@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AURORA ATELIER — Fine Gold & Silver Accessories</title>
+  <meta name="description" content="Discover, customize, and shop modern minimalist luxury accessories in pure gold and liquid sterling silver.">
+  
+  <!-- Google Fonts & Stylesheet -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div style="background: var(--text-charcoal); color: var(--gold-pale); text-align: center; padding: 0.45rem 1rem; font-size: 0.78rem; letter-spacing: 0.08em; font-weight: 500; text-transform: uppercase;">
+    ✨ Complimentary Insured Atelier Delivery on all Gold & Silver orders above ₹2,999 &bull; Code: <strong>AURORA10</strong> for 10% Off
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="header">
+    <div class="container nav-container">
+      <!-- Brand Logo -->
+      <a href="#home" class="brand-logo">
+        <span class="logo-title">AURORA</span>
+        <span class="logo-subtitle">Maison Atelier</span>
+      </a>
+
+      <!-- Navigation Links -->
+      <ul class="nav-links">
+        <li><a href="#home" class="nav-link active">Home</a></li>
+        <li><a href="#explore" class="nav-link">Explore Accessories</a></li>
+        <li><a href="#custom-request" class="nav-link">Create / Request</a></li>
+        <li><a href="#inspiration" class="nav-link">Upload Inspiration</a></li>
+        <li><a href="#orders" class="nav-link">Orders</a></li>
+        <li id="navAdminTab" style="display:none;"><a href="#admin" class="nav-link" style="color:var(--gold-dark); font-weight:700;">Admin Studio</a></li>
+      </ul>
+
+      <!-- Action Buttons -->
+      <div class="nav-actions">
+        <!-- Wishlist Icon -->
+        <button class="icon-btn" onclick="navigateTo('#explore')" title="Wishlist">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span class="badge-count" id="wishlistBadge" style="display:none;">0</span>
+        </button>
+
+        <!-- Cart Icon -->
+        <button class="icon-btn" onclick="openCartDrawer()" title="Shopping Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span class="badge-count" id="cartBadge" style="display:none;">0</span>
+        </button>
+
+        <!-- User Profile -->
+        <div id="navUserProfile"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       VIEW 1: HOME PAGE (#home)
+       ========================================================================== -->
+  <section id="home">
+    <!-- Hero Section -->
+    <div class="hero">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <span class="eyebrow">FINE JEWELRY & BESPOKE ATELIER</span>
+          <h1 class="hero-headline">
+            Find the Piece That <em>Feels Like You.</em>
+          </h1>
+          <p class="hero-subtext">
+            Discover, customize, and shop accessories crafted around your style. Hand-forged in pure 18K gold and liquid sterling silver with modern Gen-Z elegance.
+          </p>
+          <div class="hero-actions">
+            <button class="btn btn-gold btn-lg" onclick="navigateTo('#explore')">
+              Explore Collection ✨
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="navigateTo('#custom-request')">
+              Custom Order Studio
+            </button>
+          </div>
+
+          <!-- Trust Badges -->
+          <div class="hero-trust-badges">
+            <div class="trust-badge-item">
+              <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span class="trust-text">100% Certified Hallmark</span>
+            </div>
+            <div class="trust-badge-item">
+              <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span class="trust-text">Insured Atelier Courier</span>
+            </div>
+            <div class="trust-badge-item">
+              <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span class="trust-text">Artisanal Handcrafted</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Visual Imagery -->
+        <div class="hero-visual">
+          <div class="hero-card-main">
+            <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1000&q=80" alt="Aurora Fine Jewelry Collection">
+          </div>
+          
+          <!-- Floating Badge Cards -->
+          <div class="hero-floating-card card-top-right">
+            <img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=200&q=80" class="floating-thumb" alt="Solstice Choker">
+            <div class="floating-info">
+              <h5>Aurora Solstice</h5>
+              <p>18K Solid Gold &bull; ₹12,499</p>
+            </div>
+          </div>
+
+          <div class="hero-floating-card card-bottom-left">
+            <img src="https://images.unsplash.com/photo-1611591475152-478311382490?auto=format&fit=crop&w=200&q=80" class="floating-thumb" alt="Liquid Silver Cuff">
+            <div class="floating-info">
+              <h5>Liquid Silver Cuff</h5>
+              <p>925 Sterling Silver &bull; ₹4,899</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Curated Metals Section -->
+    <div class="container section-padding">
+      <div class="section-header">
+        <span class="eyebrow">CURATED METALS</span>
+        <h2 class="section-title">Pure Gold & Liquid Silver</h2>
+        <p class="section-subtitle">Everyday luxury designed to be stacked, styled, and treasured for a lifetime.</p>
+      </div>
+
+      <div class="metal-curation-grid">
+        <div class="curation-card" onclick="Aurora.activeFilter.metal='Gold'; navigateTo('#explore');">
+          <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80" alt="The Pure Gold Edit">
+          <div class="curation-overlay"></div>
+          <div class="curation-content">
+            <div class="curation-tag">18K & 22K SOLID GOLD</div>
+            <h3 class="curation-title">The Pure Gold Edit</h3>
+            <span class="curation-link">Explore Gold Pieces &rarr;</span>
+          </div>
+        </div>
+
+        <div class="curation-card" onclick="Aurora.activeFilter.metal='Silver'; navigateTo('#explore');">
+          <img src="https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=800&q=80" alt="Liquid Silver Selection">
+          <div class="curation-overlay"></div>
+          <div class="curation-content">
+            <div class="curation-tag">925 STERLING SILVER</div>
+            <h3 class="curation-title">Liquid Silver Selection</h3>
+            <span class="curation-link">Explore Silver Pieces &rarr;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trending Section -->
+      <div class="section-header" style="margin-top: 3rem;">
+        <span class="eyebrow">TRENDING IN ATELIER</span>
+        <h2 class="section-title">Most Coveted Pieces</h2>
+      </div>
+      <div class="products-grid" id="featuredProductsGrid"></div>
+
+      <div style="text-align: center; margin-top: 3.5rem;">
+        <button class="btn btn-outline-gold btn-lg" onclick="navigateTo('#explore')">
+          View All Accessories &rarr;
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       VIEW 2: DESCRIBE WHAT YOU WANT (#custom-request)
+       ========================================================================== -->
+  <section id="custom-request" class="section-padding" style="display:none;">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">BESPOKE ACCESSORY MATCHER</span>
+        <h2 class="section-title">Describe What You Want</h2>
+        <p class="section-subtitle">
+          Type your exact vision or choose your preferred metals and aesthetics. Our smart atelier system instantly matches available pieces or initiates a bespoke commission.
+        </p>
+      </div>
+
+      <div class="bespoke-box">
+        <!-- Main Description Text Box -->
+        <div class="bespoke-textarea-wrapper">
+          <label class="form-label" style="margin-bottom:0.6rem; display:block;">Describe your ideal accessory:</label>
+          <textarea id="bespokePromptInput" class="bespoke-textarea" placeholder="e.g. I want a simple gold necklace with a delicate pendant for everyday wear..." oninput="handlePromptInput()"></textarea>
+          
+          <!-- Prompt Suggestions -->
+          <div class="prompt-suggestions">
+            <span>Try asking:</span>
+            <span class="suggestion-chip" onclick="quickSelectPrompt('I want a simple gold necklace')">&ldquo;I want a simple gold necklace.&rdquo;</span>
+            <span class="suggestion-chip" onclick="quickSelectPrompt('Looking for a silver bracelet with a minimalist design')">&ldquo;Looking for a silver bracelet with a minimalist design.&rdquo;</span>
+            <span class="suggestion-chip" onclick="quickSelectPrompt('I want a gold ring for everyday wear')">&ldquo;I want a gold ring for everyday wear.&rdquo;</span>
+            <span class="suggestion-chip" onclick="quickSelectPrompt('Show me elegant earrings suitable for a formal event')">&ldquo;Show me elegant earrings suitable for a formal event.&rdquo;</span>
+          </div>
+        </div>
+
+        <!-- Quick Select Aesthetic Chips -->
+        <div style="margin: 1.5rem 0;">
+          <label class="form-label">Quick-Select Attributes:</label>
+          <div class="chips-group">
+            <button class="chip chip-gold" onclick="quickSelectPrompt('Gold')">✨ Gold</button>
+            <button class="chip chip-silver" onclick="quickSelectPrompt('Silver')">❄️ Silver</button>
+            <button class="chip" onclick="quickSelectPrompt('Ring')">💍 Ring</button>
+            <button class="chip" onclick="quickSelectPrompt('Necklace')">📿 Necklace</button>
+            <button class="chip" onclick="quickSelectPrompt('Bracelet')">✨ Bracelet</button>
+            <button class="chip" onclick="quickSelectPrompt('Earrings')">✨ Earrings</button>
+            <button class="chip" onclick="quickSelectPrompt('Minimalist')">Minimalist</button>
+            <button class="chip" onclick="quickSelectPrompt('Formal')">Formal</button>
+            <button class="chip" onclick="quickSelectPrompt('Everyday')">Everyday</button>
+            <button class="chip" onclick="quickSelectPrompt('Luxury')">Luxury</button>
+          </div>
+        </div>
+
+        <!-- Specific Parameters Grid -->
+        <div class="bespoke-filters-grid">
+          <div class="custom-select-group">
+            <label>Accessory Type</label>
+            <select id="bespokeTypeSelect" class="custom-select" onchange="handlePromptInput()">
+              <option value="Necklace">Necklace</option>
+              <option value="Bracelet">Bracelet</option>
+              <option value="Ring">Ring</option>
+              <option value="Earrings">Earrings</option>
+              <option value="Anklet / Charm">Anklet / Charm</option>
+            </select>
+          </div>
+
+          <div class="custom-select-group">
+            <label>Preferred Metal</label>
+            <select id="bespokeMetalSelect" class="custom-select" onchange="handlePromptInput()">
+              <option value="Gold">18K Solid Gold</option>
+              <option value="Silver">925 Sterling Silver</option>
+              <option value="Rose Gold">14K Rose Gold</option>
+              <option value="Dual Tone">Dual Tone (Gold + Silver)</option>
+            </select>
+          </div>
+
+          <div class="custom-select-group">
+            <label>Target Budget</label>
+            <select id="bespokeBudgetSelect" class="custom-select">
+              <option value="Under ₹5,000">Under ₹5,000</option>
+              <option value="₹5,000 - ₹15,000" selected>₹5,000 - ₹15,000</option>
+              <option value="₹15,000 - ₹30,000">₹15,000 - ₹30,000</option>
+              <option value="Luxury Bespoke (₹30,000+)">Luxury Bespoke (₹30,000+)</option>
+            </select>
+          </div>
+
+          <div class="custom-select-group">
+            <label>Occasion & Style</label>
+            <select id="bespokeOccasionSelect" class="custom-select">
+              <option value="Everyday Minimalist">Everyday Minimalist</option>
+              <option value="Cocktail & Evening">Cocktail & Evening</option>
+              <option value="Bridal & Festive">Bridal & Festive</option>
+              <option value="Gift for Someone Special">Gift for Someone Special</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bespoke-footer-actions">
+          <div style="font-size:0.85rem; color:var(--text-muted);">
+            ✨ Live AI & Atelier matching active
+          </div>
+          <div style="display:flex; gap:0.8rem;">
+            <button class="btn btn-secondary" onclick="navigateTo('#inspiration')">
+              📷 Upload Inspiration Image
+            </button>
+            <button class="btn btn-gold" onclick="submitBespokeRequest()">
+              Submit Bespoke Commission ✨
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Matching Products Container -->
+      <div id="bespokeMatchesContainer" style="display:none; margin-top:4rem;">
+        <div class="section-header" style="margin-bottom:2rem;">
+          <span class="eyebrow">INSTANT ATELIER MATCHES</span>
+          <h3 style="font-size:1.8rem;">Available Pieces Matching Your Description</h3>
+        </div>
+        <div class="products-grid" id="bespokeMatchesGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       VIEW 3: UPLOAD / PASTE INSPIRATION (#inspiration)
+       ========================================================================== -->
+  <section id="inspiration" class="section-padding" style="display:none;">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">INSPIRATION STUDIO</span>
+        <h2 class="section-title">Upload or Paste Inspiration</h2>
+        <p class="section-subtitle">
+          Have a design you love? Upload an image, drag and drop, or simply press <strong>Ctrl + V</strong> anywhere to paste. Tell us what you want and our artisans will forge or match it.
+        </p>
+      </div>
+
+      <div class="inspiration-upload-grid">
+        <!-- Dropzone Card -->
+        <div class="upload-dropzone" id="inspirationDropzone" onclick="document.querySelector('#inspirationFileInput').click()">
+          <input type="file" id="inspirationFileInput" accept="image/*" style="display:none;" onchange="handleImageFileInput(event)">
+          <div class="dropzone-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <h3 class="dropzone-title">Upload, Drag & Drop, or Paste</h3>
+          <p class="dropzone-subtitle">
+            Drop an image file from your device, or press <strong>Ctrl+V</strong> to paste directly from your clipboard.
+          </p>
+          <div style="display:flex; gap:0.6rem; flex-wrap:wrap; justify-content:center;">
+            <button type="button" class="btn btn-secondary btn-sm">Browse Device File</button>
+            <button type="button" class="btn btn-outline-gold btn-sm" onclick="event.stopPropagation(); addImageByUrl();">Add via URL</button>
+          </div>
+        </div>
+
+        <!-- Preview & Customization Card -->
+        <div class="inspiration-preview-card">
+          <div>
+            <div class="eyebrow">INSPIRATION PREVIEW</div>
+            <div class="preview-image-container" id="inspirationPreviewContainer">
+              <div class="preview-placeholder">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:0.5rem; color:var(--gold-primary);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <div>Uploaded or pasted inspiration image will appear here</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">How do you want this made or matched?</label>
+              <textarea id="inspirationNotesInput" class="form-input" style="height:90px; resize:vertical;" placeholder="e.g. I love this pendant but want it in 18K solid yellow gold with an adjustable 16-18 inch chain..."></textarea>
+            </div>
+          </div>
+
+          <div id="inspirationSubmitCard" style="display:flex; justify-content:flex-end; margin-top:1rem;">
+            <button class="btn btn-gold btn-lg" onclick="submitInspirationCommission()" style="width:100%;">
+              Submit to Master Jewelers ✨
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       VIEW 4: EXPLORE ACCESSORIES / CATALOG (#explore)
+       ========================================================================== -->
+  <section id="explore" class="section-padding" style="display:none;">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">THE COMPLETE ATELIER</span>
+        <h2 class="section-title">Explore Accessories</h2>
+        <p class="section-subtitle">
+          Handcrafted gold and silver fine jewelry, ethically sourced and hallmarked.
+        </p>
+      </div>
+
+      <!-- Toolbar & Filters -->
+      <div class="catalog-toolbar">
+        <!-- Search -->
+        <div class="catalog-search-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="catalogSearchInput" placeholder="Search gold, silver, rings, chokers, cuffs...">
+        </div>
+
+        <!-- Filter Category Chips -->
+        <div class="filter-pills">
+          <button class="chip filter-pill active" data-filter-type="category" data-filter-val="All">All</button>
+          <button class="chip filter-pill" data-filter-type="category" data-filter-val="Necklace">Necklaces</button>
+          <button class="chip filter-pill" data-filter-type="category" data-filter-val="Bracelet">Bracelets</button>
+          <button class="chip filter-pill" data-filter-type="category" data-filter-val="Ring">Rings</button>
+          <button class="chip filter-pill" data-filter-type="category" data-filter-val="Earrings">Earrings</button>
+        </div>
+
+        <!-- Metal Filter Chips -->
+        <div class="filter-pills">
+          <button class="chip chip-gold filter-pill" data-filter-type="metal" data-filter-val="Gold">Gold</button>
+          <button class="chip chip-silver filter-pill" data-filter-type="metal" data-filter-val="Silver">Silver</button>
+        </div>
+
+        <!-- Sorting -->
+        <div>
+          <select id="catalogSortSelect" class="custom-select" style="padding:0.5rem 1rem; border-radius:var(--radius-pill);">
+            <option value="default">Featured</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+            <option value="rating">Top Rated</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="products-grid" id="catalogProductsGrid"></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       VIEW 5: CART PAGE (#cart)
+       ========================================================================== -->
+  <section id="cart" class="section-padding" style="display:none;">
+    <div class="container" style="max-width: 900px;">
+      <div class="section-header">
+        <span class="eyebrow">YOUR ATELIER SELECTIONS</span>
+        <h2 class="section-title">Shopping Bag</h2>
+      </div>
+
+      <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--border-subtle); padding:2rem; box-shadow:var(--shadow-sm);">
+        <div id="cartDrawerItems"></div>
+        
+        <div id="cartDrawerFooter" style="margin-top:2rem; border-top:1px solid var(--border-subtle); padding-top:1.5rem;">
+          <div class="promo-row">
+            <input type="text" id="promoInput" class="promo-input" placeholder="Promo code (e.g. AURORA10)">
+            <button class="btn btn-secondary btn-sm" onclick="applyPromoCode()">Apply</button>
+          </div>
+
+          <div class="cart-summary-line">
+            <span>Subtotal</span>
+            <span id="cartSubtotal">₹0</span>
+          </div>
+          <div class="cart-summary-line">
+            <span>Insured Atelier Delivery</span>
+            <span id="cartShipping">FREE</span>
+          </div>
+          <div class="cart-summary-line" id="cartDiscountRow" style="display:none; color:var(--gold-dark); font-weight:600;">
+            <span>VIP Atelier Discount</span>
+            <span id="cartDiscount">-₹0</span>
+          </div>
+          <div class="cart-summary-total">
+            <span>Estimated Total</span>
+            <span id="cartTotal" style="color:var(--gold-dark);">₹0</span>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; margin-top:2rem; gap:1rem; flex-wrap:wrap;">
+            <button class="btn btn-secondary" onclick="navigateTo('#explore')">
+              &larr; Continue Shopping
+            </button>
+            <button class="btn btn-gold btn-lg" onclick="navigateTo('#checkout')">
+              Proceed to Secure Checkout ✨
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       VIEW 6: CHECKOUT PAGE (#checkout)
+       ========================================================================== -->
+  <section id="checkout" class="section-padding" style="display:none;">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">SECURE ATELIER ORDER</span>
+        <h2 class="section-title">Complete Your Purchase</h2>
+      </div>
+
+      <form onsubmit="processOrderCheckout(event)" class="checkout-grid">
+        <!-- Left: Form Steps -->
+        <div>
+          <!-- Step 1: Customer Details -->
+          <div class="checkout-card">
+            <h3 style="font-size:1.3rem; margin-bottom:1.5rem; display:flex; align-items:center;">
+              <span class="step-badge">1</span> Delivery & Contact Details
+            </h3>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="checkoutName" class="form-input" value="Aria Vance" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address (for Order Confirmation)</label>
+                <input type="email" id="checkoutEmail" class="form-input" value="aria.vance@example.com" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number (for Courier updates)</label>
+              <input type="tel" id="checkoutPhone" class="form-input" value="+91 98765 43210" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Street Address & Landmark</label>
+              <input type="text" id="checkoutStreet" class="form-input" value="Penthouse 14B, Marine Lines" required>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">City</label>
+                <input type="text" id="checkoutCity" class="form-input" value="Mumbai" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">State</label>
+                <input type="text" id="checkoutState" class="form-input" value="Maharashtra" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Postal / PIN Code</label>
+              <input type="text" id="checkoutZip" class="form-input" value="400020" required>
+            </div>
+          </div>
+
+          <!-- Step 2: Payment Method -->
+          <div class="checkout-card">
+            <h3 style="font-size:1.3rem; margin-bottom:1.5rem; display:flex; align-items:center;">
+              <span class="step-badge">2</span> Payment Method
+            </h3>
+
+            <label class="payment-method-card active">
+              <div style="display:flex; align-items:center; gap:0.8rem;">
+                <input type="radio" name="paymentMethod" value="UPI / Instant QR" checked>
+                <div>
+                  <strong>UPI / QR Code &bull; GooglePay, PhonePe, Paytm</strong>
+                  <div style="font-size:0.8rem; color:var(--text-muted);">Instant zero-fee payment with buyer insurance</div>
+                </div>
+              </div>
+              <span style="color:var(--gold-dark); font-weight:700;">⚡ Instant</span>
+            </label>
+
+            <label class="payment-method-card">
+              <div style="display:flex; align-items:center; gap:0.8rem;">
+                <input type="radio" name="paymentMethod" value="Credit / Debit Card (Visa/Mastercard)">
+                <div>
+                  <strong>Credit / Debit Card</strong>
+                  <div style="font-size:0.8rem; color:var(--text-muted);">Encrypted 256-bit SSL transaction</div>
+                </div>
+              </div>
+              <span>💳 Card</span>
+            </label>
+
+            <label class="payment-method-card">
+              <div style="display:flex; align-items:center; gap:0.8rem;">
+                <input type="radio" name="paymentMethod" value="Net Banking / Atelier Wire">
+                <div>
+                  <strong>Net Banking / Direct Bank Wire</strong>
+                  <div style="font-size:0.8rem; color:var(--text-muted);">All major Indian & International banks</div>
+                </div>
+              </div>
+              <span>🏦 Wire</span>
+            </label>
+
+            <label class="payment-method-card">
+              <div style="display:flex; align-items:center; gap:0.8rem;">
+                <input type="radio" name="paymentMethod" value="Cash on Delivery (Verified)">
+                <div>
+                  <strong>Cash on Delivery (COD)</strong>
+                  <div style="font-size:0.8rem; color:var(--text-muted);">Pay upon insured delivery at your doorstep</div>
+                </div>
+              </div>
+              <span>📦 COD</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Right: Order Summary Sidebar -->
+        <div class="checkout-card" style="position:sticky; top:100px;">
+          <h3 style="font-size:1.3rem; margin-bottom:1.2rem;">Order Summary</h3>
+          <div id="checkoutItemsSummary"></div>
+          
+          <button type="submit" class="btn btn-gold btn-lg" style="width:100%; margin-top:1.5rem;">
+            Confirm Purchase ✨
+          </button>
+          
+          <div style="text-align:center; font-size:0.78rem; color:var(--text-subtle); margin-top:1rem;">
+            🔒 256-Bit SSL Insured Atelier Checkout &bull; 100% Genuine Certified
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       VIEW 7: ORDER CONFIRMATION SUCCESS VIEW (#orderConfirmationView)
+       ========================================================================== -->
+  <section id="orderConfirmationView" class="section-padding" style="display:none;"></section>
+
+  <!-- ==========================================================================
+       VIEW 8: MY ORDERS & LIVE TRACKING (#orders)
+       ========================================================================== -->
+  <section id="orders" class="section-padding" style="display:none;">
+    <div class="container" style="max-width:960px;">
+      <div class="section-header">
+        <span class="eyebrow">ORDER HISTORY & STATUS</span>
+        <h2 class="section-title">My Orders</h2>
+        <p class="section-subtitle">Live real-time tracking from our master jewelry bench to your doorstep.</p>
+      </div>
+
+      <div id="ordersListContainer"></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       VIEW 9: ADMIN / SELLER DASHBOARD (#admin)
+       ========================================================================== -->
+  <section id="admin" class="section-padding" style="display:none;">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">MAISON AURORA STUDIO</span>
+        <h2 class="section-title">Seller & Atelier Dashboard</h2>
+        <p class="section-subtitle">Manage jewelry inventory, confirm incoming client orders, update tracking status, and review custom bespoke requests.</p>
+      </div>
+
+      <!-- Metrics -->
+      <div class="admin-metrics-grid">
+        <div class="metric-card">
+          <span class="metric-title">Total Revenue</span>
+          <span class="metric-value text-gold" id="adminStatRevenue">₹0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-title">Total Orders</span>
+          <span class="metric-value" id="adminStatOrders">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-title">Catalog Pieces</span>
+          <span class="metric-value" id="adminStatProducts">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-title">Bespoke Requests</span>
+          <span class="metric-value" id="adminStatRequests">0</span>
+        </div>
+      </div>
+
+      <!-- Orders Management -->
+      <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--border-subtle); padding:2rem; margin-bottom:3rem; box-shadow:var(--shadow-sm);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+          <h3 style="font-size:1.4rem;">Customer Orders & Status Dispatcher</h3>
+          <span style="font-size:0.85rem; color:var(--text-muted);">Change status below to instantly update buyer tracking</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Client</th>
+                <th>Amount</th>
+                <th>Payment</th>
+                <th>Live Status Dispatch</th>
+              </tr>
+            </thead>
+            <tbody id="adminOrdersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Bespoke Requests Review -->
+      <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--border-subtle); padding:2rem; margin-bottom:3rem; box-shadow:var(--shadow-sm);">
+        <h3 style="font-size:1.4rem; margin-bottom:1.5rem;">Client Bespoke & Inspiration Requests</h3>
+        <div id="adminRequestsContainer"></div>
+      </div>
+
+      <!-- Product Inventory Management -->
+      <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--border-subtle); padding:2rem; box-shadow:var(--shadow-sm);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+          <h3 style="font-size:1.4rem;">Catalog Inventory</h3>
+          <button class="btn btn-gold btn-sm" onclick="openAddProductModal()">+ Add New Piece</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Piece</th>
+                <th>Metal</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminProductsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       VIEW 10: AUTH / LOGIN & SIGNUP (#auth)
+       ========================================================================== -->
+  <section id="auth" class="section-padding" style="display:none;">
+    <div class="container">
+      <div class="auth-container">
+        <div style="text-align:center; margin-bottom:1.5rem;">
+          <div class="eyebrow">MAISON DE HAUTE JOAILLERIE</div>
+          <h2 style="font-size:2rem; margin-bottom:0.4rem;">Welcome to Aurora</h2>
+          <p style="color:var(--text-muted); font-size:0.88rem;">Sign in to access your curated jewelry wishlist and orders.</p>
+        </div>
+
+        <div class="auth-tabs">
+          <div class="auth-tab active" id="tabSignIn" onclick="switchAuthTab('signin')">Sign In</div>
+          <div class="auth-tab" id="tabSignUp" onclick="switchAuthTab('signup')">Create Account</div>
+        </div>
+
+        <!-- Sign In Form -->
+        <form id="formSignIn" onsubmit="handleSignInSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Email or Username</label>
+            <input type="email" id="authEmail" class="form-input" placeholder="you@luxury.com" value="buyer@aurora.luxury" required>
+          </div>
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between;">
+              <label class="form-label">Password</label>
+              <a href="javascript:void(0)" onclick="showToast('Password reset link sent to your email ✨')" style="font-size:0.75rem; color:var(--gold-dark);">Forgot Password?</a>
+            </div>
+            <input type="password" id="authPassword" class="form-input" value="password123" required>
+          </div>
+          <button type="submit" class="btn btn-gold btn-lg" style="width:100%; margin-top:1rem;">
+            Sign In to Atelier ✨
+          </button>
+        </form>
+
+        <!-- Sign Up Form -->
+        <form id="formSignUp" onsubmit="handleSignUpSubmit(event)" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="signupName" class="form-input" placeholder="e.g. Aria Vance" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="signupEmail" class="form-input" placeholder="e.g. aria@luxury.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" id="signupPhone" class="form-input" placeholder="+91 98765 43210">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Create Password</label>
+            <input type="password" id="signupPassword" class="form-input" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn btn-gold btn-lg" style="width:100%; margin-top:1rem;">
+            Create Atelier Account ✨
+          </button>
+        </form>
+
+        <!-- Quick 1-Click Demo Logins -->
+        <div class="demo-account-box">
+          <div style="font-weight:700; color:var(--text-charcoal); margin-bottom:0.5rem;">⚡ 1-Click Quick Demo Sign-Ins:</div>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loginUser('buyer@aurora.luxury', 'password123')">
+              👤 Luxury Buyer (Aria)
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loginUser('admin@aurora.luxury', 'admin123')">
+              👑 Atelier Admin (Maison)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       CART SLIDE-OVER DRAWER
+       ========================================================================== -->
+  <div class="cart-drawer-overlay" id="cartDrawerOverlay"></div>
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h3>Atelier Shopping Bag</h3>
+      <button class="modal-close-btn" onclick="closeCartDrawer()">✕</button>
+    </div>
+    <div class="cart-items-scroll" id="cartDrawerItems"></div>
+    <div class="cart-footer" id="cartDrawerFooter">
+      <div class="promo-row">
+        <input type="text" id="promoInput" class="promo-input" placeholder="Promo code (AURORA10)">
+        <button class="btn btn-secondary btn-sm" onclick="applyPromoCode()">Apply</button>
+      </div>
+      <div class="cart-summary-line">
+        <span>Subtotal</span>
+        <span id="cartSubtotal">₹0</span>
+      </div>
+      <div class="cart-summary-line">
+        <span>Shipping</span>
+        <span id="cartShipping">FREE</span>
+      </div>
+      <div class="cart-summary-line" id="cartDiscountRow" style="display:none; color:var(--gold-dark); font-weight:600;">
+        <span>VIP Discount</span>
+        <span id="cartDiscount">-₹0</span>
+      </div>
+      <div class="cart-summary-total">
+        <span>Total</span>
+        <span id="cartTotal" style="color:var(--gold-dark);">₹0</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-top:1.2rem;">
+        <button class="btn btn-secondary" onclick="closeCartDrawer(); navigateTo('#explore');">Continue</button>
+        <button class="btn btn-gold" onclick="closeCartDrawer(); navigateTo('#checkout');">Checkout ✨</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Modal Dialog -->
+  <div class="modal-overlay" id="globalModalOverlay">
+    <div class="modal-content" id="globalModalContent"></div>
+  </div>
+
+  <!-- Toast Notification Stack -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <h3 class="font-serif">AURORA ATELIER</h3>
+        <p>
+          Fine jewelry designed for modern aesthetics. 100% BIS certified 18K solid gold, 925 sterling silver, and bespoke custom artisanal creations.
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <ul class="footer-links">
+          <li><a href="#explore">Pure Gold Edit</a></li>
+          <li><a href="#explore">Liquid Silver</a></li>
+          <li><a href="#explore">Rings & Bands</a></li>
+          <li><a href="#explore">Chokers & Chains</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Custom Atelier</h4>
+        <ul class="footer-links">
+          <li><a href="#custom-request">Describe What You Want</a></li>
+          <li><a href="#inspiration">Upload Inspiration Image</a></li>
+          <li><a href="#orders">Live Order Tracking</a></li>
+          <li><a href="#auth">Client Sign In</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Concierge</h4>
+        <ul class="footer-links">
+          <li><a href="mailto:concierge@aurora.luxury">concierge@aurora.luxury</a></li>
+          <li><a href="tel:+919820011223">+91 98200 11223</a></li>
+          <li><a href="javascript:void(0)">Luxury Boulevard, Mumbai</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <div>© 2026 Aurora Atelier Fine Jewelry. All rights reserved.</div>
+      <div>Designed with Gen-Z Luxury Aesthetic</div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/static/js/app.js"></script>
+  <script>
+    // Inline helpers for Auth tabs and submissions
+    function switchAuthTab(tab) {
+      document.querySelector('#tabSignIn').classList.toggle('active', tab === 'signin');
+      document.querySelector('#tabSignUp').classList.toggle('active', tab === 'signup');
+      document.querySelector('#formSignIn').style.display = tab === 'signin' ? 'block' : 'none';
+      document.querySelector('#formSignUp').style.display = tab === 'signup' ? 'block' : 'none';
+    }
+
+    async function handleSignInSubmit(e) {
+      e.preventDefault();
+      const email = document.querySelector('#authEmail').value;
+      const pass = document.querySelector('#authPassword').value;
+      await loginUser(email, pass);
+    }
+
+    async function handleSignUpSubmit(e) {
+      e.preventDefault();
+      const name = document.querySelector('#signupName').value;
+      const email = document.querySelector('#signupEmail').value;
+      const phone = document.querySelector('#signupPhone').value;
+      const pass = document.querySelector('#signupPassword').value;
+      await signupUser(name, email, pass, phone);
+    }
+
+    async function submitInspirationCommission() {
+      const notes = document.querySelector('#inspirationNotesInput')?.value.trim();
+      if (!Aurora.inspirationImageBase64 && !notes) {
+        showToast('Please upload an inspiration image or enter details');
+        return;
+      }
+      const payload = {
+        user_name: Aurora.user ? Aurora.user.name : 'Valued Client',
+        user_email: Aurora.user ? Aurora.user.email : 'client@aurora.luxury',
+        accessory_type: 'Inspiration Design',
+        metal_type: 'Gold / Silver Bespoke',
+        budget: 'Artisan Quote',
+        occasion: 'Custom Bespoke',
+        description: notes || 'Custom design requested from inspiration photo',
+        inspiration_image: Aurora.inspirationImageBase64 || ''
+      };
+
+      try {
+        await fetch(`${API_BASE}/custom-requests`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch(e) {}
+
+      showToast('✨ Inspiration received! Our artisans will review within 24 hours.');
+      resetInspirationPreview();
+      document.querySelector('#inspirationNotesInput').value = '';
+      openCustomModal('Inspiration Received ✨', `
+        <div style="text-align:center; padding:1.5rem;">
+          <div style="font-size:3rem; margin-bottom:1rem;">💎</div>
+          <h3 style="font-size:1.4rem; margin-bottom:0.6rem;">Inspiration Logged with Master Jeweler</h3>
+          <p style="color:var(--text-muted); font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
+            We have captured your inspiration image and craftsmanship specifications. Our design team will match available inventory or provide a 3D CAD bespoke quotation.
+          </p>
+          <button class="btn btn-gold" onclick="closeModal(); navigateTo('#explore');">Explore Catalog</button>
+        </div>
+      `);
+    }
+  </script>
+</body>
+</html>
