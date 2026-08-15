@@ -201,10 +201,10 @@ def seed_products(c):
             28,
             12,
             "Sculptural 925 sterling silver statement cuff with fluid wave contours that hug the wrist with effortless modern elegance.",
-            "https://images.unsplash.com/photo-1611591475152-478311382490?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80",
             json.dumps([
-                "https://images.unsplash.com/photo-1611591475152-478311382490?auto=format&fit=crop&w=800&q=80",
-                "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80"
+                "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80"
             ]),
             "Silver,Bracelet,Minimalist,Everyday,Modern",
             json.dumps({"Hallmark": "925 Pure Silver", "Weight": "14.2 grams", "Diameter": "6.2 cm (Adjustable)", "Finish": "Rhodium-Plated Liquid Sheen"}),

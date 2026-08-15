@@ -56,9 +56,37 @@
 
         <!-- User Profile -->
         <div id="navUserProfile"></div>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button class="icon-btn mobile-menu-toggle" id="mobileMenuBtn" onclick="toggleMobileMenu()" aria-label="Toggle Navigation Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
       </div>
     </div>
   </header>
+
+  <!-- Mobile Slide-out Drawer & Backdrop -->
+  <div class="mobile-nav-backdrop" id="mobileNavBackdrop" onclick="toggleMobileMenu(false)"></div>
+  <div class="mobile-nav-drawer" id="mobileNavDrawer">
+    <div class="mobile-nav-header">
+      <div class="brand-logo">
+        <span class="logo-title">AURORA</span>
+        <span class="logo-subtitle">Maison Atelier</span>
+      </div>
+      <button class="mobile-nav-close" onclick="toggleMobileMenu(false)" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="#home" class="mobile-nav-link" onclick="toggleMobileMenu(false)">✨ Home Collection</a>
+      <a href="#explore" class="mobile-nav-link" onclick="toggleMobileMenu(false)">💎 Explore Fine Jewelry</a>
+      <a href="#custom-request" class="mobile-nav-link" onclick="toggleMobileMenu(false)">✍️ Custom Bespoke Studio</a>
+      <a href="#inspiration" class="mobile-nav-link" onclick="toggleMobileMenu(false)">📷 Inspiration Matcher</a>
+      <a href="#orders" class="mobile-nav-link" onclick="toggleMobileMenu(false)">📦 Orders & Live Tracker</a>
+      <a href="#admin" id="mobileNavAdminLink" class="mobile-nav-link" style="display:none; color:var(--gold-dark); font-weight:700;" onclick="toggleMobileMenu(false)">⚙️ Atelier Admin Studio</a>
+    </div>
+    <div class="mobile-nav-footer">
+      <div id="mobileUserProfileSlot"></div>
+    </div>
+  </div>
 
   <!-- ==========================================================================
        VIEW 1: HOME PAGE (#home)
@@ -117,7 +145,7 @@
           </div>
 
           <div class="hero-floating-card card-bottom-left">
-            <img src="https://images.unsplash.com/photo-1611591475152-478311382490?auto=format&fit=crop&w=200&q=80" class="floating-thumb" alt="Liquid Silver Cuff">
+            <img src="https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=400&q=80" class="floating-thumb" alt="Liquid Silver Cuff" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=400&q=80'">
             <div class="floating-info">
               <h5>Liquid Silver Cuff</h5>
               <p>925 Sterling Silver &bull; ₹4,899</p>
@@ -837,6 +865,37 @@
       <div>Designed with Gen-Z Luxury Aesthetic</div>
     </div>
   </footer>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <a href="#home" class="mobile-bottom-tab active" data-tab="home" onclick="navigateTo('#home')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="#explore" class="mobile-bottom-tab" data-tab="explore" onclick="navigateTo('#explore')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+      <span>Shop</span>
+    </a>
+    <a href="#custom-request" class="mobile-bottom-tab" data-tab="custom-request" onclick="navigateTo('#custom-request')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      <span>Bespoke</span>
+    </a>
+    <a href="#inspiration" class="mobile-bottom-tab" data-tab="inspiration" onclick="navigateTo('#inspiration')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <span>Inspire</span>
+    </a>
+    <a href="javascript:void(0)" class="mobile-bottom-tab" onclick="openCartDrawer()">
+      <div style="position:relative; display:inline-block;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="badge-count" id="mobileCartBadge" style="display:none; top:-6px; right:-8px;">0</span>
+      </div>
+      <span>Cart</span>
+    </a>
+    <a href="#orders" class="mobile-bottom-tab" data-tab="orders" onclick="navigateTo('#orders')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      <span>Track</span>
+    </a>
+  </nav>
 
   <!-- Scripts -->
   <script src="./static/js/app.js"></script>

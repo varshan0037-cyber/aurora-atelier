@@ -79,9 +79,23 @@ function saveWishlist() {
 // ==========================================================================
 // ROUTING & VIEW CONTROLLER
 // ==========================================================================
+function toggleMobileMenu(forceState) {
+  const drawer = document.querySelector('#mobileNavDrawer');
+  const backdrop = document.querySelector('#mobileNavBackdrop');
+  if (!drawer || !backdrop) return;
+  
+  const shouldOpen = typeof forceState === 'boolean' ? forceState : !drawer.classList.contains('active');
+  drawer.classList.toggle('active', shouldOpen);
+  backdrop.classList.toggle('active', shouldOpen);
+  document.body.style.overflow = shouldOpen ? 'hidden' : '';
+}
+
 function handleRouting() {
   const hash = window.location.hash || '#home';
   const cleanHash = hash.split('?')[0];
+
+  // Close mobile drawer on navigation
+  toggleMobileMenu(false);
 
   const sections = ['#home', '#explore', '#custom-request', '#inspiration', '#cart', '#checkout', '#orders', '#admin', '#auth'];
   
@@ -95,6 +109,15 @@ function handleRouting() {
     link.classList.remove('active');
     if (link.getAttribute('href') === cleanHash) {
       link.classList.add('active');
+    }
+  });
+
+  // Update mobile bottom nav active tabs
+  document.querySelectorAll('.mobile-bottom-tab').forEach(tab => {
+    tab.classList.remove('active');
+    const tabTarget = tab.getAttribute('href');
+    if (tabTarget === cleanHash) {
+      tab.classList.add('active');
     }
   });
 
@@ -340,10 +363,10 @@ const DEFAULT_PRODUCTS = [
     reviews_count: 28,
     stock: 12,
     description: "Sculptural 925 sterling silver statement cuff with fluid wave contours that hug the wrist with effortless modern elegance.",
-    image_url: "https://images.unsplash.com/photo-1611591475152-478311382490?auto=format&fit=crop&w=800&q=80",
+    image_url: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80",
     gallery: [
-      "https://images.unsplash.com/photo-1611591475152-478311382490?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80"
     ],
     style_tags: "Silver,Bracelet,Minimalist,Everyday,Modern",
     specs: {"Hallmark": "925 Pure Silver", "Weight": "14.2 grams", "Diameter": "6.2 cm (Adjustable)", "Finish": "Rhodium-Plated Liquid Sheen"},
@@ -593,7 +616,7 @@ function createProductCardHTML(product) {
         <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist(${product.id}, event)" title="Add to Wishlist">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="${isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
-        <img src="${product.image_url}" alt="${product.name}" loading="lazy" onclick="openProductDetails(${product.id})">
+        <img src="${product.image_url}" alt="${product.name}" loading="lazy" onclick="openProductDetails(${product.id})" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80'">
       </div>
       <div class="product-details">
         <div class="product-category-text">${product.category} &bull; ${product.metal_type}</div>
@@ -900,10 +923,15 @@ function removeCartItem(cartKey) {
 
 function updateCartBadge() {
   const badge = document.querySelector('#cartBadge');
+  const mobileBadge = document.querySelector('#mobileCartBadge');
   const count = Aurora.cart.reduce((sum, i) => sum + i.quantity, 0);
   if (badge) {
     badge.innerText = count;
     badge.style.display = count > 0 ? 'flex' : 'none';
+  }
+  if (mobileBadge) {
+    mobileBadge.innerText = count;
+    mobileBadge.style.display = count > 0 ? 'flex' : 'none';
   }
 }
 
