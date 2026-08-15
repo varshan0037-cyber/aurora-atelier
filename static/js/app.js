@@ -305,6 +305,202 @@ async function switchDemoRole() {
   }
 }
 
+const DEFAULT_PRODUCTS = [
+  {
+    id: 1,
+    name: "Aurora Solstice Choker",
+    category: "Necklace",
+    metal_type: "Gold",
+    purity: "18K Solid Gold",
+    price: 12499.00,
+    original_price: 15999.00,
+    rating: 4.95,
+    reviews_count: 34,
+    stock: 8,
+    description: "An ethereal 18K solid yellow gold choker featuring a handcrafted celestial medallion with subtle brilliant-cut moissanite accents.",
+    image_url: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1611591475152-478311382490?auto=format&fit=crop&w=800&q=80"
+    ],
+    style_tags: "Gold,Necklace,Minimalist,Luxury,Everyday",
+    specs: {"Hallmark": "BIS 750 (18K)", "Weight": "6.8 grams", "Chain Length": "16-18 in adjustable", "Closure": "Signature Lobster Clasp", "Finish": "High Polish Mirror"},
+    featured: 1
+  },
+  {
+    id: 2,
+    name: "Liquid Silver Ribbed Cuff",
+    category: "Bracelet",
+    metal_type: "Silver",
+    purity: "925 Sterling Silver",
+    price: 4899.00,
+    original_price: 5999.00,
+    rating: 4.90,
+    reviews_count: 28,
+    stock: 12,
+    description: "Sculptural 925 sterling silver statement cuff with fluid wave contours that hug the wrist with effortless modern elegance.",
+    image_url: "https://images.unsplash.com/photo-1611591475152-478311382490?auto=format&fit=crop&w=800&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1611591475152-478311382490?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80"
+    ],
+    style_tags: "Silver,Bracelet,Minimalist,Everyday,Modern",
+    specs: {"Hallmark": "925 Pure Silver", "Weight": "14.2 grams", "Diameter": "6.2 cm (Adjustable)", "Finish": "Rhodium-Plated Liquid Sheen"},
+    featured: 1
+  },
+  {
+    id: 3,
+    name: "Étoile Diamond Signet Ring",
+    category: "Ring",
+    metal_type: "Gold",
+    purity: "18K Yellow Gold",
+    price: 8999.00,
+    original_price: 10500.00,
+    rating: 4.98,
+    reviews_count: 42,
+    stock: 5,
+    description: "A modern reimagining of the heritage signet ring, cast in heavy 18K gold and star-set with a conflict-free lab solitaire diamond.",
+    image_url: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=800&q=80"
+    ],
+    style_tags: "Gold,Ring,Luxury,Everyday,Minimalist",
+    specs: {"Hallmark": "BIS 750 (18K)", "Weight": "5.4 grams", "Stone": "0.08ct VVS1 Lab Diamond", "Sizes Available": "US 5, 6, 7, 8, 9"},
+    featured: 1
+  },
+  {
+    id: 4,
+    name: "Cascade Pearl Drop Earrings",
+    category: "Earrings",
+    metal_type: "Gold",
+    purity: "14K Gold Vermeil",
+    price: 3499.00,
+    original_price: 4200.00,
+    rating: 4.88,
+    reviews_count: 19,
+    stock: 15,
+    description: "Natural organic baroque freshwater pearls suspended from delicate 14K gold vermeil geometric studs. Lightweight and dreamy.",
+    image_url: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80"
+    ],
+    style_tags: "Gold,Earrings,Formal,Luxury,Minimalist",
+    specs: {"Base Metal": "925 Sterling Silver + 2.5 Micron 14K Gold", "Pearls": "AAA Grade Freshwater Baroque", "Drop Length": "38 mm"},
+    featured: 1
+  },
+  {
+    id: 5,
+    name: "Serpentine Liquid Silver Herringbone",
+    category: "Necklace",
+    metal_type: "Silver",
+    purity: "925 Sterling Silver",
+    price: 3999.00,
+    original_price: 4800.00,
+    rating: 4.92,
+    reviews_count: 51,
+    stock: 20,
+    description: "Silky Italian herringbone chain in high-grade 925 silver that drapes fluidly like liquid mirror across your collarbone.",
+    image_url: "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=800&q=80",
+    gallery: ["https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=800&q=80"],
+    style_tags: "Silver,Necklace,Everyday,Minimalist,Modern",
+    specs: {"Hallmark": "925 Italy", "Width": "4.5 mm", "Length": "18 in with 2 in extender", "Anti-Tarnish": "Rhodium Shield"},
+    featured: 1
+  },
+  {
+    id: 6,
+    name: "L’Aura Chunky Croissant Hoops",
+    category: "Earrings",
+    metal_type: "Gold",
+    purity: "18K Gold Vermeil",
+    price: 4299.00,
+    original_price: 5500.00,
+    rating: 4.96,
+    reviews_count: 67,
+    stock: 14,
+    description: "The iconic Gen-Z croissant rib textured hoop earrings. Ultra lightweight hollow-cast design for day-to-night statement wear.",
+    image_url: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80",
+    gallery: ["https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80"],
+    style_tags: "Gold,Earrings,Everyday,Luxury,Modern",
+    specs: {"Diameter": "25 mm", "Thickness": "7 mm", "Weight": "4.1 grams per earring", "Hypoallergenic": "100% Nickel-Free"},
+    featured: 1
+  },
+  {
+    id: 7,
+    name: "Minimalist Silver Eternity Band",
+    category: "Ring",
+    metal_type: "Silver",
+    purity: "925 Sterling Silver",
+    price: 2799.00,
+    original_price: 3400.00,
+    rating: 4.85,
+    reviews_count: 24,
+    stock: 18,
+    description: "Pave-set shimmering micro-zirconias wrapped around a slender 925 sterling silver band. Perfect for stacking.",
+    image_url: "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=800&q=80",
+    gallery: ["https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=800&q=80"],
+    style_tags: "Silver,Ring,Minimalist,Everyday,Stacking",
+    specs: {"Hallmark": "925 Pure Silver", "Band Width": "1.8 mm", "Stones": "5A Flawless Cubic Zirconia"},
+    featured: 0
+  },
+  {
+    id: 8,
+    name: "Celestial Soleil Paperclip Bracelet",
+    category: "Bracelet",
+    metal_type: "Gold",
+    purity: "18K Solid Gold",
+    price: 9499.00,
+    original_price: 11999.00,
+    rating: 4.94,
+    reviews_count: 38,
+    stock: 6,
+    description: "Modern elongated paperclip chain crafted in 18K yellow gold, adorned with an engraved sunburst charm.",
+    image_url: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80",
+    gallery: ["https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80"],
+    style_tags: "Gold,Bracelet,Everyday,Luxury,Modern",
+    specs: {"Hallmark": "BIS 750 (18K)", "Length": "7.5 inches", "Weight": "5.2 grams"},
+    featured: 0
+  },
+  {
+    id: 9,
+    name: "Nocturne Silver Snake Ring",
+    category: "Ring",
+    metal_type: "Silver",
+    purity: "925 Sterling Silver",
+    price: 3199.00,
+    original_price: 3900.00,
+    rating: 4.89,
+    reviews_count: 15,
+    stock: 10,
+    description: "Sensual coiled serpent ring in oxidized 925 silver featuring emerald-green crystal eyes. Subtle rebellion with refined luxury.",
+    image_url: "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80",
+    gallery: ["https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80"],
+    style_tags: "Silver,Ring,Statement,Luxury,Modern",
+    specs: {"Hallmark": "925 Silver", "Stones": "Lab Synthetic Emeralds", "Size": "Adjustable (Fits US 6-9)"},
+    featured: 0
+  },
+  {
+    id: 10,
+    name: "Lumière Dual Tone Lock Pendant",
+    category: "Necklace",
+    metal_type: "Gold",
+    purity: "18K Gold & 925 Silver",
+    price: 7499.00,
+    original_price: 8900.00,
+    rating: 4.97,
+    reviews_count: 44,
+    stock: 7,
+    description: "A bespoke fusion of solid 18K gold and chilled 925 silver interlocking padlock design on a dual layered curb chain.",
+    image_url: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80",
+    gallery: ["https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80"],
+    style_tags: "Gold,Silver,Necklace,Statement,Luxury,Modern",
+    specs: {"Metal": "18K Gold Plated + 925 Solid Silver", "Length": "20 inches", "Pendant Size": "18mm x 12mm"},
+    featured: 1
+  }
+];
+
 // ==========================================================================
 // PRODUCTS ENGINE & CATALOG
 // ==========================================================================
@@ -312,11 +508,13 @@ async function loadProducts() {
   try {
     const res = await fetch(`${API_BASE}/products`);
     const data = await res.json();
-    if (data.success && data.products) {
+    if (data.success && data.products && data.products.length > 0) {
       Aurora.products = data.products;
+    } else {
+      Aurora.products = DEFAULT_PRODUCTS;
     }
   } catch (e) {
-    console.warn("Using offline catalog seed.");
+    Aurora.products = DEFAULT_PRODUCTS;
   }
 }
 
