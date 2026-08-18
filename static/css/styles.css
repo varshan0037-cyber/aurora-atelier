@@ -1143,12 +1143,14 @@ h1, h2, h3, h4, .font-serif {
   padding: 1.5rem;
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
   transition: var(--transition-smooth);
 }
 
 .modal-overlay.active {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .modal-content {
@@ -1375,12 +1377,14 @@ h1, h2, h3, h4, .font-serif {
   z-index: 2500;
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
   transition: var(--transition-smooth);
 }
 
 .cart-drawer-overlay.active {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .cart-drawer {
@@ -1560,6 +1564,7 @@ h1, h2, h3, h4, .font-serif {
   justify-content: space-between;
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
   transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s ease;
   overflow: hidden;
 }
@@ -1567,6 +1572,7 @@ h1, h2, h3, h4, .font-serif {
 .opening-experience-overlay.active {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .opening-header {
@@ -2584,12 +2590,14 @@ h1, h2, h3, h4, .font-serif {
   z-index: 1998;
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
   transition: var(--transition-smooth);
 }
 
 .mobile-nav-backdrop.active {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .mobile-nav-drawer {

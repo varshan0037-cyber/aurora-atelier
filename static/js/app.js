@@ -1201,11 +1201,15 @@ function updateWishlistBadge() {
 // CART ENGINE & SLIDE-OVER DRAWER
 // ==========================================================================
 function quickAddToCart(productId, e) {
-  if (e) e.stopPropagation();
+  if (e) {
+    if (e.stopPropagation) e.stopPropagation();
+    if (e.preventDefault) e.preventDefault();
+  }
   const product = Aurora.products.find(p => p.id === productId);
   if (!product) return;
   addToCart(product, product.purity || product.metal_type, 'Standard');
   showToast(`Added "${product.name}" to cart ✨`);
+  openCartDrawer();
 }
 
 function addToCart(product, metal, size) {
