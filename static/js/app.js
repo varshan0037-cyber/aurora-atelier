@@ -334,27 +334,17 @@ function handleRouting() {
     if (el) el.style.display = 'block';
     renderCartPage();
   } else if (cleanHash === '#checkout') {
-    if (!Aurora.user) {
-      showToast('Please sign in to proceed with checkout ✨');
-      window.location.hash = '#auth';
-      return;
-    }
     const el = document.querySelector('#checkout');
     if (el) el.style.display = 'block';
     renderCheckoutSummary();
   } else if (cleanHash === '#orders') {
-    if (!Aurora.user) {
-      showToast('Please sign in to view your orders ✨');
-      window.location.hash = '#auth';
-      return;
-    }
     const el = document.querySelector('#orders');
     if (el) el.style.display = 'block';
     renderOrders();
   } else if (cleanHash === '#admin') {
     if (!Aurora.user || Aurora.user.role !== 'admin') {
-      showToast('Atelier Admin access required ✨ Log in as Admin');
-      window.location.hash = '#auth';
+      showToast('Atelier Admin access required ✨ Sign in as Admin');
+      navigateTo('#auth');
       return;
     }
     const el = document.querySelector('#admin');
@@ -370,6 +360,9 @@ function handleRouting() {
     if (el) el.style.display = 'block';
     renderFeaturedProducts();
   }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
 function navigateTo(hash) {
   if (window.location.hash === hash) {
@@ -2522,7 +2515,10 @@ function openCustomModal(title, bodyHtml, isLarge = false) {
 }
 
 function closeModal() {
-  document.querySelector('#globalModalOverlay')?.classList.remove('active');
+  const overlay = document.querySelector('#globalModalOverlay');
+  if (overlay) overlay.classList.remove('active');
+  const otpModal = document.querySelector('#bankOtpModal');
+  if (otpModal) otpModal.style.display = 'none';
 }
 
 function showToast(message) {
@@ -2552,6 +2548,21 @@ function setupEventListeners() {
 
   // Cart drawer overlay click
   document.querySelector('#cartDrawerOverlay')?.addEventListener('click', closeCartDrawer);
+
+  // Bank OTP modal backdrop click
+  document.querySelector('#bankOtpModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'bankOtpModal') closeOtpModal();
+  });
+
+  // Escape key closes modals and drawers
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+      closeCartDrawer();
+      closeOtpModal();
+      toggleMobileMenu(false);
+    }
+  });
 
   // Filter chips in Catalog
   document.querySelectorAll('.filter-pill').forEach(pill => {
