@@ -1072,64 +1072,122 @@
        ========================================================================== -->
   <section id="admin" class="section-padding" style="display:none;">
     <div class="container">
-      <div class="section-header">
-        <span class="eyebrow">MAISON AURORA STUDIO</span>
-        <h2 class="section-title">Seller & Atelier Dashboard</h2>
-        <p class="section-subtitle">Manage jewelry inventory, confirm incoming client orders, update tracking status, and review custom bespoke requests.</p>
+      
+      <!-- Admin Restricted Portal Header -->
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.5rem; margin-bottom:2.5rem; padding-bottom:1.8rem; border-bottom:1px solid var(--border-subtle);">
+        <div>
+          <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.4rem;">
+            <span class="eyebrow" style="margin-bottom:0;">MAISON AURORA CONTROL CENTER</span>
+            <span class="stock-pill badge-gold" style="font-size:0.75rem; padding:0.25rem 0.75rem; font-weight:700;">👑 MASTER ADMIN ONLY</span>
+          </div>
+          <h2 style="font-family:var(--font-serif); font-size:2.4rem; color:var(--text-charcoal); margin-bottom:0.4rem;">
+            Atelier Order & Delivery Operations
+          </h2>
+          <p style="color:var(--text-muted); font-size:0.95rem; max-width:680px;">
+            Real-time incoming customer orders, delivery time windows, live tracking status dispatcher, custom bespoke commissions, and fine jewelry inventory.
+          </p>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="navigateTo('#explore')">
+            🛍️ View Boutique
+          </button>
+          <button class="btn btn-outline-gold btn-sm" onclick="openAddProductModal()">
+            + Add New Jewelry Piece
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="logoutUser()" style="color:#DC2626; border-color:#FCA5A5;">
+            🔒 Exit Admin
+          </button>
+        </div>
       </div>
 
-      <!-- Metrics -->
-      <div class="admin-metrics-grid">
+      <!-- Key Operational Metrics -->
+      <div class="admin-metrics-grid" style="margin-bottom:2.5rem;">
         <div class="metric-card">
           <span class="metric-title">Total Revenue</span>
           <span class="metric-value text-gold" id="adminStatRevenue">₹0</span>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">Gross sales volume</div>
         </div>
         <div class="metric-card">
           <span class="metric-title">Total Orders</span>
           <span class="metric-value" id="adminStatOrders">0</span>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">All client purchases</div>
         </div>
         <div class="metric-card">
-          <span class="metric-title">Catalog Pieces</span>
-          <span class="metric-value" id="adminStatProducts">0</span>
+          <span class="metric-title">Active Orders</span>
+          <span class="metric-value text-gold" id="adminStatActiveOrders">0</span>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">In Production / Transit</div>
         </div>
         <div class="metric-card">
-          <span class="metric-title">Bespoke Requests</span>
+          <span class="metric-title">Bespoke Commissions</span>
           <span class="metric-value" id="adminStatRequests">0</span>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">Custom client designs</div>
         </div>
       </div>
 
-      <!-- Orders Management -->
+      <!-- Orders & Delivery Schedule Management -->
       <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--border-subtle); padding:2rem; margin-bottom:3rem; box-shadow:var(--shadow-sm);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-          <h3 style="font-size:1.4rem;">Customer Orders & Status Dispatcher</h3>
-          <span style="font-size:0.85rem; color:var(--text-muted);">Change status below to instantly update buyer tracking</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+          <div>
+            <h3 style="font-size:1.45rem; font-family:var(--font-serif); margin-bottom:0.2rem;">Incoming Customer Orders & Delivery Times</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted);">View ordered items, delivery addresses, set delivery time slots, and update customer tracking.</p>
+          </div>
+          
+          <!-- Search & Filter Orders -->
+          <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+            <input type="text" id="adminOrderSearchInput" placeholder="Search order #, client, phone..." class="form-input" style="padding:0.45rem 0.9rem; font-size:0.85rem; width:220px;" oninput="filterAdminOrders()">
+            <select id="adminOrderStatusFilter" class="form-input" style="padding:0.45rem 0.9rem; font-size:0.85rem; width:160px;" onchange="filterAdminOrders()">
+              <option value="ALL">All Statuses</option>
+              <option value="Order Placed">Order Placed</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Artisan Handcrafting">Artisan Handcrafting</option>
+              <option value="Hallmark Verification">Hallmark Verification</option>
+              <option value="Shipped">Dispatched with Courier</option>
+              <option value="Delivered">Delivered</option>
+            </select>
+          </div>
         </div>
-        <div style="overflow-x:auto;">
-          <table class="admin-table">
+
+        <!-- Orders Table & Mobile Cards Container -->
+        <div class="admin-orders-table-wrapper" style="overflow-x:auto;">
+          <table class="admin-table" id="adminOrdersDesktopTable">
             <thead>
               <tr>
-                <th>Order #</th>
-                <th>Client</th>
-                <th>Amount</th>
-                <th>Payment</th>
-                <th>Live Status Dispatch</th>
+                <th>Order # & Date</th>
+                <th>Client & Address</th>
+                <th>Ordered Items</th>
+                <th>Amount & Payment</th>
+                <th>Delivery Schedule</th>
+                <th>Status Dispatcher</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="adminOrdersTableBody"></tbody>
           </table>
         </div>
+
+        <!-- Mobile Responsive Order Cards View -->
+        <div id="adminOrdersMobileCards" class="admin-orders-mobile-list" style="display:none;"></div>
       </div>
 
       <!-- Bespoke Requests Review -->
       <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--border-subtle); padding:2rem; margin-bottom:3rem; box-shadow:var(--shadow-sm);">
-        <h3 style="font-size:1.4rem; margin-bottom:1.5rem;">Client Bespoke & Inspiration Requests</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+          <div>
+            <h3 style="font-size:1.45rem; font-family:var(--font-serif); margin-bottom:0.2rem;">Client Bespoke & Inspiration Requests</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted);">Review customer custom designs, requested metal & budget, and uploaded inspiration photos.</p>
+          </div>
+        </div>
         <div id="adminRequestsContainer"></div>
       </div>
 
       <!-- Product Inventory Management -->
       <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--border-subtle); padding:2rem; box-shadow:var(--shadow-sm);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-          <h3 style="font-size:1.4rem;">Catalog Inventory</h3>
+          <div>
+            <h3 style="font-size:1.45rem; font-family:var(--font-serif); margin-bottom:0.2rem;">Catalog Inventory Management</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted);">Add new gold and silver creations, adjust stock availability, and manage prices.</p>
+          </div>
           <button class="btn btn-gold btn-sm" onclick="openAddProductModal()">+ Add New Piece</button>
         </div>
         <div style="overflow-x:auto;">
