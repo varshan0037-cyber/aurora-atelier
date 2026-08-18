@@ -1657,6 +1657,47 @@ async function loadCustomRequests() {
   } catch(e) {}
 }
 
+async function submitInspirationCommission() {
+  const notes = document.querySelector('#inspirationNotesInput')?.value.trim();
+  if (!Aurora.inspirationImageBase64 && !notes) {
+    showToast('Please upload an inspiration image or enter details');
+    return;
+  }
+  const payload = {
+    user_name: Aurora.user ? Aurora.user.name : 'Valued Client',
+    user_email: Aurora.user ? Aurora.user.email : 'client@aurora.luxury',
+    accessory_type: 'Inspiration Design',
+    metal_type: 'Gold / Silver Bespoke',
+    budget: 'Artisan Quote',
+    occasion: 'Custom Bespoke',
+    description: notes || 'Custom design requested from inspiration photo',
+    inspiration_image: Aurora.inspirationImageBase64 || ''
+  };
+
+  try {
+    await fetch(`${API_BASE}/custom-requests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) {}
+
+  showToast('✨ Inspiration received! Our artisans will review within 24 hours.');
+  resetInspirationPreview();
+  const inputEl = document.querySelector('#inspirationNotesInput');
+  if (inputEl) inputEl.value = '';
+  openCustomModal('Inspiration Received ✨', `
+    <div style="text-align:center; padding:1.5rem;">
+      <div style="font-size:3rem; margin-bottom:1rem;">💎</div>
+      <h3 style="font-size:1.4rem; margin-bottom:0.6rem;">Inspiration Logged with Master Jeweler</h3>
+      <p style="color:var(--text-muted); font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
+        We have captured your inspiration image and craftsmanship specifications. Our design team will match available inventory or provide a 3D CAD bespoke quotation.
+      </p>
+      <button class="btn btn-gold" onclick="closeModal(); navigateTo('#explore');">Explore Catalog</button>
+    </div>
+  `);
+}
+
 // ==========================================================================
 // UPLOAD / PASTE INSPIRATION IMAGE ENGINE
 // ==========================================================================
@@ -3282,5 +3323,6 @@ window.switchAuthTab = switchAuthTab;
 window.handleSignInSubmit = handleSignInSubmit;
 window.handleSignUpSubmit = handleSignUpSubmit;
 window.triggerGoogleSignIn = triggerGoogleSignIn;
-window.submitCustomBespoke = submitCustomBespoke;
+window.submitBespokeRequest = submitBespokeRequest;
+window.submitCustomBespoke = submitBespokeRequest;
 window.submitInspirationCommission = submitInspirationCommission;
