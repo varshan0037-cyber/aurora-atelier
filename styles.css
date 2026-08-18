@@ -2986,6 +2986,114 @@ h1, h2, h3, h4, .font-serif {
   body {
     padding-bottom: 70px;
   }
+
+  /* Opening Experience Mobile Responsive */
+  .opening-experience-overlay {
+    height: 100vh;
+    height: 100dvh;
+    padding: 0;
+    overflow-y: auto;
+  }
+
+  .opening-header {
+    padding: 1rem 1.25rem 0.5rem 1.25rem;
+  }
+
+  .opening-logo .logo-title {
+    font-size: 1.35rem;
+  }
+
+  .btn-skip-tour {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.72rem;
+  }
+
+  .opening-carousel-container {
+    padding: 0.5rem 1rem 1rem 1rem;
+    min-height: calc(100dvh - 140px);
+    display: flex;
+    align-items: center;
+  }
+
+  .opening-slide {
+    position: relative;
+    flex-direction: column-reverse;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    text-align: center;
+    width: 100%;
+    inset: auto;
+  }
+
+  .slide-content-left {
+    max-width: 100%;
+    flex: none;
+  }
+
+  .slide-badge {
+    margin-bottom: 0.5rem;
+    font-size: 0.65rem;
+    padding: 0.25rem 0.7rem;
+  }
+
+  .slide-headline {
+    font-size: 1.6rem;
+    line-height: 1.2;
+    margin-bottom: 0.6rem;
+  }
+
+  .slide-description {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    margin-bottom: 1.2rem;
+  }
+
+  .slide-actions {
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.6rem;
+  }
+
+  .slide-actions .btn {
+    width: 100%;
+    padding: 0.75rem 1.2rem;
+    font-size: 0.88rem;
+  }
+
+  .slide-visual-right {
+    width: 100%;
+    flex: none;
+    max-height: 180px;
+    margin-bottom: 0.5rem;
+  }
+
+  .slide-glass-card {
+    padding: 0.8rem;
+    max-width: 250px;
+    border-radius: var(--radius-md);
+  }
+
+  .slide-card-img {
+    height: 110px;
+    border-radius: var(--radius-sm);
+  }
+
+  .opening-footer {
+    padding: 0.6rem 1.25rem 1.2rem 1.25rem;
+    background: linear-gradient(to top, rgba(5, 5, 5, 0.95), transparent);
+  }
+
+  .carousel-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .indicator-dot {
+    width: 20px;
+    height: 4px;
+  }
   
   .header {
     height: 68px;

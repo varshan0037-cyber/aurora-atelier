@@ -94,9 +94,36 @@ function initOpeningTour() {
   const overlay = document.querySelector('#openingExperience');
   if (!overlay) return;
 
+  setupOpeningTourTouchGestures();
+
   if (!hasSeenTour) {
     openOpeningTour();
   }
+}
+
+function setupOpeningTourTouchGestures() {
+  const overlay = document.querySelector('#openingExperience');
+  if (!overlay || overlay._touchSetupDone) return;
+  overlay._touchSetupDone = true;
+
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  overlay.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  overlay.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        nextOpeningSlide();
+      } else {
+        prevOpeningSlide();
+      }
+    }
+  }, { passive: true });
 }
 
 function openOpeningTour() {
