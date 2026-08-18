@@ -30,7 +30,7 @@ const API_BASE = '/api';
 // ==========================================================================
 // INITIALIZATION
 // ==========================================================================
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
   initStorage();
   setupEventListeners();
   setupClipboardPaste();
@@ -42,21 +42,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize Google Identity Services OAuth
   initGoogleAuth();
 
-  // Check auth session
-  await checkSession();
-  
-  // Load initial products and orders
-  await loadProducts();
-  await loadOrders();
-  await loadCustomRequests();
-
-  // Handle URL hash navigation
-  handleRouting();
+  // Setup routing listeners immediately so all links work without delay
   window.addEventListener('hashchange', handleRouting);
+  
+  // Catch all anchor hash clicks globally
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[href^="#"]');
+    if (link) {
+      const href = link.getAttribute('href');
+      if (href && href.startsWith('#') && href.length > 1) {
+        e.preventDefault();
+        navigateTo(href);
+      }
+    }
+  });
+
+  // Handle URL hash navigation immediately
+  handleRouting();
+
+  // Run async network updates in background without blocking UI
+  checkSession();
+  loadProducts();
+  loadOrders();
+  loadCustomRequests();
 });
 
 // Setup Local Storage & Defaults
 function initStorage() {
+  Aurora.products = DEFAULT_PRODUCTS;
+
   const savedCart = localStorage.getItem('aurora_cart');
   if (savedCart) {
     try { Aurora.cart = JSON.parse(savedCart); } catch(e) {}
@@ -66,9 +80,23 @@ function initStorage() {
   if (savedWishlist) {
     try { Aurora.wishlist = new Set(JSON.parse(savedWishlist)); } catch(e) {}
   }
+
+  const savedOrders = localStorage.getItem('aurora_orders');
+  if (savedOrders) {
+    try { Aurora.orders = JSON.parse(savedOrders); } catch(e) {}
+  }
+  if (!Aurora.orders || Aurora.orders.length === 0) {
+    seedDefaultOrders();
+  }
+
+  const savedUser = localStorage.getItem('aurora_user');
+  if (savedUser) {
+    try { Aurora.user = JSON.parse(savedUser); } catch(e) {}
+  }
   
   updateCartBadge();
   updateWishlistBadge();
+  updateUserUI();
 }
 
 function saveCart() {
@@ -345,7 +373,7 @@ function handleRouting() {
   // Close mobile drawer on navigation
   toggleMobileMenu(false);
 
-  const sections = ['#home', '#explore', '#custom-request', '#inspiration', '#cart', '#checkout', '#orders', '#admin', '#auth'];
+  const sections = ['#home', '#explore', '#custom-request', '#inspiration', '#cart', '#checkout', '#orders', '#admin', '#auth', '#orderConfirmationView'];
   
   sections.forEach(sec => {
     const el = document.querySelector(sec);
@@ -393,13 +421,20 @@ function handleRouting() {
     if (el) el.style.display = 'block';
     renderOrders();
   } else if (cleanHash === '#admin') {
-    if (!Aurora.user || Aurora.user.role !== 'admin') {
-      showAdminPasskeyModal();
-      return;
-    }
     const el = document.querySelector('#admin');
     if (el) el.style.display = 'block';
-    renderAdminDashboard();
+    
+    const gate = document.querySelector('#adminSecurityGate');
+    const dash = document.querySelector('#adminDashboardContent');
+    
+    if (Aurora.user && Aurora.user.role === 'admin') {
+      if (gate) gate.style.display = 'none';
+      if (dash) dash.style.display = 'block';
+      renderAdminDashboard();
+    } else {
+      if (gate) gate.style.display = 'block';
+      if (dash) dash.style.display = 'none';
+    }
   } else if (cleanHash === '#auth') {
     const el = document.querySelector('#auth');
     if (el) el.style.display = 'block';
@@ -415,11 +450,10 @@ function handleRouting() {
 }
 
 function navigateTo(hash) {
-  if (window.location.hash === hash) {
-    handleRouting();
-  } else {
+  if (window.location.hash !== hash) {
     window.location.hash = hash;
   }
+  handleRouting();
 }
 
 // ==========================================================================

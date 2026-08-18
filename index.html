@@ -1078,13 +1078,41 @@
   <section id="admin" class="section-padding" style="display:none;">
     <div class="container">
       
-      <!-- Admin Restricted Portal Header -->
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.5rem; margin-bottom:2.5rem; padding-bottom:1.8rem; border-bottom:1px solid var(--border-subtle);">
-        <div>
-          <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.4rem;">
-            <span class="eyebrow" style="margin-bottom:0;">MAISON AURORA CONTROL CENTER</span>
-            <span class="stock-pill badge-gold" style="font-size:0.75rem; padding:0.25rem 0.75rem; font-weight:700;">👑 MASTER ADMIN ONLY</span>
-          </div>
+      <!-- Admin Security Gate (Shown when unauthenticated or non-admin) -->
+      <div id="adminSecurityGate" style="display:none; text-align:center; padding:3.5rem 1.5rem; max-width:560px; margin:0 auto 3rem auto; background:#FFFFFF; border-radius:var(--radius-lg); border:1px solid var(--gold-border); box-shadow:var(--shadow-md);">
+        <div style="width:70px; height:70px; border-radius:50%; background:rgba(201, 162, 39, 0.12); border:1px solid var(--gold-border); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem auto; font-size:2rem;">
+          🔒
+        </div>
+        <div class="eyebrow" style="margin-bottom:0.4rem;">RESTRICTED ATELIER ACCESS</div>
+        <h2 style="font-family:var(--font-serif); font-size:2rem; color:var(--text-charcoal); margin-bottom:0.6rem;">
+          Master Admin Studio
+        </h2>
+        <p style="font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:2rem;">
+          This internal dashboard is reserved exclusively for Atelier Management to view client orders, schedule delivery times, manage custom bespoke commissions, and dispatch packages.
+        </p>
+
+        <div style="display:flex; flex-direction:column; gap:0.9rem; max-width:340px; margin:0 auto;">
+          <button class="btn btn-gold btn-lg" onclick="quickUnlockAdminDemo()" style="width:100%;">
+            ⚡ One-Click Instant Unlock (Demo)
+          </button>
+          <button class="btn btn-secondary btn-md" onclick="showAdminPasskeyModal()" style="width:100%; border-color:var(--gold-border); color:var(--gold-dark); font-weight:700;">
+            🔑 Enter Master Passkey (AURORA2026)
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="navigateTo('#auth')" style="width:100%;">
+            Sign In with Admin Credentials →
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Full Dashboard Content (Shown when authenticated as admin) -->
+      <div id="adminDashboardContent">
+        <!-- Admin Restricted Portal Header -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.5rem; margin-bottom:2.5rem; padding-bottom:1.8rem; border-bottom:1px solid var(--border-subtle);">
+          <div>
+            <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.4rem;">
+              <span class="eyebrow" style="margin-bottom:0;">MAISON AURORA CONTROL CENTER</span>
+              <span class="stock-pill badge-gold" style="font-size:0.75rem; padding:0.25rem 0.75rem; font-weight:700;">👑 MASTER ADMIN ONLY</span>
+            </div>
           <h2 style="font-family:var(--font-serif); font-size:2.4rem; color:var(--text-charcoal); margin-bottom:0.4rem;">
             Atelier Order & Delivery Operations
           </h2>
@@ -1209,6 +1237,7 @@
             <tbody id="adminProductsTableBody"></tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   </section>
