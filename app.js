@@ -90,15 +90,15 @@ let openingSlideTimer = null;
 const TOTAL_OPENING_SLIDES = 6;
 
 function initOpeningTour() {
-  const hasSeenTour = sessionStorage.getItem('aurora_intro_seen');
   const overlay = document.querySelector('#openingExperience');
   if (!overlay) return;
 
   setupOpeningTourTouchGestures();
 
-  if (!hasSeenTour) {
-    openOpeningTour();
-  }
+  // Ensure tour overlay is completely hidden on initial load and never blocks clicks
+  overlay.style.display = 'none';
+  overlay.style.pointerEvents = 'none';
+  overlay.classList.remove('active');
 }
 
 function setupOpeningTourTouchGestures() {
@@ -143,6 +143,7 @@ function closeOpeningTour() {
   const overlay = document.querySelector('#openingExperience');
   if (!overlay) return;
   overlay.classList.remove('active');
+  overlay.style.display = 'none';
   overlay.style.opacity = '0';
   overlay.style.visibility = 'hidden';
   overlay.style.pointerEvents = 'none';
@@ -327,6 +328,13 @@ function toggleMobileMenu(forceState) {
   const shouldOpen = typeof forceState === 'boolean' ? forceState : !drawer.classList.contains('active');
   drawer.classList.toggle('active', shouldOpen);
   backdrop.classList.toggle('active', shouldOpen);
+  if (shouldOpen) {
+    backdrop.style.display = 'block';
+    backdrop.style.pointerEvents = 'auto';
+  } else {
+    backdrop.style.display = 'none';
+    backdrop.style.pointerEvents = 'none';
+  }
   document.body.style.overflow = shouldOpen ? 'hidden' : '';
 }
 
@@ -1363,13 +1371,25 @@ function renderCartPage() {
 
 function openCartDrawer() {
   renderCart();
-  document.querySelector('#cartDrawerOverlay')?.classList.add('active');
-  document.querySelector('#cartDrawer')?.classList.add('active');
+  const overlay = document.querySelector('#cartDrawerOverlay');
+  const drawer = document.querySelector('#cartDrawer');
+  if (overlay) {
+    overlay.style.display = 'block';
+    overlay.style.pointerEvents = 'auto';
+    overlay.classList.add('active');
+  }
+  if (drawer) drawer.classList.add('active');
 }
 
 function closeCartDrawer() {
-  document.querySelector('#cartDrawerOverlay')?.classList.remove('active');
-  document.querySelector('#cartDrawer')?.classList.remove('active');
+  const overlay = document.querySelector('#cartDrawerOverlay');
+  const drawer = document.querySelector('#cartDrawer');
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.style.display = 'none';
+    overlay.style.pointerEvents = 'none';
+  }
+  if (drawer) drawer.classList.remove('active');
 }
 
 function applyPromoCode() {
@@ -3087,12 +3107,22 @@ function openCustomModal(title, bodyHtml, isLarge = false) {
       ${bodyHtml}
     </div>
   `;
+  overlay.style.display = 'flex';
+  overlay.style.opacity = '1';
+  overlay.style.visibility = 'visible';
+  overlay.style.pointerEvents = 'auto';
   overlay.classList.add('active');
 }
 
 function closeModal() {
   const overlay = document.querySelector('#globalModalOverlay');
-  if (overlay) overlay.classList.remove('active');
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.style.display = 'none';
+    overlay.style.opacity = '0';
+    overlay.style.visibility = 'hidden';
+    overlay.style.pointerEvents = 'none';
+  }
   const otpModal = document.querySelector('#bankOtpModal');
   if (otpModal) otpModal.style.display = 'none';
 }
