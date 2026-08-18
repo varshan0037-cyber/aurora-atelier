@@ -130,6 +130,10 @@ function openOpeningTour() {
   const overlay = document.querySelector('#openingExperience');
   if (!overlay) return;
   overlay.classList.add('active');
+  overlay.style.display = 'flex';
+  overlay.style.opacity = '1';
+  overlay.style.visibility = 'visible';
+  overlay.style.pointerEvents = 'auto';
   document.body.style.overflow = 'hidden';
   goToOpeningSlide(0);
   startOpeningSlideTimer();
@@ -139,6 +143,9 @@ function closeOpeningTour() {
   const overlay = document.querySelector('#openingExperience');
   if (!overlay) return;
   overlay.classList.remove('active');
+  overlay.style.opacity = '0';
+  overlay.style.visibility = 'hidden';
+  overlay.style.pointerEvents = 'none';
   document.body.style.overflow = '';
   sessionStorage.setItem('aurora_intro_seen', 'true');
   clearInterval(openingSlideTimer);
@@ -150,6 +157,15 @@ function goToOpeningSlide(index) {
   const slides = document.querySelectorAll('.opening-slide');
   slides.forEach((slide, idx) => {
     slide.classList.toggle('active', idx === currentOpeningSlide);
+    if (idx === currentOpeningSlide) {
+      slide.style.opacity = '1';
+      slide.style.visibility = 'visible';
+      slide.style.pointerEvents = 'auto';
+    } else {
+      slide.style.opacity = '0';
+      slide.style.visibility = 'hidden';
+      slide.style.pointerEvents = 'none';
+    }
   });
 
   const dots = document.querySelectorAll('#openingIndicators .indicator-dot');

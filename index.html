@@ -314,6 +314,11 @@
         <!-- User Profile -->
         <div id="navUserProfile"></div>
 
+        <!-- Mobile Tour Header Button -->
+        <button class="btn btn-outline-gold btn-sm mobile-tour-header-btn" onclick="openOpeningTour()" style="display:none; padding:0.35rem 0.65rem; font-size:0.75rem; font-weight:700; border-radius:var(--radius-pill);">
+          ✨ Tour
+        </button>
+
         <!-- Mobile Menu Toggle Button -->
         <button class="icon-btn mobile-menu-toggle" id="mobileMenuBtn" onclick="toggleMobileMenu()" aria-label="Toggle Navigation Menu">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -367,6 +372,9 @@
             </button>
             <button class="btn btn-secondary btn-lg" onclick="navigateTo('#custom-request')">
               Custom Order Studio
+            </button>
+            <button class="btn btn-outline-gold btn-lg" onclick="openOpeningTour()" style="display:inline-flex; align-items:center; gap:0.5rem;">
+              ✨ Watch Tour Intro
             </button>
           </div>
 
@@ -1344,6 +1352,10 @@
     <a href="#inspiration" class="mobile-bottom-tab" data-tab="inspiration" onclick="navigateTo('#inspiration')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
       <span>Inspire</span>
+    </a>
+    <a href="javascript:void(0)" class="mobile-bottom-tab" onclick="openOpeningTour()" style="color:var(--gold-dark); font-weight:700;">
+      <span style="font-size:1.15rem; line-height:1; display:block;">✨</span>
+      <span>Tour</span>
     </a>
     <a href="javascript:void(0)" class="mobile-bottom-tab" onclick="openCartDrawer()">
       <div style="position:relative; display:inline-block;">
