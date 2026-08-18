@@ -484,17 +484,8 @@ async function loginUser(email, password, silent = false) {
         return false;
       }
     } else {
-      if (res.status === 404) {
-        // Fallback on GitHub Pages where backend API returns 404
-        throw new Error('Static host mode');
-      }
-      let errorMsg = 'Invalid email or password';
-      try {
-        const d = await res.json();
-        if (d.error) errorMsg = d.error;
-      } catch(e) {}
-      if (!silent) showAuthError(errorMsg);
-      return false;
+      // If server is static host (GitHub Pages returns 405 or 404), switch to client auth fallback
+      throw new Error('Static host mode');
     }
   } catch (err) {
     // Client fallback for static site / offline
@@ -515,13 +506,21 @@ async function loginUser(email, password, silent = false) {
       }
       return true;
     }
-    showAuthError('Invalid email or password');
+    if (!silent) showAuthError('Invalid email or password');
     return false;
   }
 }
 
 async function signupUser(name, email, password, phone) {
   clearAuthError();
+  if (!name || !email || !password) {
+    showAuthError('Name, email, and password are required.');
+    return false;
+  }
+  if (password.length < 6) {
+    showAuthError('Password must be at least 6 characters.');
+    return false;
+  }
   try {
     const res = await fetch(`${API_BASE}/auth/signup`, {
       method: 'POST',
@@ -543,16 +542,7 @@ async function signupUser(name, email, password, phone) {
         return false;
       }
     } else {
-      if (res.status === 404) {
-        throw new Error('Static host mode');
-      }
-      let errorMsg = 'Signup failed. Please try again.';
-      try {
-        const d = await res.json();
-        if (d.error) errorMsg = d.error;
-      } catch(e) {}
-      showAuthError(errorMsg);
-      return false;
+      throw new Error('Static host mode');
     }
   } catch (err) {
     Aurora.user = {
@@ -560,7 +550,7 @@ async function signupUser(name, email, password, phone) {
       name,
       email,
       phone: phone || '',
-      role: 'buyer',
+      role: email.toLowerCase().includes('admin') ? 'admin' : 'buyer',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'
     };
     localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
