@@ -1323,32 +1323,7 @@
 
   <!-- Scripts -->
   <script src="./static/js/app.js"></script>
-  <script src="./app.js"></script>
   <script>
-    // Inline helpers for Auth tabs and submissions
-    function switchAuthTab(tab) {
-      document.querySelector('#tabSignIn').classList.toggle('active', tab === 'signin');
-      document.querySelector('#tabSignUp').classList.toggle('active', tab === 'signup');
-      document.querySelector('#formSignIn').style.display = tab === 'signin' ? 'block' : 'none';
-      document.querySelector('#formSignUp').style.display = tab === 'signup' ? 'block' : 'none';
-    }
-
-    async function handleSignInSubmit(e) {
-      e.preventDefault();
-      const email = document.querySelector('#authEmail').value;
-      const pass = document.querySelector('#authPassword').value;
-      await loginUser(email, pass);
-    }
-
-    async function handleSignUpSubmit(e) {
-      e.preventDefault();
-      const name = document.querySelector('#signupName').value;
-      const email = document.querySelector('#signupEmail').value;
-      const phone = document.querySelector('#signupPhone').value;
-      const pass = document.querySelector('#signupPassword').value;
-      await signupUser(name, email, pass, phone);
-    }
-
     async function submitInspirationCommission() {
       const notes = document.querySelector('#inspirationNotesInput')?.value.trim();
       if (!Aurora.inspirationImageBase64 && !notes) {

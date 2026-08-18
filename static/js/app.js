@@ -371,11 +371,12 @@ function handleRouting() {
     renderFeaturedProducts();
   }
 
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
 function navigateTo(hash) {
-  window.location.hash = hash;
+  if (window.location.hash === hash) {
+    handleRouting();
+  } else {
+    window.location.hash = hash;
+  }
 }
 
 // ==========================================================================
@@ -388,6 +389,80 @@ async function checkSession() {
       Aurora.user = JSON.parse(savedUser);
       updateUserUI();
     } catch(e) {}
+  } else {
+    updateUserUI();
+  }
+}
+
+function switchAuthTab(tab) {
+  const tabSign = document.querySelector('#tabSignIn');
+  const tabSignU = document.querySelector('#tabSignUp');
+  const formSign = document.querySelector('#formSignIn');
+  const formSignU = document.querySelector('#formSignUp');
+
+  if (tabSign) tabSign.classList.toggle('active', tab === 'signin');
+  if (tabSignU) tabSignU.classList.toggle('active', tab === 'signup');
+  if (formSign) formSign.style.display = (tab === 'signin') ? 'block' : 'none';
+  if (formSignU) formSignU.style.display = (tab === 'signup') ? 'block' : 'none';
+  clearAuthError();
+}
+
+async function handleSignInSubmit(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const email = document.querySelector('#authEmail')?.value.trim();
+  const pass = document.querySelector('#authPassword')?.value;
+
+  if (!email || !pass) {
+    showAuthError('Please enter your email and password.');
+    return;
+  }
+
+  const btn = document.querySelector('#btnSignInSubmit');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = 'Signing in...';
+  }
+
+  try {
+    await loginUser(email, pass);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = 'Sign In to Atelier ✨';
+    }
+  }
+}
+
+async function handleSignUpSubmit(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const name = document.querySelector('#signupName')?.value.trim();
+  const email = document.querySelector('#signupEmail')?.value.trim();
+  const phone = document.querySelector('#signupPhone')?.value.trim();
+  const pass = document.querySelector('#signupPassword')?.value;
+
+  if (!name || !email || !pass) {
+    showAuthError('Name, email, and password are required.');
+    return;
+  }
+
+  if (pass.length < 6) {
+    showAuthError('Password must be at least 6 characters.');
+    return;
+  }
+
+  const btn = document.querySelector('#btnSignUpSubmit');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = 'Creating Account...';
+  }
+
+  try {
+    await signupUser(name, email, pass, phone);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = 'Create Atelier Account ✨';
+    }
   }
 }
 
@@ -399,37 +474,51 @@ async function loginUser(email, password, silent = false) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    const data = await res.json();
     
-    if (data.success && data.user) {
-      Aurora.user = data.user;
-      localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
-      updateUserUI();
-      if (!silent) {
-        showToast(`✨ Welcome back, ${Aurora.user.name}!`);
-        navigateTo(Aurora.user.role === 'admin' ? '#admin' : '#home');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.user) {
+        Aurora.user = data.user;
+        localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
+        updateUserUI();
+        if (!silent) {
+          showToast(`✨ Welcome back, ${Aurora.user.name}!`);
+          navigateTo('#home');
+        }
+        return true;
+      } else {
+        if (!silent) showAuthError(data.error || 'Invalid email or password');
+        return false;
       }
-      return true;
     } else {
-      if (!silent) showAuthError(data.error || 'Invalid email or password');
+      if (res.status === 404) {
+        // Fallback on GitHub Pages where backend API returns 404
+        throw new Error('Static host mode');
+      }
+      let errorMsg = 'Invalid email or password';
+      try {
+        const d = await res.json();
+        if (d.error) errorMsg = d.error;
+      } catch(e) {}
+      if (!silent) showAuthError(errorMsg);
       return false;
     }
   } catch (err) {
-    // Client fallback for static site demo
+    // Client fallback for static site / offline
     if (email && password) {
       const displayName = email.split('@')[0];
       Aurora.user = {
         id: Date.now(),
         name: displayName.charAt(0).toUpperCase() + displayName.slice(1),
         email: email,
-        role: email.includes('admin') ? 'admin' : 'buyer',
+        role: email.toLowerCase().includes('admin') ? 'admin' : 'buyer',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'
       };
       localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
       updateUserUI();
       if (!silent) {
         showToast(`✨ Welcome, ${Aurora.user.name}!`);
-        navigateTo(Aurora.user.role === 'admin' ? '#admin' : '#home');
+        navigateTo('#home');
       }
       return true;
     }
@@ -446,16 +535,30 @@ async function signupUser(name, email, password, phone) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password, phone })
     });
-    const data = await res.json();
-    if (data.success && data.user) {
-      Aurora.user = data.user;
-      localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
-      updateUserUI();
-      showToast(`✨ Welcome to Aurora Atelier, ${name}!`);
-      navigateTo('#home');
-      return true;
+    
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.user) {
+        Aurora.user = data.user;
+        localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
+        updateUserUI();
+        showToast(`✨ Welcome to Aurora Atelier, ${name}!`);
+        navigateTo('#home');
+        return true;
+      } else {
+        showAuthError(data.error || 'Signup failed. Please try again.');
+        return false;
+      }
     } else {
-      showAuthError(data.error || 'Signup failed. Please try again.');
+      if (res.status === 404) {
+        throw new Error('Static host mode');
+      }
+      let errorMsg = 'Signup failed. Please try again.';
+      try {
+        const d = await res.json();
+        if (d.error) errorMsg = d.error;
+      } catch(e) {}
+      showAuthError(errorMsg);
       return false;
     }
   } catch (err) {
@@ -463,7 +566,7 @@ async function signupUser(name, email, password, phone) {
       id: Date.now(),
       name,
       email,
-      phone,
+      phone: phone || '',
       role: 'buyer',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'
     };
@@ -480,26 +583,41 @@ function logoutUser() {
   localStorage.removeItem('aurora_user');
   updateUserUI();
   showToast('You have signed out of Aurora Atelier ✨');
-  navigateTo('#home');
+  navigateTo('#auth');
 }
 
 function updateUserUI() {
   const profileContainer = document.querySelector('#navUserProfile');
+  const mobileProfileSlot = document.querySelector('#mobileUserProfileSlot');
   const adminNavTab = document.querySelector('#navAdminTab');
+  const mobileAdminLink = document.querySelector('#mobileNavAdminLink');
 
   if (Aurora.user) {
     if (profileContainer) {
       profileContainer.innerHTML = `
-        <div class="user-profile-btn" onclick="toggleUserMenu()">
+        <div class="user-profile-btn" onclick="toggleUserMenu()" title="Account Profile">
           <img src="${Aurora.user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}" class="user-avatar" alt="Avatar">
           <span class="user-name-label">${Aurora.user.name.split(' ')[0]}</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </div>
       `;
     }
-    if (adminNavTab) {
-      adminNavTab.style.display = Aurora.user.role === 'admin' ? 'block' : 'none';
+    if (mobileProfileSlot) {
+      mobileProfileSlot.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:0.8rem 1rem; background:var(--bg-card-subtle); border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <img src="${Aurora.user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+            <div>
+              <strong style="font-size:0.88rem; display:block;">${Aurora.user.name}</strong>
+              <small style="color:var(--text-muted); font-size:0.75rem;">${Aurora.user.email}</small>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="logoutUser()" style="background:#DC2626; padding:0.35rem 0.75rem; font-size:0.75rem;">Sign Out</button>
+        </div>
+      `;
     }
+    if (adminNavTab) adminNavTab.style.display = Aurora.user.role === 'admin' ? 'block' : 'none';
+    if (mobileAdminLink) mobileAdminLink.style.display = Aurora.user.role === 'admin' ? 'block' : 'none';
   } else {
     if (profileContainer) {
       profileContainer.innerHTML = `
@@ -508,38 +626,38 @@ function updateUserUI() {
         </button>
       `;
     }
+    if (mobileProfileSlot) {
+      mobileProfileSlot.innerHTML = `
+        <button class="btn btn-gold" style="width:100%;" onclick="toggleMobileMenu(false); navigateTo('#auth');">
+          Sign In to Atelier ✨
+        </button>
+      `;
+    }
     if (adminNavTab) adminNavTab.style.display = 'none';
+    if (mobileAdminLink) mobileAdminLink.style.display = 'none';
   }
 }
 
 function toggleUserMenu() {
-  if (!Aurora.user) return;
-  const isBuyer = Aurora.user.role === 'buyer';
-  const nextRole = isBuyer ? 'Atelier Admin' : 'Luxury Buyer';
+  if (!Aurora.user) {
+    navigateTo('#auth');
+    return;
+  }
   
   const modalHtml = `
     <div style="text-align:center; padding: 1rem;">
-      <img src="${Aurora.user.avatar}" style="width:72px; height:72px; border-radius:50%; margin: 0 auto 1rem auto; border: 2px solid var(--gold-primary); object-fit:cover;">
+      <img src="${Aurora.user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}" style="width:72px; height:72px; border-radius:50%; margin: 0 auto 1rem auto; border: 2px solid var(--gold-primary); object-fit:cover;">
       <h3 style="font-size:1.3rem; margin-bottom: 2px;">${Aurora.user.name}</h3>
       <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 1.5rem;">${Aurora.user.email} &bull; <strong style="color:var(--gold-dark); text-transform:uppercase;">${Aurora.user.role}</strong></p>
       
-      <div style="display:flex; flex-direction:column; gap:0.6rem; max-width:280px; margin:0 auto;">
-        <button class="btn btn-secondary btn-sm" onclick="navigateTo('#orders'); closeModal();">My Orders & Tracking</button>
-        ${Aurora.user.role === 'admin' ? '<button class="btn btn-secondary btn-sm" onclick="navigateTo(\'#admin\'); closeModal();">Atelier Admin Dashboard</button>' : ''}
-        <button class="btn btn-outline-gold btn-sm" onclick="switchDemoRole(); closeModal();">Switch to ${nextRole}</button>
-        <button class="btn btn-primary btn-sm" onclick="logoutUser(); closeModal();" style="background:#DC2626;">Sign Out</button>
+      <div style="display:flex; flex-direction:column; gap:0.75rem; max-width:280px; margin:0 auto;">
+        <button class="btn btn-secondary btn-sm" onclick="closeModal(); navigateTo('#orders');">My Orders & Tracking</button>
+        ${Aurora.user.role === 'admin' ? '<button class="btn btn-secondary btn-sm" onclick="closeModal(); navigateTo(\'#admin\');">Atelier Admin Dashboard</button>' : ''}
+        <button class="btn btn-primary btn-sm" onclick="closeModal(); logoutUser();" style="background:#DC2626; color:#FFF;">Sign Out</button>
       </div>
     </div>
   `;
   openCustomModal('Account Profile', modalHtml);
-}
-
-async function switchDemoRole() {
-  if (Aurora.user && Aurora.user.role === 'admin') {
-    await loginUser('buyer@aurora.luxury', 'password123');
-  } else {
-    await loginUser('admin@aurora.luxury', 'admin123');
-  }
 }
 
 const DEFAULT_PRODUCTS = [
