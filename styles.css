@@ -3205,6 +3205,12 @@ h1, h2, h3, h4, .font-serif {
     gap: 3px;
   }
 
+  .mobile-admin-header-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 3px;
+  }
+
   .mobile-menu-toggle {
     display: flex;
   }

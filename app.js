@@ -2851,11 +2851,15 @@ function showAdminPasskeyModal() {
           </div>
         </div>
 
-        <button type="submit" class="btn btn-gold btn-lg" style="width:100%; margin-bottom:0.8rem;">
+        <button type="submit" class="btn btn-gold btn-lg" style="width:100%; margin-bottom:0.6rem;">
           👑 Unlock Master Admin Studio
         </button>
+
+        <button type="button" class="btn btn-secondary btn-sm" onclick="quickUnlockAdminDemo()" style="width:100%; background:rgba(201, 162, 39, 0.12); border:1px solid var(--gold-border); font-weight:700; color:var(--gold-dark); margin-bottom:0.8rem;">
+          ⚡ One-Click Instant Admin Unlock (Demo)
+        </button>
         
-        <div style="text-align:center; margin-top:0.8rem;">
+        <div style="text-align:center; margin-top:0.4rem;">
           <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal(); navigateTo('#auth');" style="width:100%;">
             Sign in with Admin Credentials →
           </button>
@@ -2866,6 +2870,21 @@ function showAdminPasskeyModal() {
   openCustomModal('🔒 Restricted Admin Access', modalHtml);
 }
 
+function quickUnlockAdminDemo() {
+  Aurora.user = {
+    id: 1,
+    name: 'Atelier Master Admin',
+    email: 'admin@aurora.luxury',
+    role: 'admin',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'
+  };
+  localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
+  updateUserUI();
+  closeModal();
+  showToast('👑 Master Admin authorized! Welcome to Atelier Operations.');
+  navigateTo('#admin');
+}
+
 function verifyAdminPasskeySubmit(e) {
   e.preventDefault();
   const input = document.querySelector('#adminPasskeyInput');
@@ -2874,18 +2893,7 @@ function verifyAdminPasskeySubmit(e) {
 
   const key = input.value.trim().toUpperCase();
   if (key === 'AURORA2026' || key === 'ADMIN123' || key === 'ADMIN' || key === 'AURORA') {
-    Aurora.user = {
-      id: 1,
-      name: 'Atelier Master Admin',
-      email: 'admin@aurora.luxury',
-      role: 'admin',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'
-    };
-    localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
-    updateUserUI();
-    closeModal();
-    showToast('👑 Master Admin authorized! Welcome to Atelier Operations.');
-    navigateTo('#admin');
+    quickUnlockAdminDemo();
   } else {
     if (errorDiv) {
       errorDiv.style.display = 'block';

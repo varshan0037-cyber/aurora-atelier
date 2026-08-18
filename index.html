@@ -294,7 +294,7 @@
         <li><a href="#inspiration" class="nav-link">Upload Inspiration</a></li>
         <li><a href="#orders" class="nav-link">Orders</a></li>
         <li><a href="javascript:void(0)" onclick="openOpeningTour()" class="nav-link" style="color:var(--gold-dark); font-weight:600;">✨ Tour Intro</a></li>
-        <li id="navAdminTab" style="display:none;"><a href="#admin" class="nav-link" style="color:var(--gold-dark); font-weight:700;">Admin Studio</a></li>
+        <li id="navAdminTab"><a href="#admin" class="nav-link" style="color:var(--gold-dark); font-weight:700; background:rgba(201, 162, 39, 0.1); padding:0.4rem 0.9rem; border-radius:var(--radius-pill); border:1px solid var(--gold-border);">⚙️ Admin Studio</a></li>
       </ul>
 
       <!-- Action Buttons -->
@@ -315,8 +315,13 @@
         <div id="navUserProfile"></div>
 
         <!-- Mobile Tour Header Button -->
-        <button class="btn btn-outline-gold btn-sm mobile-tour-header-btn" onclick="openOpeningTour()" style="display:none; padding:0.35rem 0.65rem; font-size:0.75rem; font-weight:700; border-radius:var(--radius-pill);">
+        <button class="btn btn-outline-gold btn-sm mobile-tour-header-btn" onclick="openOpeningTour()" style="display:none; padding:0.35rem 0.6rem; font-size:0.75rem; font-weight:700; border-radius:var(--radius-pill);">
           ✨ Tour
+        </button>
+
+        <!-- Mobile Admin Header Button -->
+        <button class="btn btn-outline-gold btn-sm mobile-admin-header-btn" onclick="navigateTo('#admin')" style="display:none; padding:0.35rem 0.6rem; font-size:0.75rem; font-weight:700; border-radius:var(--radius-pill); background:rgba(201, 162, 39, 0.12);">
+          ⚙️ Admin
         </button>
 
         <!-- Mobile Menu Toggle Button -->
@@ -344,7 +349,7 @@
       <a href="#inspiration" class="mobile-nav-link" onclick="toggleMobileMenu(false)">📷 Inspiration Matcher</a>
       <a href="#orders" class="mobile-nav-link" onclick="toggleMobileMenu(false)">📦 Orders & Live Tracker</a>
       <a href="javascript:void(0)" class="mobile-nav-link" style="color:var(--gold-dark); font-weight:700; background:rgba(201, 162, 39, 0.08); border-color:var(--gold-border);" onclick="toggleMobileMenu(false); openOpeningTour();">🌟 Brand Tour & Highlights</a>
-      <a href="#admin" id="mobileNavAdminLink" class="mobile-nav-link" style="display:none; color:var(--gold-dark); font-weight:700;" onclick="toggleMobileMenu(false)">⚙️ Atelier Admin Studio</a>
+      <a href="#admin" id="mobileNavAdminLink" class="mobile-nav-link" style="color:var(--gold-dark); font-weight:700; background:rgba(201, 162, 39, 0.12); border-color:var(--gold-border);" onclick="toggleMobileMenu(false); navigateTo('#admin')">⚙️ Atelier Admin Studio</a>
     </div>
     <div class="mobile-nav-footer">
       <div id="mobileUserProfileSlot"></div>
@@ -1425,6 +1430,10 @@
     <a href="#orders" class="mobile-bottom-tab" data-tab="orders" onclick="navigateTo('#orders')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
       <span>Track</span>
+    </a>
+    <a href="#admin" class="mobile-bottom-tab" data-tab="admin" onclick="navigateTo('#admin')" style="color:var(--gold-dark); font-weight:700;">
+      <span style="font-size:1.15rem; line-height:1; display:block;">⚙️</span>
+      <span>Admin</span>
     </a>
   </nav>
 
