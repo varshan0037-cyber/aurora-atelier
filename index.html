@@ -289,13 +289,13 @@
 
       <!-- Navigation Links -->
       <ul class="nav-links">
-        <li><a href="#home" class="nav-link active">Home</a></li>
-        <li><a href="#explore" class="nav-link">Explore Accessories</a></li>
-        <li><a href="#custom-request" class="nav-link">Create / Request</a></li>
-        <li><a href="#inspiration" class="nav-link">Upload Inspiration</a></li>
-        <li><a href="#orders" class="nav-link">Orders</a></li>
+        <li><a href="#home" class="nav-link active" onclick="navigateTo('#home')">Home</a></li>
+        <li><a href="#explore" class="nav-link" onclick="navigateTo('#explore')">Explore Accessories</a></li>
+        <li><a href="#custom-request" class="nav-link" onclick="navigateTo('#custom-request')">Create / Request</a></li>
+        <li><a href="#inspiration" class="nav-link" onclick="navigateTo('#inspiration')">Upload Inspiration</a></li>
+        <li><a href="#orders" class="nav-link" onclick="navigateTo('#orders')">Orders</a></li>
         <li><a href="javascript:void(0)" onclick="openOpeningTour()" class="nav-link" style="color:var(--gold-dark); font-weight:600;">✨ Tour Intro</a></li>
-        <li id="navAdminTab"><a href="#admin" class="nav-link" style="color:var(--gold-dark); font-weight:700; background:rgba(201, 162, 39, 0.1); padding:0.4rem 0.9rem; border-radius:var(--radius-pill); border:1px solid var(--gold-border);">⚙️ Admin Studio</a></li>
+        <li id="navAdminTab"><a href="#admin" class="nav-link" onclick="navigateTo('#admin')" style="color:var(--gold-dark); font-weight:700; background:rgba(201, 162, 39, 0.1); padding:0.4rem 0.9rem; border-radius:var(--radius-pill); border:1px solid var(--gold-border);">⚙️ Admin Studio</a></li>
       </ul>
 
       <!-- Action Buttons -->
@@ -344,11 +344,11 @@
       <button class="mobile-nav-close" onclick="toggleMobileMenu(false)" aria-label="Close menu">&times;</button>
     </div>
     <div class="mobile-nav-links">
-      <a href="#home" class="mobile-nav-link" onclick="toggleMobileMenu(false)">✨ Home Collection</a>
-      <a href="#explore" class="mobile-nav-link" onclick="toggleMobileMenu(false)">💎 Explore Fine Jewelry</a>
-      <a href="#custom-request" class="mobile-nav-link" onclick="toggleMobileMenu(false)">✍️ Custom Bespoke Studio</a>
-      <a href="#inspiration" class="mobile-nav-link" onclick="toggleMobileMenu(false)">📷 Inspiration Matcher</a>
-      <a href="#orders" class="mobile-nav-link" onclick="toggleMobileMenu(false)">📦 Orders & Live Tracker</a>
+      <a href="#home" class="mobile-nav-link" onclick="toggleMobileMenu(false); navigateTo('#home')">✨ Home Collection</a>
+      <a href="#explore" class="mobile-nav-link" onclick="toggleMobileMenu(false); navigateTo('#explore')">💎 Explore Fine Jewelry</a>
+      <a href="#custom-request" class="mobile-nav-link" onclick="toggleMobileMenu(false); navigateTo('#custom-request')">✍️ Custom Bespoke Studio</a>
+      <a href="#inspiration" class="mobile-nav-link" onclick="toggleMobileMenu(false); navigateTo('#inspiration')">📷 Inspiration Matcher</a>
+      <a href="#orders" class="mobile-nav-link" onclick="toggleMobileMenu(false); navigateTo('#orders')">📦 Orders & Live Tracker</a>
       <a href="javascript:void(0)" class="mobile-nav-link" style="color:var(--gold-dark); font-weight:700; background:rgba(201, 162, 39, 0.08); border-color:var(--gold-border);" onclick="toggleMobileMenu(false); openOpeningTour();">🌟 Brand Tour & Highlights</a>
       <a href="#admin" id="mobileNavAdminLink" class="mobile-nav-link" style="color:var(--gold-dark); font-weight:700; background:rgba(201, 162, 39, 0.12); border-color:var(--gold-border);" onclick="toggleMobileMenu(false); navigateTo('#admin')">⚙️ Atelier Admin Studio</a>
     </div>

@@ -323,42 +323,49 @@ function seedDefaultOrders() {
 // ==========================================================================
 // INITIALIZATION
 // ==========================================================================
-document.addEventListener('DOMContentLoaded', () => {
-  initStorage();
-  setupEventListeners();
-  setupClipboardPaste();
-  setupDragAndDrop();
-  
-  // Initialize Opening Tour Experience
-  initOpeningTour();
+let appInitialized = false;
 
-  // Initialize Google Identity Services OAuth
-  initGoogleAuth();
+function initializeApp() {
+  if (appInitialized) return;
+  appInitialized = true;
 
-  // Setup routing listeners immediately so all links work without delay
-  window.addEventListener('hashchange', handleRouting);
-  
-  // Catch all anchor hash clicks globally
-  document.addEventListener('click', (e) => {
-    const link = e.target.closest('a[href^="#"]');
-    if (link) {
-      const href = link.getAttribute('href');
-      if (href && href.startsWith('#') && href.length > 1) {
-        e.preventDefault();
-        navigateTo(href);
+  try {
+    initStorage();
+    setupEventListeners();
+    setupClipboardPaste();
+    setupDragAndDrop();
+    initOpeningTour();
+    initGoogleAuth();
+
+    window.addEventListener('hashchange', handleRouting);
+    
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href^="#"]');
+      if (link) {
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#') && href.length > 1) {
+          e.preventDefault();
+          navigateTo(href);
+        }
       }
-    }
-  });
+    });
 
-  // Handle URL hash navigation immediately
-  handleRouting();
+    handleRouting();
 
-  // Run async network updates in background without blocking UI
-  checkSession();
-  loadProducts();
-  loadOrders();
-  loadCustomRequests();
-});
+    checkSession();
+    loadProducts();
+    loadOrders();
+    loadCustomRequests();
+  } catch (err) {
+    console.error('Aurora Atelier init error:', err);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}
 
 // Setup Local Storage & Defaults
 function initStorage() {
@@ -3240,3 +3247,40 @@ function setupEventListeners() {
     renderProducts();
   });
 }
+
+// Global Window Exports for Inline Onclick Handlers
+window.navigateTo = navigateTo;
+window.handleRouting = handleRouting;
+window.openOpeningTour = openOpeningTour;
+window.closeOpeningTour = closeOpeningTour;
+window.nextOpeningSlide = nextOpeningSlide;
+window.prevOpeningSlide = prevOpeningSlide;
+window.goToOpeningSlide = goToOpeningSlide;
+window.openCartDrawer = openCartDrawer;
+window.closeCartDrawer = closeCartDrawer;
+window.toggleMobileMenu = toggleMobileMenu;
+window.quickUnlockAdminDemo = quickUnlockAdminDemo;
+window.showAdminPasskeyModal = showAdminPasskeyModal;
+window.verifyAdminPasskeySubmit = verifyAdminPasskeySubmit;
+window.openCustomModal = openCustomModal;
+window.closeModal = closeModal;
+window.openProductDetails = openProductDetails;
+window.quickAddToCart = quickAddToCart;
+window.toggleWishlist = toggleWishlist;
+window.filterAdminOrders = filterAdminOrders;
+window.openRescheduleDeliveryModal = openRescheduleDeliveryModal;
+window.submitRescheduleDelivery = submitRescheduleDelivery;
+window.updateOrderStatusAdmin = updateOrderStatusAdmin;
+window.deleteOrderAdmin = deleteOrderAdmin;
+window.viewOrderInvoiceAdmin = viewOrderInvoiceAdmin;
+window.openAddProductModal = openAddProductModal;
+window.submitAddProductAdmin = submitAddProductAdmin;
+window.applyPromoCode = applyPromoCode;
+window.toggleUserMenu = toggleUserMenu;
+window.logoutUser = logoutUser;
+window.switchAuthTab = switchAuthTab;
+window.handleSignInSubmit = handleSignInSubmit;
+window.handleSignUpSubmit = handleSignUpSubmit;
+window.triggerGoogleSignIn = triggerGoogleSignIn;
+window.submitCustomBespoke = submitCustomBespoke;
+window.submitInspirationCommission = submitInspirationCommission;
