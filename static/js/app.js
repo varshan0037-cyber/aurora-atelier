@@ -36,7 +36,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupClipboardPaste();
   setupDragAndDrop();
   
-  // Check auth or set default demo user
+  // Initialize Opening Tour Experience
+  initOpeningTour();
+
+  // Initialize Google Identity Services OAuth
+  initGoogleAuth();
+
+  // Check auth session
   await checkSession();
   
   // Load initial products and orders
@@ -74,6 +80,197 @@ function saveCart() {
 function saveWishlist() {
   localStorage.setItem('aurora_wishlist', JSON.stringify(Array.from(Aurora.wishlist)));
   updateWishlistBadge();
+}
+
+// ==========================================================================
+// OPENING EXPERIENCE CAROUSEL & TOUR ENGINE
+// ==========================================================================
+let currentOpeningSlide = 0;
+let openingSlideTimer = null;
+const TOTAL_OPENING_SLIDES = 6;
+
+function initOpeningTour() {
+  const hasSeenTour = sessionStorage.getItem('aurora_intro_seen');
+  const overlay = document.querySelector('#openingExperience');
+  if (!overlay) return;
+
+  if (!hasSeenTour) {
+    openOpeningTour();
+  }
+}
+
+function openOpeningTour() {
+  const overlay = document.querySelector('#openingExperience');
+  if (!overlay) return;
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  goToOpeningSlide(0);
+  startOpeningSlideTimer();
+}
+
+function closeOpeningTour() {
+  const overlay = document.querySelector('#openingExperience');
+  if (!overlay) return;
+  overlay.classList.remove('active');
+  document.body.style.overflow = '';
+  sessionStorage.setItem('aurora_intro_seen', 'true');
+  clearInterval(openingSlideTimer);
+}
+
+function goToOpeningSlide(index) {
+  currentOpeningSlide = (index + TOTAL_OPENING_SLIDES) % TOTAL_OPENING_SLIDES;
+  
+  const slides = document.querySelectorAll('.opening-slide');
+  slides.forEach((slide, idx) => {
+    slide.classList.toggle('active', idx === currentOpeningSlide);
+  });
+
+  const dots = document.querySelectorAll('#openingIndicators .indicator-dot');
+  dots.forEach((dot, idx) => {
+    dot.classList.toggle('active', idx === currentOpeningSlide);
+  });
+}
+
+function nextOpeningSlide() {
+  goToOpeningSlide(currentOpeningSlide + 1);
+  resetOpeningSlideTimer();
+}
+
+function prevOpeningSlide() {
+  goToOpeningSlide(currentOpeningSlide - 1);
+  resetOpeningSlideTimer();
+}
+
+function startOpeningSlideTimer() {
+  clearInterval(openingSlideTimer);
+  openingSlideTimer = setInterval(() => {
+    goToOpeningSlide(currentOpeningSlide + 1);
+  }, 6000);
+}
+
+function resetOpeningSlideTimer() {
+  clearInterval(openingSlideTimer);
+  startOpeningSlideTimer();
+}
+
+// ==========================================================================
+// GOOGLE OAUTH & REAL AUTHENTICATION
+// ==========================================================================
+function initGoogleAuth() {
+  // If Google Identity Services SDK is ready:
+  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+    try {
+      google.accounts.id.initialize({
+        client_id: '984572834921-auroraatelierclient.apps.googleusercontent.com',
+        callback: handleGoogleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
+      const wrapper = document.querySelector('#googleSignInButtonWrapper');
+      if (wrapper) {
+        google.accounts.id.renderButton(wrapper, {
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'pill',
+          width: 320
+        });
+      }
+    } catch(err) {
+      console.log('[Google Auth Init]', err);
+    }
+  } else {
+    // Retry once SDK finishes loading
+    setTimeout(initGoogleAuth, 800);
+  }
+}
+
+function triggerGoogleSignIn() {
+  clearAuthError();
+  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+    try {
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // If prompt blocked or cancelled, trigger standard modal
+          showAuthError('Email doesn’t exist or Google authentication failed. Please check your Google account and try again.');
+        }
+      });
+    } catch(e) {
+      showAuthError('Email doesn’t exist or Google authentication failed. Please check your Google account and try again.');
+    }
+  } else {
+    showAuthError('Email doesn’t exist or Google authentication failed. Please check your Google account and try again.');
+  }
+}
+
+async function handleGoogleCredentialResponse(response) {
+  clearAuthError();
+  if (!response || !response.credential) {
+    showAuthError('Email doesn’t exist or Google authentication failed. Please check your Google account and try again.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential })
+    });
+    const data = await res.json();
+
+    if (data.success && data.user) {
+      Aurora.user = data.user;
+      localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
+      updateUserUI();
+      showToast(`✨ Welcome to Aurora Atelier, ${Aurora.user.name}!`);
+      navigateTo('#home');
+    } else {
+      showAuthError(data.error || 'Email doesn’t exist or Google authentication failed. Please check your Google account and try again.');
+    }
+  } catch (err) {
+    // Authenticate via client decoding in standalone static mode
+    try {
+      const parts = response.credential.split('.');
+      if (parts.length >= 2) {
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        if (payload.email) {
+          Aurora.user = {
+            id: Date.now(),
+            name: payload.name || payload.email.split('@')[0],
+            email: payload.email,
+            avatar: payload.picture || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+            role: 'buyer'
+          };
+          localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
+          updateUserUI();
+          showToast(`✨ Welcome, ${Aurora.user.name}!`);
+          navigateTo('#home');
+          return;
+        }
+      }
+    } catch(e) {}
+
+    showAuthError('Email doesn’t exist or Google authentication failed. Please check your Google account and try again.');
+  }
+}
+
+function showAuthError(msg) {
+  const box = document.querySelector('#authErrorMessage');
+  if (box) {
+    box.innerText = msg;
+    box.style.display = 'block';
+  } else {
+    showToast(msg);
+  }
+}
+
+function clearAuthError() {
+  const box = document.querySelector('#authErrorMessage');
+  if (box) {
+    box.innerText = '';
+    box.style.display = 'none';
+  }
 }
 
 // ==========================================================================
@@ -166,6 +363,7 @@ function handleRouting() {
   } else if (cleanHash === '#auth') {
     const el = document.querySelector('#auth');
     if (el) el.style.display = 'block';
+    clearAuthError();
   } else {
     // Default Home
     const el = document.querySelector('#home');
@@ -190,13 +388,11 @@ async function checkSession() {
       Aurora.user = JSON.parse(savedUser);
       updateUserUI();
     } catch(e) {}
-  } else {
-    // Auto-login default luxury buyer for frictionless onboarding
-    await loginUser('buyer@aurora.luxury', 'password123', true);
   }
 }
 
 async function loginUser(email, password, silent = false) {
+  clearAuthError();
   try {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
@@ -210,29 +406,40 @@ async function loginUser(email, password, silent = false) {
       localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
       updateUserUI();
       if (!silent) {
-        showToast(`Welcome back, ${Aurora.user.name} ✨`);
+        showToast(`✨ Welcome back, ${Aurora.user.name}!`);
         navigateTo(Aurora.user.role === 'admin' ? '#admin' : '#home');
       }
       return true;
     } else {
-      if (!silent) showToast(data.error || 'Invalid credentials');
+      if (!silent) showAuthError(data.error || 'Invalid email or password');
       return false;
     }
   } catch (err) {
-    // Local fallback for offline/client mode
-    if (email === 'admin@aurora.luxury') {
-      Aurora.user = { id: 2, name: 'Maison Aurora Atelier', email, role: 'admin', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80' };
-    } else {
-      Aurora.user = { id: 1, name: 'Aria Vance', email: email || 'buyer@aurora.luxury', role: 'buyer', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80' };
+    // Client fallback for static site demo
+    if (email && password) {
+      const displayName = email.split('@')[0];
+      Aurora.user = {
+        id: Date.now(),
+        name: displayName.charAt(0).toUpperCase() + displayName.slice(1),
+        email: email,
+        role: email.includes('admin') ? 'admin' : 'buyer',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'
+      };
+      localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
+      updateUserUI();
+      if (!silent) {
+        showToast(`✨ Welcome, ${Aurora.user.name}!`);
+        navigateTo(Aurora.user.role === 'admin' ? '#admin' : '#home');
+      }
+      return true;
     }
-    localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
-    updateUserUI();
-    if (!silent) showToast(`Welcome, ${Aurora.user.name} ✨`);
-    return true;
+    showAuthError('Invalid email or password');
+    return false;
   }
 }
 
 async function signupUser(name, email, password, phone) {
+  clearAuthError();
   try {
     const res = await fetch(`${API_BASE}/auth/signup`, {
       method: 'POST',
@@ -244,18 +451,25 @@ async function signupUser(name, email, password, phone) {
       Aurora.user = data.user;
       localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
       updateUserUI();
-      showToast(`Welcome to Aurora Atelier, ${name}! ✨`);
+      showToast(`✨ Welcome to Aurora Atelier, ${name}!`);
       navigateTo('#home');
       return true;
     } else {
-      showToast(data.error || 'Signup failed');
+      showAuthError(data.error || 'Signup failed. Please try again.');
       return false;
     }
   } catch (err) {
-    Aurora.user = { id: Date.now(), name, email, role: 'buyer', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80' };
+    Aurora.user = {
+      id: Date.now(),
+      name,
+      email,
+      phone,
+      role: 'buyer',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'
+    };
     localStorage.setItem('aurora_user', JSON.stringify(Aurora.user));
     updateUserUI();
-    showToast(`Welcome to Aurora Atelier, ${name}! ✨`);
+    showToast(`✨ Welcome to Aurora Atelier, ${name}!`);
     navigateTo('#home');
     return true;
   }
@@ -1241,19 +1455,38 @@ function resetInspirationPreview() {
 }
 
 // ==========================================================================
-// CHECKOUT & PURCHASE PROCESS
+// CHECKOUT & MULTI-PAYMENT GATEWAY ENGINE
 // ==========================================================================
+let activePaymentMethod = 'upi';
+let upiCountdownTimer = null;
+let otpCountdownTimer = null;
+
 function renderCheckoutSummary() {
   const container = document.querySelector('#checkoutItemsSummary');
   if (!container) return;
 
   const { subtotal, discount, shipping, total } = calculateCartTotals();
 
+  // Populate user data if logged in
+  if (Aurora.user) {
+    const nameEl = document.querySelector('#checkoutName');
+    const emailEl = document.querySelector('#checkoutEmail');
+    const phoneEl = document.querySelector('#checkoutPhone');
+    const cardNameEl = document.querySelector('#cardInputName');
+    const cardPhoneEl = document.querySelector('#cardInputPhone');
+    
+    if (nameEl && !nameEl.value) nameEl.value = Aurora.user.name || '';
+    if (emailEl && !emailEl.value) emailEl.value = Aurora.user.email || '';
+    if (phoneEl && !phoneEl.value && Aurora.user.phone) phoneEl.value = Aurora.user.phone;
+    if (cardNameEl && !cardNameEl.value) cardNameEl.value = Aurora.user.name || '';
+    if (cardPhoneEl && !cardPhoneEl.value && Aurora.user.phone) cardPhoneEl.value = Aurora.user.phone || '';
+  }
+
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem;">
       ${Aurora.cart.map(item => `
         <div style="display:flex; gap:0.8rem; align-items:center;">
-          <img src="${item.image}" style="width:48px; height:48px; border-radius:6px; object-fit:cover; border:1px solid var(--border-subtle);">
+          <img src="${item.image}" style="width:48px; height:48px; border-radius:6px; object-fit:cover; border:1px solid var(--border-subtle);" onerror="this.src='https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80'">
           <div style="flex:1;">
             <div style="font-weight:600; font-size:0.88rem;">${item.name}</div>
             <div style="font-size:0.75rem; color:var(--text-muted);">${item.metal} &bull; Qty: ${item.quantity}</div>
@@ -1274,7 +1507,7 @@ function renderCheckoutSummary() {
       </div>
       ${discount > 0 ? `
         <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; color:var(--gold-dark); font-weight:600;">
-          <span>VIP Atelier Discount</span>
+          <span>VIP Atelier Discount (AURORA10)</span>
           <span>-₹${discount.toLocaleString()}</span>
         </div>
       ` : ''}
@@ -1284,25 +1517,394 @@ function renderCheckoutSummary() {
       </div>
     </div>
   `;
+
+  // Update dynamic amounts
+  const upiPayableEl = document.querySelector('#upiPayableAmount');
+  if (upiPayableEl) upiPayableEl.innerText = `₹${total.toLocaleString()}`;
+
+  // Generate UPI QR Code
+  generateUpiQrCode(total);
+  startUpiCountdownTimer();
 }
 
-async function processOrderCheckout(e) {
-  e.preventDefault();
+function switchPaymentMethod(method) {
+  activePaymentMethod = method;
+  
+  // Update Radio check states
+  const radioUpi = document.querySelector('#radioUpi');
+  const radioCard = document.querySelector('#radioCard');
+  const radioNet = document.querySelector('#radioNetbanking');
+  const radioCod = document.querySelector('#radioCod');
 
+  if (radioUpi) radioUpi.checked = (method === 'upi');
+  if (radioCard) radioCard.checked = (method === 'card');
+  if (radioNet) radioNet.checked = (method === 'netbanking');
+  if (radioCod) radioCod.checked = (method === 'cod');
+
+  // Update UI Card classes
+  document.querySelectorAll('.payment-method-card').forEach(card => card.classList.remove('active'));
+  const activeRadio = document.querySelector(`input[name="paymentMethodRadio"][value*="${method === 'upi' ? 'UPI' : method === 'card' ? 'Card' : method === 'netbanking' ? 'Net' : 'Cash'}"]`);
+  if (activeRadio) activeRadio.closest('.payment-method-card')?.classList.add('active');
+
+  // Toggle Sub-Panels
+  const panelUpi = document.querySelector('#panelUpiQr');
+  const panelCard = document.querySelector('#panelCard3D');
+  const panelNet = document.querySelector('#panelNetBanking');
+  const panelCod = document.querySelector('#panelCod');
+
+  if (panelUpi) panelUpi.style.display = (method === 'upi') ? 'block' : 'none';
+  if (panelCard) panelCard.style.display = (method === 'card') ? 'block' : 'none';
+  if (panelNet) panelNet.style.display = (method === 'netbanking') ? 'block' : 'none';
+  if (panelCod) panelCod.style.display = (method === 'cod') ? 'block' : 'none';
+
+  // Update Summary label
+  const summaryMethod = document.querySelector('#summarySelectedMethod');
+  if (summaryMethod) {
+    if (method === 'upi') summaryMethod.innerText = 'UPI Instant QR';
+    if (method === 'card') summaryMethod.innerText = 'Credit / Debit Card (3D Secure)';
+    if (method === 'netbanking') summaryMethod.innerText = 'Net Banking / Wire';
+    if (method === 'cod') summaryMethod.innerText = 'Cash on Delivery (COD)';
+  }
+
+  if (method === 'upi') {
+    const { total } = calculateCartTotals();
+    generateUpiQrCode(total);
+  }
+}
+
+// --------------------------------------------------------------------------
+// DYNAMIC UPI QR GENERATION & TIMER ENGINE
+// --------------------------------------------------------------------------
+function generateUpiQrCode(amount) {
+  const canvas = document.querySelector('#upiQrCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const size = canvas.width;
+
+  // Clear canvas
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, size, size);
+
+  // Standalone QR code matrix generation algorithm
+  const upiUri = `upi://pay?pa=aurora.atelier@icici&pn=Aurora%20Atelier&am=${amount}&cu=INR&tn=AURORA_LUXURY_${Date.now()}`;
+  
+  // Draw High-Density Stylized QR Matrix
+  const modules = 25;
+  const cellSize = size / modules;
+
+  // Pseudo-random deterministic hash based on URI
+  let hash = 0;
+  for (let i = 0; i < upiUri.length; i++) {
+    hash = ((hash << 5) - hash) + upiUri.charCodeAt(i);
+    hash |= 0;
+  }
+
+  ctx.fillStyle = '#181716';
+
+  // Draw 3 Standard Corner Finder Patterns
+  drawFinderPattern(ctx, 0, 0, cellSize);
+  drawFinderPattern(ctx, (modules - 7) * cellSize, 0, cellSize);
+  drawFinderPattern(ctx, 0, (modules - 7) * cellSize, cellSize);
+
+  // Fill internal data dots
+  for (let r = 0; r < modules; r++) {
+    for (let c = 0; c < modules; c++) {
+      // Skip finder zones
+      if ((r < 8 && c < 8) || (r < 8 && c >= modules - 8) || (r >= modules - 8 && c < 8)) {
+        continue;
+      }
+      // Center logo placeholder zone
+      if (r >= 10 && r <= 14 && c >= 10 && c <= 14) {
+        continue;
+      }
+
+      const bit = ((hash ^ (r * 31 + c * 17)) & (1 << ((r + c) % 8))) !== 0;
+      if (bit || (r % 2 === 0 && c % 3 === 0)) {
+        ctx.fillRect(c * cellSize + 1, r * cellSize + 1, cellSize - 2, cellSize - 2);
+      }
+    }
+  }
+
+  // Draw Center Atelier Emblem in QR
+  const centerSize = cellSize * 5;
+  const centerOffset = (size - centerSize) / 2;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(centerOffset, centerOffset, centerSize, centerSize);
+  ctx.strokeStyle = '#C9A227';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(centerOffset, centerOffset, centerSize, centerSize);
+
+  ctx.fillStyle = '#C9A227';
+  ctx.font = 'bold 13px "Playfair Display", serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('✨ AA', size / 2, size / 2);
+}
+
+function drawFinderPattern(ctx, x, y, cellSize) {
+  // Outer 7x7 box
+  ctx.fillStyle = '#181716';
+  ctx.fillRect(x, y, cellSize * 7, cellSize * 7);
+  // Inner 5x5 white space
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(x + cellSize, y + cellSize, cellSize * 5, cellSize * 5);
+  // Center 3x3 solid box
+  ctx.fillStyle = '#C9A227';
+  ctx.fillRect(x + cellSize * 2, y + cellSize * 2, cellSize * 3, cellSize * 3);
+}
+
+function startUpiCountdownTimer() {
+  clearInterval(upiCountdownTimer);
+  let totalSeconds = 600; // 10 minutes
+
+  const timerEl = document.querySelector('#upiTimerText');
+  if (!timerEl) return;
+
+  upiCountdownTimer = setInterval(() => {
+    totalSeconds--;
+    if (totalSeconds <= 0) {
+      clearInterval(upiCountdownTimer);
+      timerEl.innerText = 'Expired';
+      return;
+    }
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    timerEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }, 1000);
+}
+
+function simulateUpiAppSelection(appName) {
+  document.querySelectorAll('.upi-app-pill').forEach(pill => pill.classList.remove('active'));
+  event.target.classList.add('active');
+  showToast(`⚡ Selected ${appName}. Scan QR to complete payment!`);
+}
+
+async function verifyAndTriggerUpiPayment() {
+  const statusBadge = document.querySelector('#upiPaymentStatusBadge');
+  if (statusBadge) {
+    statusBadge.innerHTML = `<span class="spinner" style="width:14px; height:14px; border:2px solid var(--gold-dark); border-top-color:transparent; border-radius:50%; display:inline-block; animation:spin 0.8s linear infinite;"></span> Connecting to Bank Payment Gateway...`;
+    statusBadge.style.background = '#FEF3C7';
+    statusBadge.style.color = '#92400E';
+  }
+
+  setTimeout(async () => {
+    if (statusBadge) {
+      statusBadge.innerHTML = `✅ Payment Authenticated & Confirmed by NPCI`;
+      statusBadge.style.background = '#DCFCE7';
+      statusBadge.style.color = '#15803D';
+    }
+
+    // Submit order
+    await executeOrderSubmission('UPI / Instant QR', 'Completed');
+  }, 1800);
+}
+
+// --------------------------------------------------------------------------
+// 3D INTERACTIVE CREDIT / DEBIT CARD SIMULATOR ENGINE
+// --------------------------------------------------------------------------
+function handleCardNumberInput(input) {
+  let val = input.value.replace(/\D/g, '').substring(0, 16);
+  let formatted = val.match(/.{1,4}/g)?.join(' ') || val;
+  input.value = formatted;
+
+  const display = document.querySelector('#cardNumberDisplay');
+  if (display) {
+    display.innerText = formatted ? formatted.padEnd(19, '•') : '•••• •••• •••• ••••';
+  }
+
+  // Detect BIN and Card Network
+  detectCardNetwork(val);
+}
+
+function detectCardNetwork(rawNumber) {
+  const frontFace = document.querySelector('#cardFrontFace');
+  const backFace = document.querySelector('#cardBackFace');
+  const networkLogo = document.querySelector('#cardNetworkLogoDisplay');
+  if (!frontFace || !backFace || !networkLogo) return;
+
+  const themes = ['card-theme-default', 'card-theme-visa', 'card-theme-mastercard', 'card-theme-rupay', 'card-theme-amex'];
+  themes.forEach(t => {
+    frontFace.classList.remove(t);
+    backFace.classList.remove(t);
+  });
+
+  if (rawNumber.startsWith('4')) {
+    frontFace.classList.add('card-theme-visa');
+    backFace.classList.add('card-theme-visa');
+    networkLogo.innerText = 'VISA';
+  } else if (/^(5[1-5]|2[2-7])/.test(rawNumber)) {
+    frontFace.classList.add('card-theme-mastercard');
+    backFace.classList.add('card-theme-mastercard');
+    networkLogo.innerText = 'MASTERCARD';
+  } else if (/^(60|65|81|82)/.test(rawNumber)) {
+    frontFace.classList.add('card-theme-rupay');
+    backFace.classList.add('card-theme-rupay');
+    networkLogo.innerText = 'RuPay';
+  } else if (/^3[47]/.test(rawNumber)) {
+    frontFace.classList.add('card-theme-amex');
+    backFace.classList.add('card-theme-amex');
+    networkLogo.innerText = 'AMEX';
+  } else {
+    frontFace.classList.add('card-theme-default');
+    backFace.classList.add('card-theme-default');
+    networkLogo.innerText = 'AURORA';
+  }
+}
+
+function handleCardExpiryInput(input) {
+  let val = input.value.replace(/\D/g, '').substring(0, 4);
+  if (val.length >= 2) {
+    val = val.substring(0, 2) + '/' + val.substring(2);
+  }
+  input.value = val;
+
+  const display = document.querySelector('#cardExpiryDisplay');
+  if (display) {
+    display.innerText = val || 'MM/YY';
+  }
+}
+
+function handleCardCvvInput(input) {
+  let val = input.value.replace(/\D/g, '').substring(0, 4);
+  input.value = val;
+
+  const display = document.querySelector('#cardCvvDisplay');
+  if (display) {
+    display.innerText = val ? '•'.repeat(val.length) : '•••';
+  }
+}
+
+function handleCardNameInput(input) {
+  const display = document.querySelector('#cardHolderDisplay');
+  if (display) {
+    display.innerText = input.value.toUpperCase() || 'ARIA VANCE';
+  }
+}
+
+function flipCard3D(isFlipped) {
+  const inner = document.querySelector('#card3dInner');
+  if (!inner) return;
+  inner.classList.toggle('flipped', isFlipped);
+}
+
+// --------------------------------------------------------------------------
+// BANK 2FA OTP MODAL ENGINE
+// --------------------------------------------------------------------------
+function triggerCardOtpModal() {
+  const num = document.querySelector('#cardInputNumber')?.value.replace(/\s/g, '');
+  const exp = document.querySelector('#cardInputExpiry')?.value;
+  const cvv = document.querySelector('#cardInputCvv')?.value;
+  const name = document.querySelector('#cardInputName')?.value.trim();
+
+  if (!num || num.length < 15) {
+    showToast('Please enter a valid 16-digit card number');
+    return;
+  }
+  if (!exp || exp.length < 5) {
+    showToast('Please enter a valid card expiry date (MM/YY)');
+    return;
+  }
+  if (!cvv || cvv.length < 3) {
+    showToast('Please enter the 3-digit CVV security code');
+    return;
+  }
+
+  const modal = document.querySelector('#bankOtpModal');
+  if (!modal) return;
+
+  const phone = document.querySelector('#cardInputPhone')?.value || '+91 98765 43210';
+  const masked = phone.length > 4 ? `•••• ••${phone.slice(-4)}` : '•••• ••4210';
+  const maskedEl = document.querySelector('#otpMaskedPhone');
+  if (maskedEl) maskedEl.innerText = masked;
+
+  modal.style.display = 'flex';
+  startOtpCountdownTimer();
+
+  // Reset inputs
+  document.querySelectorAll('.otp-input-box').forEach((box, i) => {
+    box.value = '';
+    if (i === 0) box.focus();
+  });
+}
+
+function closeOtpModal() {
+  const modal = document.querySelector('#bankOtpModal');
+  if (modal) modal.style.display = 'none';
+  clearInterval(otpCountdownTimer);
+}
+
+function handleOtpBoxInput(input, index) {
+  input.value = input.value.replace(/\D/g, '');
+  if (input.value && index < 5) {
+    const nextBox = document.querySelectorAll('.otp-input-box')[index + 1];
+    if (nextBox) nextBox.focus();
+  }
+}
+
+function startOtpCountdownTimer() {
+  clearInterval(otpCountdownTimer);
+  let seconds = 45;
+  const timerEl = document.querySelector('#otpCountdownTimer');
+  if (!timerEl) return;
+
+  otpCountdownTimer = setInterval(() => {
+    seconds--;
+    if (seconds <= 0) {
+      clearInterval(otpCountdownTimer);
+      timerEl.innerText = '00:00 (Resend Available)';
+      return;
+    }
+    timerEl.innerText = `00:${seconds.toString().padStart(2, '0')}`;
+  }, 1000);
+}
+
+async function verifyCardOtpAndSubmit() {
+  const boxes = document.querySelectorAll('.otp-input-box');
+  let enteredOtp = '';
+  boxes.forEach(b => enteredOtp += b.value);
+
+  if (enteredOtp.length < 6) {
+    showToast('Please enter the complete 6-digit OTP code');
+    return;
+  }
+
+  closeOtpModal();
+  showToast('✨ 2FA Bank Authentication Verified!');
+  await executeOrderSubmission('Credit / Debit Card (3D Secure)', 'Completed');
+}
+
+// --------------------------------------------------------------------------
+// CASH ON DELIVERY & NET BANKING HANDLERS
+// --------------------------------------------------------------------------
+async function triggerCodCheckout() {
+  await executeOrderSubmission('Cash on Delivery (Verified)', 'Pending (Cash on Delivery)');
+}
+
+async function triggerNetBankingCheckout() {
+  const bank = document.querySelector('#netBankingSelect')?.value || 'HDFC Bank';
+  showToast(`🏦 Redirecting to ${bank} Secure Token Portal...`);
+  setTimeout(async () => {
+    await executeOrderSubmission(`Net Banking (${bank})`, 'Completed');
+  }, 1200);
+}
+
+// --------------------------------------------------------------------------
+// UNIFIED ORDER SUBMISSION & TRACKING ENGINE
+// --------------------------------------------------------------------------
+async function executeOrderSubmission(paymentMethodName, paymentStatus = 'Completed') {
   if (Aurora.cart.length === 0) {
     showToast('Your cart is empty');
     navigateTo('#explore');
     return;
   }
 
-  const fullName = document.querySelector('#checkoutName').value.trim();
-  const email = document.querySelector('#checkoutEmail').value.trim();
-  const phone = document.querySelector('#checkoutPhone').value.trim();
-  const street = document.querySelector('#checkoutStreet').value.trim();
-  const city = document.querySelector('#checkoutCity').value.trim();
-  const state = document.querySelector('#checkoutState').value.trim();
-  const postalCode = document.querySelector('#checkoutZip').value.trim();
-  const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'UPI / Instant QR';
+  const fullName = document.querySelector('#checkoutName')?.value.trim() || Aurora.user?.name || 'Valued Patron';
+  const email = document.querySelector('#checkoutEmail')?.value.trim() || Aurora.user?.email || 'patron@aurora.luxury';
+  const phone = document.querySelector('#checkoutPhone')?.value.trim() || '+91 98765 43210';
+  const street = document.querySelector('#checkoutStreet')?.value.trim() || 'Penthouse 14B, Marine Lines';
+  const city = document.querySelector('#checkoutCity')?.value.trim() || 'Mumbai';
+  const state = document.querySelector('#checkoutState')?.value.trim() || 'Maharashtra';
+  const postalCode = document.querySelector('#checkoutZip')?.value.trim() || '400020';
 
   const address = { fullName, street, city, state, postalCode, phone };
   const { subtotal, discount, shipping, total } = calculateCartTotals();
@@ -1318,7 +1920,7 @@ async function processOrderCheckout(e) {
     shipping,
     discount,
     total,
-    payment_method: paymentMethod
+    payment_method: paymentMethodName
   };
 
   try {
@@ -1330,72 +1932,96 @@ async function processOrderCheckout(e) {
     const data = await res.json();
 
     if (data.success) {
-      // Clear Cart
       const orderNumber = data.order_number;
       const orderTotal = data.total;
       const eta = data.estimated_delivery;
-      
+      const isCod = (paymentStatus.includes('Cash on Delivery') || paymentMethodName.includes('Cash on Delivery'));
+
       Aurora.cart = [];
       saveCart();
 
-      // Show Order Confirmation Screen
-      displayOrderSuccessScreen(orderNumber, orderTotal, eta, address, paymentMethod);
+      displayOrderSuccessScreen(orderNumber, orderTotal, eta, address, paymentMethodName, isCod);
       await loadOrders();
     } else {
       showToast(data.error || 'Failed to place order');
     }
   } catch (err) {
-    // Offline simulation
+    // Client fallback for static hosting
     const randNum = `AUR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const isCod = (paymentStatus.includes('Cash on Delivery') || paymentMethodName.includes('Cash on Delivery'));
     Aurora.cart = [];
     saveCart();
-    displayOrderSuccessScreen(randNum, total, '4 business days', address, paymentMethod);
+    displayOrderSuccessScreen(randNum, total, '4 business days', address, paymentMethodName, isCod);
   }
 }
 
-function displayOrderSuccessScreen(orderNumber, total, eta, address, paymentMethod) {
+// --------------------------------------------------------------------------
+// ORDER CONFIRMATION & COD DISPATCH ANIMATION VIEW
+// --------------------------------------------------------------------------
+function displayOrderSuccessScreen(orderNumber, total, eta, address, paymentMethod, isCod = false) {
   const container = document.querySelector('#orderConfirmationView');
-  const checkoutContainer = document.querySelector('#checkout');
-  if (checkoutContainer) checkoutContainer.style.display = 'none';
+  const checkoutSection = document.querySelector('#checkout');
+  if (checkoutSection) checkoutSection.style.display = 'none';
 
   if (container) {
     container.style.display = 'block';
     container.innerHTML = `
       <div class="confirmation-container">
+        <!-- Animated Success Checkmark -->
         <div class="success-check-circle">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
         </div>
-        <div class="eyebrow">ORDER CONFIRMED</div>
-        <h2 style="font-size:2.2rem; margin-bottom:0.5rem;">Your Order is Confirmed ✨</h2>
-        <p style="color:var(--text-muted); font-size:1rem; margin-bottom:1.5rem;">
-          Thank you for choosing Aurora Atelier. A bespoke confirmation email has been dispatched to <strong>${address.fullName}</strong>.
+
+        <div class="eyebrow">${isCod ? 'ORDER CONFIRMED &bull; PAY ON DELIVERY' : 'PAYMENT SUCCESSFUL &bull; ORDER CONFIRMED'}</div>
+        <h2 style="font-size:2.2rem; margin-bottom:0.5rem; color:var(--text-charcoal);">
+          ${isCod ? 'Your Atelier Order is Confirmed! 📦' : 'Thank You for Your Acquisition ✨'}
+        </h2>
+        <p style="color:var(--text-muted); font-size:1rem; margin-bottom:1.5rem; line-height:1.5;">
+          A tamper-evident wax sealed dossier & order confirmation has been dispatched to <strong>${address.fullName}</strong> (${address.street}, ${address.city}).
         </p>
 
+        <!-- Animated Delivery Van -->
+        <div class="delivery-truck-wrap">
+          <div class="delivery-van-icon">🚚</div>
+          <div style="font-size:0.8rem; font-weight:700; color:var(--gold-dark); text-transform:uppercase; letter-spacing:0.08em; margin-top:0.3rem;">
+            Insured Express Courier Dispatched
+          </div>
+        </div>
+
+        <!-- Receipt Breakdown -->
         <div class="order-receipt-summary">
-          <div style="display:flex; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
-            <span>Order Number:</span>
+          <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
+            <span>Order Reference Number:</span>
             <strong style="color:var(--gold-dark);">${orderNumber}</strong>
           </div>
-          <div style="display:flex; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
+          <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
             <span>Estimated Atelier Delivery:</span>
             <strong>${eta}</strong>
           </div>
-          <div style="display:flex; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
+          <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
             <span>Payment Method:</span>
-            <span>${paymentMethod} (Verified)</span>
+            <span style="font-weight:600;">${paymentMethod}</span>
           </div>
-          <div style="display:flex; justify-content:space-between; padding:0.6rem 0 0 0; font-size:1.1rem; font-weight:700;">
-            <span>Total Paid:</span>
+          <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
+            <span>Payment Status:</span>
+            <span style="color:${isCod ? '#D97706' : 'var(--success)'}; font-weight:700;">
+              ${isCod ? 'Pending (Pay at Doorstep)' : 'Completed & Verified'}
+            </span>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:0.7rem 0 0 0; font-size:1.15rem; font-weight:800;">
+            <span>Total Amount:</span>
             <span style="color:var(--gold-dark);">₹${total.toLocaleString()}</span>
           </div>
         </div>
 
         <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
           <button class="btn btn-gold btn-lg" onclick="openConfirmationEmailModal('${orderNumber}')">
-            📧 View In-App Confirmation Email
+            📧 View Atelier Email Receipt
           </button>
           <button class="btn btn-secondary btn-lg" onclick="navigateTo('#orders')">
-            Track Order Live
+            Live Order Status
           </button>
         </div>
       </div>

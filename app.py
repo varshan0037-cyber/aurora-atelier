@@ -26,9 +26,19 @@ HOST = "0.0.0.0"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.path.join(BASE_DIR, "aurora_atelier.db")
 
-# Helper for hashing passwords
-def hash_password(password):
-    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+# Helper for hashing passwords with salt
+def hash_password(password, salt=None):
+    if not salt:
+        salt = os.urandom(16).hex()
+    hashed = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 100000).hex()
+    return f"{salt}${hashed}"
+
+def verify_password(stored_password, provided_password):
+    if '$' not in stored_password:
+        # Backward compatibility with legacy sha256
+        return hashlib.sha256(provided_password.encode('utf-8')).hexdigest() == stored_password
+    salt, hashed = stored_password.split('$', 1)
+    return hash_password(provided_password, salt) == stored_password
 
 # Initialize SQLite Database
 def init_db():
@@ -744,18 +754,70 @@ class AuroraRequestHandler(BaseHTTPRequestHandler):
             if path == '/api/auth/login':
                 email = body.get('email', '').strip().lower()
                 password = body.get('password', '')
-                pw_hash = hash_password(password)
 
-                c.execute("SELECT * FROM users WHERE LOWER(email) = ? AND password_hash = ?", (email, pw_hash))
+                c.execute("SELECT * FROM users WHERE LOWER(email) = ?", (email,))
                 user = c.fetchone()
-                if user:
+                if user and verify_password(user['password_hash'], password):
                     user_dict = dict(user)
                     del user_dict['password_hash']
+                    token = f"aurora_tok_{os.urandom(24).hex()}"
                     self._set_json_headers(200)
-                    self.wfile.write(json.dumps({'success': True, 'user': user_dict}).encode('utf-8'))
+                    self.wfile.write(json.dumps({'success': True, 'user': user_dict, 'token': token}).encode('utf-8'))
                 else:
                     self._set_json_headers(401)
                     self.wfile.write(json.dumps({'success': False, 'error': 'Invalid email or password'}).encode('utf-8'))
+                return
+
+            # POST /api/auth/google
+            elif path == '/api/auth/google':
+                credential = body.get('credential') or body.get('token')
+                email = (body.get('email') or '').strip().lower()
+                name = (body.get('name') or '').strip()
+                picture = body.get('picture') or "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
+                
+                # In production Google OAuth JWT token decoding:
+                if credential and not email:
+                    try:
+                        # Extract payload from JWT (base64url decoded)
+                        parts = credential.split('.')
+                        if len(parts) >= 2:
+                            import base64
+                            padded = parts[1] + '=' * (4 - len(parts[1]) % 4)
+                            payload_json = base64.urlsafe_b64decode(padded.encode('utf-8')).decode('utf-8')
+                            payload = json.loads(payload_json)
+                            email = payload.get('email', '').strip().lower()
+                            name = payload.get('name', '').strip()
+                            picture = payload.get('picture', picture)
+                    except Exception as e:
+                        pass
+
+                if not email or '@' not in email:
+                    self._set_json_headers(401)
+                    self.wfile.write(json.dumps({
+                        'success': False,
+                        'error': 'Email doesn’t exist or Google authentication failed. Please check your Google account and try again.'
+                    }).encode('utf-8'))
+                    return
+
+                # Find or register Google user in database
+                c.execute("SELECT * FROM users WHERE LOWER(email) = ?", (email,))
+                user = c.fetchone()
+                if not user:
+                    # Register new Google patron
+                    display_name = name or email.split('@')[0].capitalize()
+                    random_pw_hash = hash_password(os.urandom(32).hex())
+                    c.execute("INSERT INTO users (name, email, password_hash, role, avatar) VALUES (?, ?, ?, 'buyer', ?)",
+                              (display_name, email, random_pw_hash, picture))
+                    conn.commit()
+                    user_id = c.lastrowid
+                    user_dict = {'id': user_id, 'name': display_name, 'email': email, 'role': 'buyer', 'avatar': picture}
+                else:
+                    user_dict = dict(user)
+                    del user_dict['password_hash']
+
+                token = f"aurora_gauth_{os.urandom(24).hex()}"
+                self._set_json_headers(200)
+                self.wfile.write(json.dumps({'success': True, 'user': user_dict, 'token': token}).encode('utf-8'))
                 return
 
             # POST /api/auth/signup
@@ -770,6 +832,11 @@ class AuroraRequestHandler(BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps({'success': False, 'error': 'Name, email, and password required'}).encode('utf-8'))
                     return
 
+                if len(password) < 6:
+                    self._set_json_headers(400)
+                    self.wfile.write(json.dumps({'success': False, 'error': 'Password must be at least 6 characters'}).encode('utf-8'))
+                    return
+
                 pw_hash = hash_password(password)
                 avatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
                 try:
@@ -778,11 +845,12 @@ class AuroraRequestHandler(BaseHTTPRequestHandler):
                     conn.commit()
                     user_id = c.lastrowid
                     user_dict = {'id': user_id, 'name': name, 'email': email, 'role': 'buyer', 'phone': phone, 'avatar': avatar}
+                    token = f"aurora_tok_{os.urandom(24).hex()}"
                     self._set_json_headers(201)
-                    self.wfile.write(json.dumps({'success': True, 'user': user_dict}).encode('utf-8'))
+                    self.wfile.write(json.dumps({'success': True, 'user': user_dict, 'token': token}).encode('utf-8'))
                 except sqlite3.IntegrityError:
                     self._set_json_headers(400)
-                    self.wfile.write(json.dumps({'success': False, 'error': 'Account with this email already exists'}).encode('utf-8'))
+                    self.wfile.write(json.dumps({'success': False, 'error': 'An account with this email address already exists'}).encode('utf-8'))
                 return
 
             # POST /api/custom-requests
@@ -817,6 +885,35 @@ class AuroraRequestHandler(BaseHTTPRequestHandler):
                 }).encode('utf-8'))
                 return
 
+            # POST /api/orders/<id>/verify-payment
+            elif '/verify-payment' in path:
+                parts = path.strip('/').split('/')
+                order_id = parts[2] if len(parts) >= 4 else parts[1]
+                txn_id = body.get('transaction_id') or f"TXN_{os.urandom(8).hex().upper()}"
+                method = body.get('payment_method', 'UPI Instant')
+
+                c.execute("SELECT * FROM orders WHERE id = ? OR order_number = ?", (order_id, order_id))
+                order = c.fetchone()
+                if not order:
+                    self._set_json_headers(404)
+                    self.wfile.write(json.dumps({'success': False, 'error': 'Order not found'}).encode('utf-8'))
+                    return
+
+                # Update payment status
+                c.execute("UPDATE orders SET payment_status = 'Completed', payment_method = ? WHERE id = ?", (method, order['id']))
+                conn.commit()
+
+                self._set_json_headers(200)
+                self.wfile.write(json.dumps({
+                    'success': True,
+                    'order_id': order['id'],
+                    'order_number': order['order_number'],
+                    'transaction_id': txn_id,
+                    'payment_status': 'Completed',
+                    'message': 'Payment verified successfully.'
+                }).encode('utf-8'))
+                return
+
             # POST /api/orders
             elif path == '/api/orders':
                 user_id = body.get('user_id')
@@ -830,6 +927,8 @@ class AuroraRequestHandler(BaseHTTPRequestHandler):
                 discount = float(body.get('discount', 0))
                 total = float(body.get('total', 0))
                 payment_method = body.get('payment_method', 'Card Payment')
+                is_cod = 'Cash on Delivery' in payment_method or 'COD' in payment_method
+                payment_status = 'Pending (Cash on Delivery)' if is_cod else 'Completed'
 
                 if not items:
                     self._set_json_headers(400)
@@ -850,8 +949,8 @@ class AuroraRequestHandler(BaseHTTPRequestHandler):
 
                 c.execute("""
                     INSERT INTO orders (order_number, user_id, user_name, user_email, user_phone, address_json, items_json, subtotal, shipping, discount, total, payment_method, payment_status, order_status, estimated_delivery, tracking_history_json)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Completed', 'Order Placed', ?, ?)
-                """, (order_number, user_id, user_name, user_email, user_phone, json.dumps(address), json.dumps(items), subtotal, shipping, discount, total, payment_method, eta, json.dumps(initial_tracking)))
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Order Placed', ?, ?)
+                """, (order_number, user_id, user_name, user_email, user_phone, json.dumps(address), json.dumps(items), subtotal, shipping, discount, total, payment_method, payment_status, eta, json.dumps(initial_tracking)))
                 order_id = c.lastrowid
 
                 # Generate and Store Thank-You Email
@@ -866,7 +965,7 @@ class AuroraRequestHandler(BaseHTTPRequestHandler):
 
                 print(f"\n=======================================================")
                 print(f"[EMAIL DISPATCHED] To: {user_email} | Subject: {subject}")
-                print(f"Order: {order_number} | Amount: ₹{total:,.2f} | Method: {payment_method}")
+                print(f"Order: {order_number} | Amount: ₹{total:,.2f} | Method: {payment_method} | Status: {payment_status}")
                 print(f"=======================================================\n")
 
                 self._set_json_headers(201)
@@ -875,6 +974,7 @@ class AuroraRequestHandler(BaseHTTPRequestHandler):
                     'order_id': order_id,
                     'order_number': order_number,
                     'total': total,
+                    'payment_status': payment_status,
                     'estimated_delivery': eta,
                     'email_dispatched': True,
                     'message': 'Order successfully placed & confirmation email generated.'

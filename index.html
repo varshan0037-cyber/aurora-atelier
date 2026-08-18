@@ -13,8 +13,228 @@
   <link rel="stylesheet" href="./static/css/styles.css">
   <link rel="stylesheet" href="./styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+  
+  <!-- Official Google Identity Services SDK for authentic Google Sign-In -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
+
+  <!-- ==========================================================================
+       OPENING FULL-SCREEN EXPERIENCE & FEATURE TOUR CAROUSEL (#openingExperience)
+       ========================================================================== -->
+  <div class="opening-experience-overlay" id="openingExperience">
+    <!-- Header with Brand Wordmark & Skip Button -->
+    <div class="opening-header">
+      <div class="opening-logo">
+        <span class="logo-title">AURORA</span>
+        <span class="logo-subtitle">Maison Atelier</span>
+      </div>
+      <button class="btn-skip-tour" onclick="closeOpeningTour()">
+        Skip Tour & Enter Boutique &times;
+      </button>
+    </div>
+
+    <!-- Carousel Viewport -->
+    <div class="opening-carousel-container">
+      
+      <!-- Slide 1: Welcome / Maison Heritage -->
+      <div class="opening-slide active" data-slide="0">
+        <div class="slide-content-left">
+          <div class="slide-badge">✨ MAISON D’HAUTE JOAILLERIE</div>
+          <h1 class="slide-headline">Where Gen-Z Luxury Meets <em>Master Goldsmithing.</em></h1>
+          <p class="slide-description">
+            Welcome to Aurora Atelier. Discover bespoke accessories hand-forged in certified 18K solid gold and 925 liquid sterling silver. Designed for conscious elegance, self-expression, and heirloom permanence.
+          </p>
+          <div class="slide-actions">
+            <button class="btn btn-gold btn-lg" onclick="closeOpeningTour(); navigateTo('#explore');">
+              Enter Boutique ✨
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="nextOpeningSlide()">
+              Explore Signature Edits →
+            </button>
+          </div>
+        </div>
+        <div class="slide-visual-right">
+          <div class="slide-glass-card">
+            <img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80" alt="Aurora Solstice Choker" class="slide-card-img">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h4 style="color:#FFF; font-size:1.1rem; margin-bottom:2px;">Aurora Solstice Choker</h4>
+                <div style="color:var(--gold-light); font-size:0.82rem; font-weight:600;">18K Solid Gold &bull; Handcrafted</div>
+              </div>
+              <span style="background:var(--gold-gradient); color:#FFF; padding:0.3rem 0.75rem; border-radius:999px; font-weight:700; font-size:0.85rem;">₹12,499</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2: Featured Products & Fluid Metals -->
+      <div class="opening-slide" data-slide="1">
+        <div class="slide-content-left">
+          <div class="slide-badge">💎 CURATED FINE ACCESSORIES</div>
+          <h1 class="slide-headline">Liquid Silver Cuffs & <em>Sculpted Signet Rings.</em></h1>
+          <p class="slide-description">
+            From modern fluid-wave statement cuffs to star-set lab solitaire diamond signets, our pieces are cast in heavyweight precious metals and hallmarked for enduring brilliance.
+          </p>
+          <div class="slide-actions">
+            <button class="btn btn-gold btn-lg" onclick="closeOpeningTour(); navigateTo('#explore');">
+              Shop All Products ✨
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="nextOpeningSlide()">
+              Custom Studio Perks →
+            </button>
+          </div>
+        </div>
+        <div class="slide-visual-right">
+          <div class="slide-glass-card">
+            <img src="https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=600&q=80" alt="Liquid Silver Ribbed Cuff" class="slide-card-img">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h4 style="color:#FFF; font-size:1.1rem; margin-bottom:2px;">Liquid Silver Statement Cuff</h4>
+                <div style="color:var(--silver-light); font-size:0.82rem; font-weight:600;">925 Sterling Silver &bull; Fluid Wave</div>
+              </div>
+              <span style="background:var(--silver-gradient); color:#252525; padding:0.3rem 0.75rem; border-radius:999px; font-weight:700; font-size:0.85rem;">₹4,899</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3: Bespoke Custom Orders & Launch Special -->
+      <div class="opening-slide" data-slide="2">
+        <div class="slide-content-left">
+          <div class="slide-badge">✍️ BESPOKE ATELIER & VIP LAUNCH</div>
+          <h1 class="slide-headline">Describe What You Want or <em>Upload Inspiration.</em></h1>
+          <p class="slide-description">
+            Paste photo inspiration or describe your dream jewelry piece. Our master artisans create 3D CAD blueprints and craft your custom commission. Enjoy <strong>10% Off</strong> with code <strong>AURORA10</strong>.
+          </p>
+          <div class="slide-actions">
+            <button class="btn btn-gold btn-lg" onclick="closeOpeningTour(); navigateTo('#custom-request');">
+              Custom Order Studio ✨
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="nextOpeningSlide()">
+              Payment & Checkout Perks →
+            </button>
+          </div>
+        </div>
+        <div class="slide-visual-right">
+          <div class="slide-glass-card" style="text-align:center; padding:2rem 1.5rem;">
+            <div style="font-size:3.5rem; margin-bottom:0.8rem;">💎</div>
+            <h3 style="color:#FFF; font-size:1.3rem; margin-bottom:0.4rem;">Launch Privilege &bull; 10% Off</h3>
+            <div style="background:rgba(201,162,39,0.2); border:1.5px dashed var(--gold-light); padding:0.6rem 1.2rem; border-radius:8px; display:inline-block; font-size:1.15rem; font-weight:800; color:var(--gold-light); letter-spacing:0.1em; margin:1rem 0;">
+              CODE: AURORA10
+            </div>
+            <p style="color:#D4CEBE; font-size:0.85rem;">Complimentary BIS Hallmark certification & insured door delivery nationwide.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 4: Fast & Frictionless Multi-Payment Gateway -->
+      <div class="opening-slide" data-slide="3">
+        <div class="slide-content-left">
+          <div class="slide-badge">⚡ FAST, MULTI-PAYMENT GATEWAY</div>
+          <h1 class="slide-headline">Dynamic UPI QR, <em>3D Cards & Cash on Delivery.</em></h1>
+          <p class="slide-description">
+            Experience ultra-smooth checkout: Scan dynamic UPI QR with Google Pay, PhonePe, or Paytm with live status verification, or use our interactive 3D Card simulator with 2FA OTP security. Cash on Delivery is also available.
+          </p>
+          <div class="slide-actions">
+            <button class="btn btn-gold btn-lg" onclick="closeOpeningTour(); navigateTo('#explore');">
+              Explore Collection ✨
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="nextOpeningSlide()">
+              Security Guarantee →
+            </button>
+          </div>
+        </div>
+        <div class="slide-visual-right">
+          <div class="slide-glass-card" style="text-align:center; padding:1.8rem;">
+            <div style="display:flex; justify-content:center; gap:0.6rem; margin-bottom:1.2rem; flex-wrap:wrap;">
+              <span class="upi-app-pill">📱 Google Pay</span>
+              <span class="upi-app-pill">💜 PhonePe</span>
+              <span class="upi-app-pill">💙 Paytm</span>
+              <span class="upi-app-pill">💳 3D Cards</span>
+            </div>
+            <div style="font-size:0.9rem; color:#FFF; font-weight:600; margin-bottom:0.5rem;">Dynamic Real-Time QR Scanner</div>
+            <p style="font-size:0.8rem; color:#A8A29E;">Instant automated payment verification directly connected to your bank gateway.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 5: Bank-Grade Security & Official OAuth -->
+      <div class="opening-slide" data-slide="4">
+        <div class="slide-content-left">
+          <div class="slide-badge">🔒 BANK-GRADE SECURITY</div>
+          <h1 class="slide-headline">PCI-DSS Tokenization & <em>Real Google OAuth.</em></h1>
+          <p class="slide-description">
+            We never store raw credit card numbers, CVVs, or bank PINs in our database. Enjoy true single-click Google Sign-In with Google Identity Services (GSI) and 256-Bit SSL encrypted tokenization.
+          </p>
+          <div class="slide-actions">
+            <button class="btn btn-gold btn-lg" onclick="closeOpeningTour(); navigateTo('#auth');">
+              Sign In to Atelier ✨
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="nextOpeningSlide()">
+              Delivery & Unboxing →
+            </button>
+          </div>
+        </div>
+        <div class="slide-visual-right">
+          <div class="slide-glass-card" style="text-align:center; padding:2rem 1.5rem;">
+            <div style="font-size:3rem; margin-bottom:0.6rem;">🛡️</div>
+            <h4 style="color:#FFF; font-size:1.2rem; margin-bottom:0.4rem;">256-Bit Encrypted Vault</h4>
+            <p style="color:#D4CEBE; font-size:0.85rem; line-height:1.5;">
+              Zero credential leakage. Fully compliant with modern web security, verified authentication, and bank tokenization protocols.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 6: White-Glove Delivery & Unboxing -->
+      <div class="opening-slide" data-slide="5">
+        <div class="slide-content-left">
+          <div class="slide-badge">📦 INSURED ATELIER UNBOXING</div>
+          <h1 class="slide-headline">Tamper-Proof Packaging & <em>Live GPS Tracking.</em></h1>
+          <p class="slide-description">
+            Your fine jewelry is packed in tamper-evident wax-sealed presentation boxes, accompanied by velvet travel pouches and a certified Hallmark authenticity dossier with live courier milestones.
+          </p>
+          <div class="slide-actions">
+            <button class="btn btn-gold btn-lg" onclick="closeOpeningTour(); navigateTo('#home');">
+              Start Shopping Now ✨
+            </button>
+          </div>
+        </div>
+        <div class="slide-visual-right">
+          <div class="slide-glass-card" style="text-align:center; padding:2rem 1.5rem;">
+            <div style="font-size:3.2rem; margin-bottom:0.6rem;">🎁</div>
+            <h4 style="color:#FFF; font-size:1.2rem; margin-bottom:0.4rem;">White-Glove Luxury Unboxing</h4>
+            <p style="color:#D4CEBE; font-size:0.85rem;">
+              Complimentary gift packaging, personalized handwritten note, and live order tracking every step of the journey.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer with Indicators & Prev/Next Arrows -->
+    <div class="opening-footer">
+      <div class="carousel-indicators" id="openingIndicators">
+        <div class="indicator-dot active" onclick="goToOpeningSlide(0)"></div>
+        <div class="indicator-dot" onclick="goToOpeningSlide(1)"></div>
+        <div class="indicator-dot" onclick="goToOpeningSlide(2)"></div>
+        <div class="indicator-dot" onclick="goToOpeningSlide(3)"></div>
+        <div class="indicator-dot" onclick="goToOpeningSlide(4)"></div>
+        <div class="indicator-dot" onclick="goToOpeningSlide(5)"></div>
+      </div>
+
+      <div class="carousel-controls">
+        <button class="carousel-btn" onclick="prevOpeningSlide()" aria-label="Previous Slide">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="carousel-btn" onclick="nextOpeningSlide()" aria-label="Next Slide">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Top Announcement Bar -->
   <div style="background: var(--text-charcoal); color: var(--gold-pale); text-align: center; padding: 0.45rem 1rem; font-size: 0.78rem; letter-spacing: 0.08em; font-weight: 500; text-transform: uppercase;">
@@ -37,6 +257,7 @@
         <li><a href="#custom-request" class="nav-link">Create / Request</a></li>
         <li><a href="#inspiration" class="nav-link">Upload Inspiration</a></li>
         <li><a href="#orders" class="nav-link">Orders</a></li>
+        <li><a href="javascript:void(0)" onclick="openOpeningTour()" class="nav-link" style="color:var(--gold-dark); font-weight:600;">✨ Tour Intro</a></li>
         <li id="navAdminTab" style="display:none;"><a href="#admin" class="nav-link" style="color:var(--gold-dark); font-weight:700;">Admin Studio</a></li>
       </ul>
 
@@ -526,55 +747,193 @@
             </div>
           </div>
 
-          <!-- Step 2: Payment Method -->
+          <!-- Step 2: Payment Method Selection -->
           <div class="checkout-card">
             <h3 style="font-size:1.3rem; margin-bottom:1.5rem; display:flex; align-items:center;">
-              <span class="step-badge">2</span> Payment Method
+              <span class="step-badge">2</span> Select Payment Gateway
             </h3>
 
-            <label class="payment-method-card active">
+            <!-- Method 1: UPI / QR Code -->
+            <label class="payment-method-card active" onclick="switchPaymentMethod('upi')">
               <div style="display:flex; align-items:center; gap:0.8rem;">
-                <input type="radio" name="paymentMethod" value="UPI / Instant QR" checked>
+                <input type="radio" name="paymentMethodRadio" id="radioUpi" value="UPI / Instant QR" checked onchange="switchPaymentMethod('upi')">
                 <div>
-                  <strong>UPI / QR Code &bull; GooglePay, PhonePe, Paytm</strong>
+                  <strong>UPI / QR Code &bull; Google Pay, PhonePe, Paytm</strong>
                   <div style="font-size:0.8rem; color:var(--text-muted);">Instant zero-fee payment with buyer insurance</div>
                 </div>
               </div>
-              <span style="color:var(--gold-dark); font-weight:700;">⚡ Instant</span>
+              <span style="color:var(--gold-dark); font-weight:700;">⚡ Instant QR</span>
             </label>
 
-            <label class="payment-method-card">
+            <!-- UPI Dynamic QR Sub-Panel -->
+            <div id="panelUpiQr" class="upi-qr-panel">
+              <div class="upi-timer-badge" id="upiCountdownBadge">
+                ⏱️ QR Active &bull; <span id="upiTimerText">09:59</span>
+              </div>
+              <div class="qr-canvas-frame">
+                <div class="qr-laser-scanner"></div>
+                <canvas id="upiQrCanvas" width="200" height="200"></canvas>
+              </div>
+              <div style="font-size:1.1rem; font-weight:700; color:var(--text-charcoal); margin-bottom:0.3rem;">
+                Scan with any UPI App to Pay <span id="upiPayableAmount" style="color:var(--gold-dark);">₹0</span>
+              </div>
+              <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.8rem;">
+                UPI ID: <strong style="color:var(--text-charcoal);">aurora.atelier@icici</strong> &bull; Insured Merchant
+              </div>
+
+              <!-- UPI App Quick-Launch Pills -->
+              <div class="upi-apps-pills">
+                <span class="upi-app-pill active" onclick="simulateUpiAppSelection('Google Pay')">📱 Google Pay</span>
+                <span class="upi-app-pill" onclick="simulateUpiAppSelection('PhonePe')">💜 PhonePe</span>
+                <span class="upi-app-pill" onclick="simulateUpiAppSelection('Paytm')">💙 Paytm</span>
+                <span class="upi-app-pill" onclick="simulateUpiAppSelection('BHIM UPI')">🇮🇳 BHIM</span>
+              </div>
+
+              <div id="upiPaymentStatusBadge" style="background:#FAF3DF; border:1px solid var(--gold-primary); color:var(--gold-dark); padding:0.6rem 1rem; border-radius:var(--radius-pill); font-size:0.85rem; font-weight:600; margin:1rem auto; max-width:320px; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+                <span class="status-pulse-dot"></span> Waiting for scan & authentication...
+              </div>
+
+              <button type="button" class="btn btn-gold btn-lg" onclick="verifyAndTriggerUpiPayment()" style="width:100%; margin-top:0.5rem;">
+                Verify & Complete UPI Payment ⚡
+              </button>
+            </div>
+
+            <!-- Method 2: Credit / Debit Card -->
+            <label class="payment-method-card" onclick="switchPaymentMethod('card')">
               <div style="display:flex; align-items:center; gap:0.8rem;">
-                <input type="radio" name="paymentMethod" value="Credit / Debit Card (Visa/Mastercard)">
+                <input type="radio" name="paymentMethodRadio" id="radioCard" value="Credit / Debit Card" onchange="switchPaymentMethod('card')">
                 <div>
-                  <strong>Credit / Debit Card</strong>
-                  <div style="font-size:0.8rem; color:var(--text-muted);">Encrypted 256-bit SSL transaction</div>
+                  <strong>Credit / Debit Card (Visa, Mastercard, RuPay, Amex)</strong>
+                  <div style="font-size:0.8rem; color:var(--text-muted);">Encrypted 3D secure payment with 2FA OTP verification</div>
                 </div>
               </div>
-              <span>💳 Card</span>
+              <span>💳 3D Card</span>
             </label>
 
-            <label class="payment-method-card">
+            <!-- 3D Interactive Card Simulator Panel -->
+            <div id="panelCard3D" style="display:none; margin-top:1.2rem; padding:1.5rem; background:var(--bg-card-subtle); border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+              
+              <!-- 3D Flipping Card Simulator -->
+              <div class="card-3d-wrap" id="card3dContainer">
+                <div class="card-3d-inner" id="card3dInner">
+                  <!-- Front Face -->
+                  <div class="card-face card-front card-theme-default" id="cardFrontFace">
+                    <div class="card-top-row">
+                      <div class="card-chip-svg"></div>
+                      <div class="card-network-logo" id="cardNetworkLogoDisplay">AURORA</div>
+                    </div>
+                    <div class="card-number-display" id="cardNumberDisplay">•••• •••• •••• ••••</div>
+                    <div class="card-bottom-row">
+                      <div class="card-holder-group">
+                        <span class="card-sub-label">CARD PATRON</span>
+                        <span class="card-holder-val" id="cardHolderDisplay">ARIA VANCE</span>
+                      </div>
+                      <div class="card-expiry-group">
+                        <span class="card-sub-label">EXPIRES</span>
+                        <span class="card-expiry-val" id="cardExpiryDisplay">MM/YY</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Back Face -->
+                  <div class="card-face card-back card-theme-default" id="cardBackFace">
+                    <div class="card-black-stripe"></div>
+                    <div class="card-cvv-box-wrap">
+                      <span class="card-sub-label" style="margin-bottom:3px;">SECURITY CVV</span>
+                      <div class="card-cvv-white-strip" id="cardCvvDisplay">•••</div>
+                    </div>
+                    <div class="card-security-text">
+                      PCI-DSS Compliant &bull; 256-Bit SSL Tokenization &bull; Authorized by Reserve Bank
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Inputs Form -->
+              <div class="form-group">
+                <label class="form-label">Card Number (16 Digits)</label>
+                <input type="text" id="cardInputNumber" class="form-input" placeholder="4532 •••• •••• ••••" maxlength="19" oninput="handleCardNumberInput(this)">
+              </div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">Expiry Date (MM/YY)</label>
+                  <input type="text" id="cardInputExpiry" class="form-input" placeholder="12/28" maxlength="5" oninput="handleCardExpiryInput(this)">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">CVV / Security Code</label>
+                  <input type="password" id="cardInputCvv" class="form-input" placeholder="•••" maxlength="4" onfocus="flipCard3D(true)" onblur="flipCard3D(false)" oninput="handleCardCvvInput(this)">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Cardholder Full Name</label>
+                <input type="text" id="cardInputName" class="form-input" placeholder="Aria Vance" oninput="handleCardNameInput(this)">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mobile Number (for Bank 2FA OTP)</label>
+                <input type="tel" id="cardInputPhone" class="form-input" placeholder="+91 98765 43210">
+              </div>
+
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:1rem; display:flex; align-items:center; gap:0.4rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Zero sensitive credentials stored. Raw CVVs and bank PINs are tokenized directly via PCI gateway.
+              </div>
+
+              <button type="button" class="btn btn-gold btn-lg" onclick="triggerCardOtpModal()" style="width:100%;">
+                Proceed to 2FA Bank Authentication 💳
+              </button>
+            </div>
+
+            <!-- Method 3: Net Banking -->
+            <label class="payment-method-card" onclick="switchPaymentMethod('netbanking')">
               <div style="display:flex; align-items:center; gap:0.8rem;">
-                <input type="radio" name="paymentMethod" value="Net Banking / Atelier Wire">
+                <input type="radio" name="paymentMethodRadio" id="radioNetbanking" value="Net Banking / Atelier Wire" onchange="switchPaymentMethod('netbanking')">
                 <div>
                   <strong>Net Banking / Direct Bank Wire</strong>
-                  <div style="font-size:0.8rem; color:var(--text-muted);">All major Indian & International banks</div>
+                  <div style="font-size:0.8rem; color:var(--text-muted);">All major banks &bull; Instant tokenized transfer</div>
                 </div>
               </div>
-              <span>🏦 Wire</span>
+              <span>🏦 Net Banking</span>
             </label>
 
-            <label class="payment-method-card">
+            <div id="panelNetBanking" style="display:none; margin-top:1rem; padding:1.2rem; background:var(--bg-card-subtle); border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+              <div class="form-group">
+                <label class="form-label">Select Your Banking Institution</label>
+                <select id="netBankingSelect" class="form-input">
+                  <option value="HDFC Bank">HDFC Bank Limited</option>
+                  <option value="ICICI Bank">ICICI Bank Limited</option>
+                  <option value="State Bank of India">State Bank of India (SBI)</option>
+                  <option value="Axis Bank">Axis Bank</option>
+                  <option value="Kotak Mahindra">Kotak Mahindra Bank</option>
+                </select>
+              </div>
+              <button type="button" class="btn btn-gold btn-lg" onclick="triggerNetBankingCheckout()" style="width:100%; margin-top:0.5rem;">
+                Proceed to Secure Bank Gateway 🏦
+              </button>
+            </div>
+
+            <!-- Method 4: Cash on Delivery -->
+            <label class="payment-method-card" onclick="switchPaymentMethod('cod')">
               <div style="display:flex; align-items:center; gap:0.8rem;">
-                <input type="radio" name="paymentMethod" value="Cash on Delivery (Verified)">
+                <input type="radio" name="paymentMethodRadio" id="radioCod" value="Cash on Delivery" onchange="switchPaymentMethod('cod')">
                 <div>
                   <strong>Cash on Delivery (COD)</strong>
-                  <div style="font-size:0.8rem; color:var(--text-muted);">Pay upon insured delivery at your doorstep</div>
+                  <div style="font-size:0.8rem; color:var(--text-muted);">Pay cash/UPI upon white-glove doorstep delivery</div>
                 </div>
               </div>
               <span>📦 COD</span>
             </label>
+
+            <div id="panelCod" style="display:none; margin-top:1rem; padding:1.5rem; background:var(--bg-card-subtle); border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+              <div style="display:flex; gap:1rem; align-items:flex-start; margin-bottom:1rem;">
+                <div style="font-size:1.8rem;">🛡️</div>
+                <div style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+                  <strong>Doorstep Verification Policy:</strong> Our courier concierge will present your tamper-evident presentation box. Payment will be collected via Cash or QR upon delivery.
+                </div>
+              </div>
+              <button type="button" class="btn btn-gold btn-lg" onclick="triggerCodCheckout()" style="width:100%;">
+                Confirm Cash on Delivery Order 📦
+              </button>
+            </div>
           </div>
         </div>
 
@@ -583,11 +942,18 @@
           <h3 style="font-size:1.3rem; margin-bottom:1.2rem;">Order Summary</h3>
           <div id="checkoutItemsSummary"></div>
           
-          <button type="submit" class="btn btn-gold btn-lg" style="width:100%; margin-top:1.5rem;">
-            Confirm Purchase ✨
-          </button>
+          <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border-subtle);">
+            <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:0.4rem;">
+              <span style="color:var(--text-muted);">Selected Gateway:</span>
+              <strong id="summarySelectedMethod" style="color:var(--text-charcoal);">UPI Instant QR</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:0.4rem;">
+              <span style="color:var(--text-muted);">Delivery Pincode:</span>
+              <strong id="summaryDeliveryPincode" style="color:var(--text-charcoal);">400020 (Insured)</strong>
+            </div>
+          </div>
           
-          <div style="text-align:center; font-size:0.78rem; color:var(--text-subtle); margin-top:1rem;">
+          <div style="text-align:center; font-size:0.78rem; color:var(--text-subtle); margin-top:1.2rem; line-height:1.4;">
             🔒 256-Bit SSL Insured Atelier Checkout &bull; 100% Genuine Certified
           </div>
         </div>
@@ -596,9 +962,50 @@
   </section>
 
   <!-- ==========================================================================
+       BANK OTP 2-FACTOR AUTHENTICATION MODAL (#bankOtpModal)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="bankOtpModal" style="display:none;">
+    <div class="otp-dialog">
+      <div style="display:flex; justify-content:center; margin-bottom:1rem;">
+        <div style="width:54px; height:54px; border-radius:50%; background:var(--gold-pale); border:1.5px solid var(--gold-primary); display:flex; align-items:center; justify-content:center; font-size:1.6rem;">
+          🛡️
+        </div>
+      </div>
+      <h3 style="font-size:1.4rem; margin-bottom:0.4rem; color:var(--text-charcoal);">Bank 2FA Authentication</h3>
+      <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+        A 6-digit One-Time Password (OTP) has been sent to your registered mobile ending in <strong id="otpMaskedPhone">•••• ••4210</strong>.
+      </p>
+
+      <div class="otp-digit-group">
+        <input type="text" class="otp-input-box" maxlength="1" oninput="handleOtpBoxInput(this, 0)" autofocus>
+        <input type="text" class="otp-input-box" maxlength="1" oninput="handleOtpBoxInput(this, 1)">
+        <input type="text" class="otp-input-box" maxlength="1" oninput="handleOtpBoxInput(this, 2)">
+        <input type="text" class="otp-input-box" maxlength="1" oninput="handleOtpBoxInput(this, 3)">
+        <input type="text" class="otp-input-box" maxlength="1" oninput="handleOtpBoxInput(this, 4)">
+        <input type="text" class="otp-input-box" maxlength="1" oninput="handleOtpBoxInput(this, 5)">
+      </div>
+
+      <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.5rem;">
+        Resend OTP in <span id="otpCountdownTimer" style="font-weight:700; color:var(--gold-dark);">00:45</span>
+      </div>
+
+      <div style="display:flex; gap:0.8rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeOtpModal()" style="flex:1;">Cancel</button>
+        <button type="button" class="btn btn-gold" onclick="verifyCardOtpAndSubmit()" style="flex:2;">Verify & Authorize Payment ✨</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
        VIEW 7: ORDER CONFIRMATION SUCCESS VIEW (#orderConfirmationView)
        ========================================================================== -->
-  <section id="orderConfirmationView" class="section-padding" style="display:none;"></section>
+  <section id="orderConfirmationView" class="section-padding" style="display:none;">
+    <div class="container">
+      <div class="confirmation-container" id="confirmationContainerContent">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </div>
+  </section>
 
   <!-- ==========================================================================
        VIEW 8: MY ORDERS & LIVE TRACKING (#orders)
@@ -706,8 +1113,32 @@
       <div class="auth-container">
         <div style="text-align:center; margin-bottom:1.5rem;">
           <div class="eyebrow">MAISON DE HAUTE JOAILLERIE</div>
-          <h2 style="font-size:2rem; margin-bottom:0.4rem;">Welcome to Aurora</h2>
-          <p style="color:var(--text-muted); font-size:0.88rem;">Sign in to access your curated jewelry wishlist and orders.</p>
+          <h2 style="font-size:2rem; margin-bottom:0.4rem;">Welcome to Aurora Atelier</h2>
+          <p style="color:var(--text-muted); font-size:0.88rem;">Sign in to access your curated luxury wishlist, orders, and bespoke CAD studio.</p>
+        </div>
+
+        <!-- Dynamic Auth Error Alert Box -->
+        <div id="authErrorMessage" style="display:none; background:#FEE2E2; border:1px solid #FCA5A5; color:#B91C1C; padding:0.9rem 1.1rem; border-radius:var(--radius-sm); font-size:0.85rem; line-height:1.5; margin-bottom:1.2rem; text-align:center;">
+        </div>
+
+        <!-- Official Google OAuth Button -->
+        <button type="button" class="btn btn-secondary btn-lg" onclick="triggerGoogleSignIn()" style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.75rem; border-color:#D6D3D1; margin-bottom:1rem; box-shadow:var(--shadow-sm);">
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <div id="googleSignInButtonWrapper" style="display:none; justify-content:center; margin-bottom:1rem;"></div>
+
+        <!-- Divider -->
+        <div style="display:flex; align-items:center; gap:1rem; margin:1.5rem 0; color:var(--text-subtle); font-size:0.75rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;">
+          <div style="flex:1; height:1px; background:var(--border-subtle);"></div>
+          <span>Or with Email Credentials</span>
+          <div style="flex:1; height:1px; background:var(--border-subtle);"></div>
         </div>
 
         <div class="auth-tabs">
@@ -718,17 +1149,17 @@
         <!-- Sign In Form -->
         <form id="formSignIn" onsubmit="handleSignInSubmit(event)">
           <div class="form-group">
-            <label class="form-label">Email or Username</label>
-            <input type="email" id="authEmail" class="form-input" placeholder="you@luxury.com" value="buyer@aurora.luxury" required>
+            <label class="form-label">Email Address</label>
+            <input type="email" id="authEmail" class="form-input" placeholder="you@luxury.com" required>
           </div>
           <div class="form-group">
             <div style="display:flex; justify-content:space-between;">
               <label class="form-label">Password</label>
-              <a href="javascript:void(0)" onclick="showToast('Password reset link sent to your email ✨')" style="font-size:0.75rem; color:var(--gold-dark);">Forgot Password?</a>
+              <a href="javascript:void(0)" onclick="showToast('Password reset link sent to your registered email ✨')" style="font-size:0.75rem; color:var(--gold-dark); font-weight:600;">Forgot Password?</a>
             </div>
-            <input type="password" id="authPassword" class="form-input" value="password123" required>
+            <input type="password" id="authPassword" class="form-input" placeholder="Enter your password" required>
           </div>
-          <button type="submit" class="btn btn-gold btn-lg" style="width:100%; margin-top:1rem;">
+          <button type="submit" id="btnSignInSubmit" class="btn btn-gold btn-lg" style="width:100%; margin-top:1rem;">
             Sign In to Atelier ✨
           </button>
         </form>
@@ -744,29 +1175,22 @@
             <input type="email" id="signupEmail" class="form-input" placeholder="e.g. aria@luxury.com" required>
           </div>
           <div class="form-group">
-            <label class="form-label">Phone</label>
+            <label class="form-label">Phone Number (Optional)</label>
             <input type="tel" id="signupPhone" class="form-input" placeholder="+91 98765 43210">
           </div>
           <div class="form-group">
-            <label class="form-label">Create Password</label>
-            <input type="password" id="signupPassword" class="form-input" placeholder="••••••••" required>
+            <label class="form-label">Create Password (Min. 6 characters)</label>
+            <input type="password" id="signupPassword" class="form-input" placeholder="••••••••" minlength="6" required>
           </div>
-          <button type="submit" class="btn btn-gold btn-lg" style="width:100%; margin-top:1rem;">
+          <button type="submit" id="btnSignUpSubmit" class="btn btn-gold btn-lg" style="width:100%; margin-top:1rem;">
             Create Atelier Account ✨
           </button>
         </form>
 
-        <!-- Quick 1-Click Demo Logins -->
-        <div class="demo-account-box">
-          <div style="font-weight:700; color:var(--text-charcoal); margin-bottom:0.5rem;">⚡ 1-Click Quick Demo Sign-Ins:</div>
-          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="loginUser('buyer@aurora.luxury', 'password123')">
-              👤 Luxury Buyer (Aria)
-            </button>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="loginUser('admin@aurora.luxury', 'admin123')">
-              👑 Atelier Admin (Maison)
-            </button>
-          </div>
+        <!-- Security Guarantee Footer -->
+        <div style="text-align:center; margin-top:1.8rem; font-size:0.75rem; color:var(--text-muted); display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          256-Bit SSL Encrypted &bull; Authentic OAuth Verification
         </div>
       </div>
     </div>
