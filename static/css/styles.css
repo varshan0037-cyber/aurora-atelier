@@ -79,11 +79,249 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-main);
+  background-color: transparent;
   color: var(--text-dark);
   line-height: 1.6;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ==========================================================================
+   ANIMATED LUXURY GEOMETRIC BACKGROUND WITH GOLD ACCENTS & GLOW
+   ========================================================================== */
+.luxury-ambient-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 30%, #FFFFFF 0%, #FAF8F5 45%, #F4ECE1 100%);
+}
+
+/* Diagonal Geometric Panels */
+.bg-geom-panel {
+  position: absolute;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+/* Top-Left Diagonal Architecture */
+.bg-panel-tl-outer {
+  top: -20vh;
+  left: -20vw;
+  width: 75vw;
+  height: 60vh;
+  background: linear-gradient(135deg, #F8F5EE 0%, #FFFFFF 60%, #FAF7F0 100%);
+  transform: rotate(-35deg);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.04);
+  animation: floatTopLeft 18s ease-in-out infinite alternate;
+}
+
+.bg-panel-tl-main {
+  top: -30vh;
+  left: -15vw;
+  width: 68vw;
+  height: 70vh;
+  background: linear-gradient(135deg, #FAF8F4 0%, #FFFFFF 70%, #F5EFE6 100%);
+  transform: rotate(-35deg);
+  box-shadow: 0 30px 60px rgba(24, 23, 22, 0.06), 0 4px 20px rgba(201, 162, 39, 0.08);
+  animation: floatTopLeftMain 15s ease-in-out infinite alternate;
+  overflow: hidden;
+}
+
+.bg-panel-tl-inner {
+  top: -15vh;
+  left: -10vw;
+  width: 48vw;
+  height: 50vh;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(247, 243, 236, 0.8) 100%);
+  transform: rotate(-35deg);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.05);
+  animation: floatTopLeft 22s ease-in-out infinite alternate-reverse;
+}
+
+/* Bottom-Right Diagonal Architecture */
+.bg-panel-br-outer {
+  bottom: -25vh;
+  right: -20vw;
+  width: 80vw;
+  height: 65vh;
+  background: linear-gradient(135deg, #FAF8F5 0%, #FFFFFF 50%, #F3EDE3 100%);
+  transform: rotate(-35deg);
+  box-shadow: 0 -25px 50px rgba(0, 0, 0, 0.04);
+  animation: floatBottomRight 20s ease-in-out infinite alternate;
+}
+
+.bg-panel-br-main {
+  bottom: -32vh;
+  right: -15vw;
+  width: 72vw;
+  height: 72vh;
+  background: linear-gradient(135deg, #F8F5EE 0%, #FFFFFF 65%, #F4EFE6 100%);
+  transform: rotate(-35deg);
+  box-shadow: 0 -30px 60px rgba(24, 23, 22, 0.06), 0 -4px 20px rgba(201, 162, 39, 0.08);
+  animation: floatBottomRightMain 16s ease-in-out infinite alternate;
+  overflow: hidden;
+}
+
+.bg-panel-br-inner {
+  bottom: -15vh;
+  right: -10vw;
+  width: 50vw;
+  height: 50vh;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 247, 240, 0.8) 100%);
+  transform: rotate(-35deg);
+  box-shadow: 0 -20px 45px rgba(0, 0, 0, 0.05);
+  animation: floatBottomRight 24s ease-in-out infinite alternate-reverse;
+}
+
+/* Radiant Gold Border Accent Line */
+.bg-gold-line-main {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #D4AF37 0%, #FDF0A6 25%, #C9A227 50%, #FFF5BD 75%, #B8860B 100%);
+  background-size: 200% 100%;
+  animation: goldShimmerFlow 6s linear infinite;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.5), 0 0 24px rgba(253, 240, 166, 0.3);
+}
+
+.bg-panel-br-main .bg-gold-line-main {
+  top: 0;
+  bottom: auto;
+}
+
+.bg-gold-line-accent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, #C9A227 0%, #F5E298 50%, #9E7D17 100%);
+  background-size: 200% 100%;
+  animation: goldShimmerFlow 8s linear infinite reverse;
+}
+
+.bg-panel-br-inner .bg-gold-line-accent {
+  top: 0;
+  bottom: auto;
+}
+
+/* Parallel Gold Pinstripes matching reference */
+.bg-gold-pinstripes {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  opacity: 0.85;
+}
+
+.bg-panel-tl-main .bg-gold-pinstripes {
+  bottom: 12px;
+  left: 0;
+}
+
+.bg-panel-br-main .bg-gold-pinstripes {
+  top: 12px;
+  left: 0;
+}
+
+.bg-gold-pinstripes span {
+  display: block;
+  width: 100%;
+  height: 1.2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(201, 162, 39, 0.3) 15%, rgba(212, 175, 55, 0.75) 50%, rgba(245, 226, 152, 0.9) 75%, transparent 100%);
+  background-size: 200% 100%;
+  animation: goldShimmerFlow 7s ease-in-out infinite;
+}
+
+.bg-gold-pinstripes span:nth-child(2) { animation-delay: 1s; opacity: 0.75; }
+.bg-gold-pinstripes span:nth-child(3) { animation-delay: 2s; opacity: 0.55; }
+.bg-gold-pinstripes span:nth-child(4) { animation-delay: 3s; opacity: 0.35; }
+
+/* Pulsing Glowing Ambient Orbs */
+.bg-glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+.bg-glow-orb-1 {
+  top: 15%;
+  left: 10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(223, 190, 88, 0.25) 0%, rgba(201, 162, 39, 0.05) 60%, transparent 70%);
+  animation: orbPulse 12s ease-in-out infinite alternate;
+}
+
+.bg-glow-orb-2 {
+  bottom: 20%;
+  right: 15%;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(245, 226, 152, 0.22) 0%, rgba(201, 162, 39, 0.04) 60%, transparent 70%);
+  animation: orbPulse 15s ease-in-out infinite alternate-reverse;
+}
+
+/* Subtle Floating Shimmer Sparkles */
+.bg-sparkle {
+  position: absolute;
+  color: #C9A227;
+  font-size: 1rem;
+  opacity: 0;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.8);
+  animation: sparkleTwinkle 6s ease-in-out infinite;
+}
+
+.bg-sparkle-1 { top: 25%; left: 30%; font-size: 0.9rem; animation-delay: 0s; }
+.bg-sparkle-2 { top: 60%; left: 20%; font-size: 1.2rem; animation-delay: 2.5s; }
+.bg-sparkle-3 { top: 35%; right: 28%; font-size: 1.1rem; animation-delay: 1.2s; }
+.bg-sparkle-4 { top: 75%; right: 35%; font-size: 0.8rem; animation-delay: 4s; }
+
+/* Keyframe Animations */
+@keyframes goldShimmerFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes floatTopLeft {
+  0% { transform: rotate(-35deg) translate(0, 0); }
+  100% { transform: rotate(-35.5deg) translate(-10px, -12px); }
+}
+
+@keyframes floatTopLeftMain {
+  0% { transform: rotate(-35deg) translate(0, 0) scale(1); }
+  100% { transform: rotate(-34.5deg) translate(12px, 8px) scale(1.015); }
+}
+
+@keyframes floatBottomRight {
+  0% { transform: rotate(-35deg) translate(0, 0); }
+  100% { transform: rotate(-34.8deg) translate(10px, 12px); }
+}
+
+@keyframes floatBottomRightMain {
+  0% { transform: rotate(-35deg) translate(0, 0) scale(1); }
+  100% { transform: rotate(-35.2deg) translate(-12px, -8px) scale(1.015); }
+}
+
+@keyframes orbPulse {
+  0% { transform: scale(1) translate(0, 0); opacity: 0.35; }
+  50% { transform: scale(1.18) translate(20px, -15px); opacity: 0.55; }
+  100% { transform: scale(0.95) translate(-15px, 20px); opacity: 0.35; }
+}
+
+@keyframes sparkleTwinkle {
+  0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+  50% { opacity: 0.75; transform: scale(1.2) rotate(45deg); }
 }
 
 img {
