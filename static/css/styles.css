@@ -277,6 +277,8 @@ body {
   color: #C9A227;
   font-size: 1rem;
   opacity: 0;
+  pointer-events: none !important;
+  user-select: none;
   text-shadow: 0 0 8px rgba(212, 175, 55, 0.8);
   animation: sparkleTwinkle 6s ease-in-out infinite;
 }
