@@ -1465,44 +1465,47 @@ async function submitBespokeRequest() {
   };
 
   try {
+    if (window.AuroraDB) {
+      await window.AuroraDB.saveCustomRequest(payload);
+    }
     const res = await fetch(`${API_BASE}/custom-requests`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    const data = await res.json();
-    if (data.success) {
-      showToast('✨ Bespoke request submitted! Our artisans will review within 24h.');
-      document.querySelector('#bespokePromptInput').value = '';
-      Aurora.inspirationImageBase64 = null;
-      resetInspirationPreview();
-      await loadCustomRequests();
-      openCustomModal('Bespoke Commission Received ✨', `
-        <div style="text-align:center; padding:1.5rem;">
-          <div style="font-size:3rem; margin-bottom:1rem;">💍</div>
-          <h3 style="font-size:1.4rem; margin-bottom:0.6rem;">Your Request has Reached Our Atelier</h3>
-          <p style="color:var(--text-muted); font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
-            Our head artisan is reviewing your specifications for <strong>${metal_type} ${accessory_type}</strong>. You will receive a quotation and digital 3D rendering in your registered inbox.
-          </p>
-          <button class="btn btn-gold" onclick="closeModal(); navigateTo('#explore');">Continue Exploring</button>
-        </div>
-      `);
-    }
-  } catch (err) {
-    showToast('✨ Bespoke request saved to your atelier account!');
-    closeModal();
-  }
+  } catch (err) {}
+
+  showToast('✨ Bespoke request submitted! Our artisans will review within 24h.');
+  const promptEl = document.querySelector('#bespokePromptInput');
+  if (promptEl) promptEl.value = '';
+  Aurora.inspirationImageBase64 = null;
+  resetInspirationPreview();
+  await loadCustomRequests();
+  openCustomModal('Bespoke Commission Received ✨', `
+    <div style="text-align:center; padding:1.5rem;">
+      <div style="font-size:3rem; margin-bottom:1rem;">💍</div>
+      <h3 style="font-size:1.4rem; margin-bottom:0.6rem;">Your Request has Reached Our Atelier</h3>
+      <p style="color:var(--text-muted); font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
+        Our head artisan is reviewing your specifications for <strong>${metal_type} ${accessory_type}</strong>. You will receive a quotation and digital 3D rendering in your registered inbox.
+      </p>
+      <button class="btn btn-gold" onclick="closeModal(); navigateTo('#explore');">Continue Exploring</button>
+    </div>
+  `);
 }
 
 async function loadCustomRequests() {
-  try {
-    const email = Aurora.user ? Aurora.user.email : '';
-    const res = await fetch(`${API_BASE}/custom-requests?email=${encodeURIComponent(email)}`);
-    const data = await res.json();
-    if (data.success) {
-      Aurora.customRequests = data.requests;
-    }
-  } catch(e) {}
+  if (window.AuroraDB) {
+    Aurora.customRequests = await window.AuroraDB.getCustomRequests();
+  } else {
+    try {
+      const email = Aurora.user ? Aurora.user.email : '';
+      const res = await fetch(`${API_BASE}/custom-requests?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      if (data.success) {
+        Aurora.customRequests = data.requests;
+      }
+    } catch(e) {}
+  }
 }
 
 async function submitInspirationCommission() {
@@ -1523,6 +1526,9 @@ async function submitInspirationCommission() {
   };
 
   try {
+    if (window.AuroraDB) {
+      await window.AuroraDB.saveCustomRequest(payload);
+    }
     await fetch(`${API_BASE}/custom-requests`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2117,69 +2123,58 @@ async function executeOrderSubmission(paymentMethodName, paymentStatus = 'Comple
     payment_method: paymentMethodName
   };
 
+  const randNum = `AUR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+  const isCod = (paymentStatus.includes('Cash on Delivery') || paymentMethodName.includes('Cash on Delivery'));
+  const newOrder = {
+    id: Date.now(),
+    order_number: randNum,
+    user_name: fullName,
+    user_email: email,
+    user_phone: phone,
+    shipping_address: `${street}, ${city}, ${state} - ${postalCode}`,
+    items: Aurora.cart.map(c => ({
+      name: c.product.name,
+      metal: c.product.metal_type,
+      price: c.product.price,
+      quantity: c.quantity,
+      image: c.product.image_url,
+      size: c.size || 'Standard'
+    })),
+    subtotal: subtotal,
+    discount: discount,
+    shipping: shipping,
+    total: total,
+    payment_method: paymentMethodName,
+    payment_status: isCod ? 'Payment Pending (COD Collection)' : 'Payment Verified (Online)',
+    order_status: 'Order Placed',
+    created_at: new Date().toISOString(),
+    placed_time_formatted: new Date().toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) + ' at ' + new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }),
+    estimated_delivery_date: new Date(Date.now() + 3 * 24 * 3600 * 1000).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }),
+    delivery_time_slot: 'Morning Slot (09:00 AM - 12:00 PM)',
+    delivery_notes: 'Insured White-Glove Atelier Courier'
+  };
+
   try {
-    const res = await fetch(`${API_BASE}/orders`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      const orderNumber = data.order_number;
-      const orderTotal = data.total;
-      const eta = data.estimated_delivery;
-      const isCod = (paymentStatus.includes('Cash on Delivery') || paymentMethodName.includes('Cash on Delivery'));
-
-      Aurora.cart = [];
-      saveCart();
-
-      displayOrderSuccessScreen(orderNumber, orderTotal, eta, address, paymentMethodName, isCod);
-      await loadOrders();
+    if (window.AuroraDB) {
+      await window.AuroraDB.saveOrder(newOrder);
     } else {
-      showToast(data.error || 'Failed to place order');
+      let existingOrders = [];
+      try {
+        const saved = localStorage.getItem('aurora_orders');
+        if (saved) existingOrders = JSON.parse(saved);
+      } catch(e) {}
+      existingOrders.unshift(newOrder);
+      localStorage.setItem('aurora_orders', JSON.stringify(existingOrders));
     }
-  } catch (err) {
-    // Client fallback for static hosting
-    const randNum = `AUR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    const isCod = (paymentStatus.includes('Cash on Delivery') || paymentMethodName.includes('Cash on Delivery'));
-    const newOrder = {
-      id: Date.now(),
-      order_number: randNum,
-      user_name: fullName,
-      user_email: email,
-      user_phone: phone,
-      shipping_address: `${street}, ${city}, ${state} - ${postalCode}`,
-      items: Aurora.cart.map(c => ({
-        name: c.product.name,
-        metal: c.product.metal_type,
-        price: c.product.price,
-        quantity: c.quantity,
-        image: c.product.image_url
-      })),
-      total: total,
-      payment_method: paymentMethodName,
-      payment_status: isCod ? 'Payment Pending (COD Collection)' : 'Payment Verified (Online)',
-      order_status: 'Order Placed',
-      created_at: new Date().toISOString(),
-      placed_time_formatted: new Date().toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) + ' at ' + new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }),
-      estimated_delivery_date: new Date(Date.now() + 3 * 24 * 3600 * 1000).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }),
-      delivery_time_slot: 'Morning Slot (09:00 AM - 12:00 PM)',
-      delivery_notes: 'Insured White-Glove Atelier Courier'
-    };
-
-    let existingOrders = [];
-    try {
-      const saved = localStorage.getItem('aurora_orders');
-      if (saved) existingOrders = JSON.parse(saved);
-    } catch(e) {}
-    existingOrders.unshift(newOrder);
-    localStorage.setItem('aurora_orders', JSON.stringify(existingOrders));
-
-    Aurora.cart = [];
-    saveCart();
-    displayOrderSuccessScreen(randNum, total, '3-4 business days', address, paymentMethodName, isCod);
+  } catch(e) {
+    console.error('Error saving order:', e);
   }
+
+  // Clear cart and show confirmation screen
+  Aurora.cart = [];
+  saveCart();
+  displayOrderSuccessScreen(randNum, total, '3-4 business days', address, paymentMethodName, isCod);
+  await loadOrders();
 }
 
 // --------------------------------------------------------------------------
@@ -2293,14 +2288,16 @@ async function openConfirmationEmailModal(orderNumber) {
 // MY ORDERS & LIVE TRACKER
 // ==========================================================================
 async function loadOrders() {
-  try {
-    const email = Aurora.user ? Aurora.user.email : '';
-    const res = await fetch(`${API_BASE}/orders?email=${encodeURIComponent(email)}`);
-    const data = await res.json();
-    if (data.success) {
-      Aurora.orders = data.orders;
+  if (window.AuroraDB) {
+    Aurora.orders = await window.AuroraDB.getOrders();
+  } else {
+    try {
+      const saved = localStorage.getItem('aurora_orders');
+      Aurora.orders = saved ? JSON.parse(saved) : [];
+    } catch(e) {
+      Aurora.orders = [];
     }
-  } catch(e) {}
+  }
 }
 
 function renderOrders() {
