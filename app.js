@@ -2143,9 +2143,42 @@ async function executeOrderSubmission(paymentMethodName, paymentStatus = 'Comple
     // Client fallback for static hosting
     const randNum = `AUR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
     const isCod = (paymentStatus.includes('Cash on Delivery') || paymentMethodName.includes('Cash on Delivery'));
+    const newOrder = {
+      id: Date.now(),
+      order_number: randNum,
+      user_name: fullName,
+      user_email: email,
+      user_phone: phone,
+      shipping_address: `${street}, ${city}, ${state} - ${postalCode}`,
+      items: Aurora.cart.map(c => ({
+        name: c.product.name,
+        metal: c.product.metal_type,
+        price: c.product.price,
+        quantity: c.quantity,
+        image: c.product.image_url
+      })),
+      total: total,
+      payment_method: paymentMethodName,
+      payment_status: isCod ? 'Payment Pending (COD Collection)' : 'Payment Verified (Online)',
+      order_status: 'Order Placed',
+      created_at: new Date().toISOString(),
+      placed_time_formatted: new Date().toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) + ' at ' + new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }),
+      estimated_delivery_date: new Date(Date.now() + 3 * 24 * 3600 * 1000).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }),
+      delivery_time_slot: 'Morning Slot (09:00 AM - 12:00 PM)',
+      delivery_notes: 'Insured White-Glove Atelier Courier'
+    };
+
+    let existingOrders = [];
+    try {
+      const saved = localStorage.getItem('aurora_orders');
+      if (saved) existingOrders = JSON.parse(saved);
+    } catch(e) {}
+    existingOrders.unshift(newOrder);
+    localStorage.setItem('aurora_orders', JSON.stringify(existingOrders));
+
     Aurora.cart = [];
     saveCart();
-    displayOrderSuccessScreen(randNum, total, '4 business days', address, paymentMethodName, isCod);
+    displayOrderSuccessScreen(randNum, total, '3-4 business days', address, paymentMethodName, isCod);
   }
 }
 

@@ -1,0 +1,594 @@
+/**
+ * AURORA ATELIER — Master Admin & Operations Portal
+ * Dedicated, Secure, and Mobile-Optimized Management Engine
+ */
+
+const DEFAULT_ADMIN_ORDERS = [
+  {
+    id: 101,
+    order_number: 'AUR-2026-8942',
+    user_name: 'Mira Kapoor',
+    user_email: 'mira.kapoor@luxury.com',
+    user_phone: '+91 98201 45890',
+    shipping_address: 'Flat 14B, Sea Face Towers, Worli, Mumbai, Maharashtra - 400018',
+    items: [
+      {
+        name: 'Celestial Diamond Tennis Bracelet',
+        metal: '18K White Gold',
+        price: 18500,
+        quantity: 1,
+        image: 'https://images.unsplash.com/photo-1611591475819-2098d5f3089d?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        name: 'Elysian Solitaire Pendant Necklace',
+        metal: '18K Yellow Gold',
+        price: 14200,
+        quantity: 1,
+        image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80'
+      }
+    ],
+    total: 32700,
+    payment_method: 'UPI Instant QR (Scan & Pay)',
+    payment_status: 'Payment Verified (Online)',
+    order_status: 'Artisan Handcrafting',
+    created_at: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+    placed_time_formatted: '18 Aug 2026 at 08:30 AM',
+    estimated_delivery_date: '20 Aug 2026',
+    delivery_time_slot: 'Morning Slot (09:00 AM - 12:00 PM)',
+    delivery_notes: 'White-glove insured security courier'
+  },
+  {
+    id: 102,
+    order_number: 'AUR-2026-7319',
+    user_name: 'Devansh Singhania',
+    user_email: 'devansh.s@atelier.com',
+    user_phone: '+91 97112 68420',
+    shipping_address: 'Villa 8, Golf Links, New Delhi, Delhi - 110003',
+    items: [
+      {
+        name: 'Aethel Emerald Signet Ring',
+        metal: '18K Yellow Gold',
+        price: 12900,
+        quantity: 1,
+        image: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=600&q=80'
+      }
+    ],
+    total: 12900,
+    payment_method: '3D Secure Card (Visa/Mastercard)',
+    payment_status: 'Payment Verified (Online)',
+    order_status: 'Hallmark Verification',
+    created_at: new Date(Date.now() - 8 * 3600 * 1000).toISOString(),
+    placed_time_formatted: '18 Aug 2026 at 03:15 AM',
+    estimated_delivery_date: '21 Aug 2026',
+    delivery_time_slot: 'Afternoon Slot (12:00 PM - 04:00 PM)',
+    delivery_notes: 'Direct signature required upon receipt'
+  },
+  {
+    id: 103,
+    order_number: 'AUR-2026-6105',
+    user_name: 'Ananya Roy',
+    user_email: 'ananya.roy@couture.com',
+    user_phone: '+91 98305 11980',
+    shipping_address: '42 Ballygunge Circular Rd, Kolkata, West Bengal - 700019',
+    items: [
+      {
+        name: 'Seraphina Liquid Silver Drop Earrings',
+        metal: '925 Sterling Silver',
+        price: 5400,
+        quantity: 2,
+        image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80'
+      }
+    ],
+    total: 10800,
+    payment_method: 'Cash on Delivery (COD Verified)',
+    payment_status: 'Payment Pending (COD Collection)',
+    order_status: 'Order Placed',
+    created_at: new Date(Date.now() - 1 * 3600 * 1000).toISOString(),
+    placed_time_formatted: '18 Aug 2026 at 10:05 AM',
+    estimated_delivery_date: '22 Aug 2026',
+    delivery_time_slot: 'Evening Slot (04:00 PM - 08:00 PM)',
+    delivery_notes: 'Collect exact cash ₹10,800 or UPI on delivery'
+  }
+];
+
+let adminOrders = [];
+
+// Initialize Admin Portal
+function initAdminPortal() {
+  const isAuth = sessionStorage.getItem('aurora_admin_logged_in') === 'true';
+  const gateEl = document.querySelector('#adminGateSection');
+  const dashEl = document.querySelector('#adminDashboardSection');
+
+  if (isAuth) {
+    if (gateEl) gateEl.style.display = 'none';
+    if (dashEl) dashEl.style.display = 'block';
+    loadAdminData();
+  } else {
+    if (gateEl) gateEl.style.display = 'block';
+    if (dashEl) dashEl.style.display = 'none';
+  }
+}
+
+// Unlock Admin
+function unlockAdminPasskey(e) {
+  if (e) e.preventDefault();
+  const input = document.querySelector('#adminPasskeyInput');
+  const errBox = document.querySelector('#adminPasskeyError');
+  const pass = (input ? input.value : '').trim().toUpperCase();
+
+  if (pass === 'AURORA2026' || pass === 'ADMIN' || pass === 'ADMIN123') {
+    sessionStorage.setItem('aurora_admin_logged_in', 'true');
+    initAdminPortal();
+    showToast('👑 Master Admin unlocked! Welcome to Atelier Operations.');
+  } else {
+    if (errBox) {
+      errBox.style.display = 'block';
+      errBox.innerText = '❌ Invalid Passkey. Access restricted to Atelier Admin.';
+    }
+  }
+}
+
+function quickUnlockAdmin() {
+  sessionStorage.setItem('aurora_admin_logged_in', 'true');
+  initAdminPortal();
+  showToast('⚡ Instant Admin Access Granted (Demo Mode)');
+}
+
+function logoutAdmin() {
+  sessionStorage.removeItem('aurora_admin_logged_in');
+  initAdminPortal();
+  showToast('🔒 Signed out of Atelier Admin');
+}
+
+// Load Data
+function loadAdminData() {
+  const saved = localStorage.getItem('aurora_orders');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        adminOrders = parsed;
+      } else {
+        adminOrders = DEFAULT_ADMIN_ORDERS;
+        localStorage.setItem('aurora_orders', JSON.stringify(adminOrders));
+      }
+    } catch(e) {
+      adminOrders = DEFAULT_ADMIN_ORDERS;
+    }
+  } else {
+    adminOrders = DEFAULT_ADMIN_ORDERS;
+    localStorage.setItem('aurora_orders', JSON.stringify(adminOrders));
+  }
+
+  updateMetrics();
+  renderOrdersTable();
+  renderOrdersMobileCards();
+  renderCustomRequests();
+}
+
+function updateMetrics() {
+  const totalRev = adminOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+  const totalCount = adminOrders.length;
+  const activeCount = adminOrders.filter(o => o.order_status !== 'Delivered').length;
+  const deliveredCount = adminOrders.filter(o => o.order_status === 'Delivered').length;
+
+  const revEl = document.querySelector('#statRevenue');
+  const ordersEl = document.querySelector('#statOrders');
+  const activeEl = document.querySelector('#statActiveOrders');
+  const deliveredEl = document.querySelector('#statDelivered');
+
+  if (revEl) revEl.innerText = `₹${totalRev.toLocaleString()}`;
+  if (ordersEl) ordersEl.innerText = totalCount;
+  if (activeEl) activeEl.innerText = activeCount;
+  if (deliveredEl) deliveredEl.innerText = deliveredCount;
+}
+
+// Render Orders Desktop Table
+function renderOrdersTable(filteredList = null) {
+  const tbody = document.querySelector('#adminOrdersTbody');
+  if (!tbody) return;
+
+  const list = filteredList || adminOrders;
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2.5rem; color:#6B7280;">No incoming orders found matching filter.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(o => {
+    const isPaid = (o.payment_status && o.payment_status.includes('Verified')) || o.payment_method?.includes('UPI') || o.payment_method?.includes('Card');
+    
+    return `
+      <tr>
+        <td>
+          <strong style="color:#111827; font-size:0.95rem; display:block;">${o.order_number}</strong>
+          <div style="font-size:0.78rem; color:#6B7280; margin-top:2px;">
+            ⏱️ ${o.placed_time_formatted || (o.created_at ? o.created_at.split('T')[0] : 'Today')}
+          </div>
+        </td>
+        <td>
+          <strong style="display:block; color:#111827;">${o.user_name}</strong>
+          <div style="font-size:0.8rem; color:#4B5563;">📞 ${o.user_phone || '+91 98765 43210'}</div>
+          <div style="font-size:0.75rem; color:#6B7280; max-width:200px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;" title="${o.shipping_address}">
+            📍 ${o.shipping_address}
+          </div>
+        </td>
+        <td>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            ${(o.items || []).map(it => `
+              <div style="display:flex; align-items:center; gap:6px; font-size:0.8rem;">
+                <img src="${it.image}" style="width:26px; height:26px; border-radius:4px; object-fit:cover; border:1px solid #E5E7EB;">
+                <span>${it.name} <strong style="color:#C9A227;">(x${it.quantity})</strong></span>
+              </div>
+            `).join('')}
+          </div>
+        </td>
+        <td>
+          <strong style="font-size:1rem; color:#111827; display:block;">₹${Number(o.total).toLocaleString()}</strong>
+          <span style="display:inline-block; font-size:0.7rem; padding:2px 8px; border-radius:12px; font-weight:700; background:${isPaid ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)'}; color:${isPaid ? '#059669' : '#D97706'};">
+            ${isPaid ? '✓ Paid Online' : '⚠️ COD Pending'}
+          </span>
+          <div style="font-size:0.72rem; color:#6B7280; margin-top:2px;">${o.payment_method}</div>
+        </td>
+        <td>
+          <div style="background:#F0FDF4; border:1px solid #BBF7D0; padding:0.45rem 0.65rem; border-radius:6px; font-size:0.8rem;">
+            <div style="font-weight:700; color:#15803D;">📅 ${o.estimated_delivery_date || 'In 2-3 Days'}</div>
+            <div style="font-weight:600; color:#D97706; margin-top:2px;">⏰ ${o.delivery_time_slot || 'Morning (9am-12pm)'}</div>
+            <button class="btn-time-edit" onclick="openRescheduleModal(${o.id})">
+              🕒 Set / Change Time
+            </button>
+          </div>
+        </td>
+        <td>
+          <select class="admin-select" onchange="changeOrderStatus(${o.id}, this.value)">
+            <option value="Order Placed" ${o.order_status === 'Order Placed' ? 'selected' : ''}>1. Order Placed</option>
+            <option value="Confirmed" ${o.order_status === 'Confirmed' ? 'selected' : ''}>2. Confirmed</option>
+            <option value="Artisan Handcrafting" ${o.order_status === 'Artisan Handcrafting' ? 'selected' : ''}>3. Artisan Handcrafting</option>
+            <option value="Hallmark Verification" ${o.order_status === 'Hallmark Verification' ? 'selected' : ''}>4. Hallmark Verification</option>
+            <option value="Shipped" ${o.order_status === 'Shipped' ? 'selected' : ''}>5. Dispatched with Courier</option>
+            <option value="Delivered" ${o.order_status === 'Delivered' ? 'selected' : ''}>6. Delivered</option>
+          </select>
+        </td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-action" onclick="printPackingSlip(${o.id})" title="Print Packing Slip">📄</button>
+            <button class="btn-action btn-delete" onclick="removeOrder(${o.id})" title="Delete Order">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Render Orders Mobile Cards
+function renderOrdersMobileCards(filteredList = null) {
+  const container = document.querySelector('#adminOrdersMobileContainer');
+  if (!container) return;
+
+  const list = filteredList || adminOrders;
+  if (list.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:2rem; color:#6B7280;">No orders found matching filter.</div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(o => {
+    const isPaid = (o.payment_status && o.payment_status.includes('Verified')) || o.payment_method?.includes('UPI') || o.payment_method?.includes('Card');
+
+    return `
+      <div class="mobile-order-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem; border-bottom:1px solid #F3F4F6; padding-bottom:0.6rem;">
+          <div>
+            <strong style="font-size:1.05rem; color:#111827;">${o.order_number}</strong>
+            <div style="font-size:0.75rem; color:#6B7280;">Placed: ${o.placed_time_formatted || 'Today'}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:1.15rem; font-weight:800; color:#C9A227;">₹${Number(o.total).toLocaleString()}</div>
+            <span style="font-size:0.68rem; padding:2px 6px; border-radius:8px; font-weight:700; background:${isPaid ? '#ECFDF5' : '#FFFBEB'}; color:${isPaid ? '#059669' : '#D97706'};">
+              ${isPaid ? 'Paid Online' : 'COD Pending'}
+            </span>
+          </div>
+        </div>
+
+        <!-- Client Info -->
+        <div style="font-size:0.85rem; line-height:1.45; margin-bottom:0.75rem;">
+          <div><strong>Client:</strong> ${o.user_name} &bull; <a href="tel:${o.user_phone}" style="color:#2563EB; text-decoration:none;">${o.user_phone || '+91 98765 43210'}</a></div>
+          <div style="color:#4B5563; font-size:0.8rem; margin-top:2px;">📍 ${o.shipping_address}</div>
+        </div>
+
+        <!-- Ordered Items -->
+        <div style="background:#F9FAFB; padding:0.6rem; border-radius:8px; margin-bottom:0.75rem;">
+          ${(o.items || []).map(it => `
+            <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.82rem; margin-bottom:4px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <img src="${it.image}" style="width:24px; height:24px; border-radius:4px; object-fit:cover;">
+                <span>${it.name}</span>
+              </div>
+              <strong>x${it.quantity} &bull; ₹${(it.price * it.quantity).toLocaleString()}</strong>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Delivery Schedule -->
+        <div style="background:#F0FDF4; border:1px solid #BBF7D0; padding:0.65rem; border-radius:8px; margin-bottom:0.75rem;">
+          <div style="font-size:0.85rem;">📅 <strong>Delivery Date:</strong> <span style="color:#15803D; font-weight:700;">${o.estimated_delivery_date || 'In 2-3 Days'}</span></div>
+          <div style="font-size:0.85rem; margin-top:3px;">⏰ <strong>Time Window:</strong> <span style="color:#D97706; font-weight:700;">${o.delivery_time_slot || 'Morning (9am-12pm)'}</span></div>
+          <button class="btn-time-edit" style="width:100%; margin-top:6px; padding:0.45rem; font-size:0.8rem;" onclick="openRescheduleModal(${o.id})">
+            🕒 Set / Change Delivery Time Slot
+          </button>
+        </div>
+
+        <!-- Status Dispatch -->
+        <div style="margin-bottom:0.75rem;">
+          <label style="font-size:0.72rem; font-weight:700; text-transform:uppercase; color:#6B7280; display:block; margin-bottom:3px;">Update Dispatch Status</label>
+          <select class="admin-select" style="width:100%;" onchange="changeOrderStatus(${o.id}, this.value)">
+            <option value="Order Placed" ${o.order_status === 'Order Placed' ? 'selected' : ''}>1. Order Placed</option>
+            <option value="Confirmed" ${o.order_status === 'Confirmed' ? 'selected' : ''}>2. Confirmed</option>
+            <option value="Artisan Handcrafting" ${o.order_status === 'Artisan Handcrafting' ? 'selected' : ''}>3. Artisan Handcrafting</option>
+            <option value="Hallmark Verification" ${o.order_status === 'Hallmark Verification' ? 'selected' : ''}>4. Hallmark Verification</option>
+            <option value="Shipped" ${o.order_status === 'Shipped' ? 'selected' : ''}>5. Dispatched with Courier</option>
+            <option value="Delivered" ${o.order_status === 'Delivered' ? 'selected' : ''}>6. Delivered</option>
+          </select>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex; gap:8px;">
+          <button class="btn-primary-sm" style="flex:1;" onclick="printPackingSlip(${o.id})">📄 Packing Slip</button>
+          <button class="btn-danger-sm" onclick="removeOrder(${o.id})">🗑️ Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Filter Orders
+function filterOrders() {
+  const q = (document.querySelector('#orderSearchInput')?.value || '').trim().toLowerCase();
+  const st = document.querySelector('#orderStatusFilter')?.value || 'ALL';
+
+  const filtered = adminOrders.filter(o => {
+    const matchQ = !q || o.order_number.toLowerCase().includes(q) || (o.user_name && o.user_name.toLowerCase().includes(q)) || (o.user_phone && o.user_phone.toLowerCase().includes(q));
+    const matchSt = st === 'ALL' || o.order_status === st;
+    return matchQ && matchSt;
+  });
+
+  renderOrdersTable(filtered);
+  renderOrdersMobileCards(filtered);
+}
+
+// Status Changer
+function changeOrderStatus(orderId, newStatus) {
+  const idx = adminOrders.findIndex(o => o.id === orderId);
+  if (idx !== -1) {
+    adminOrders[idx].order_status = newStatus;
+    localStorage.setItem('aurora_orders', JSON.stringify(adminOrders));
+    updateMetrics();
+    showToast(`✨ Status dispatched: "${newStatus}"!`);
+  }
+}
+
+// Reschedule Delivery Modal
+function openRescheduleModal(orderId) {
+  const order = adminOrders.find(o => o.id === orderId);
+  if (!order) return;
+
+  const todayIso = new Date().toISOString().split('T')[0];
+  const modal = document.querySelector('#adminModal');
+  const modalContent = document.querySelector('#adminModalContent');
+  if (!modal || !modalContent) return;
+
+  modalContent.innerHTML = `
+    <div style="padding:1.2rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; border-bottom:1px solid #E5E7EB; padding-bottom:0.8rem;">
+        <h3 style="font-size:1.3rem; color:#111827; margin:0;">🕒 Schedule Delivery Time</h3>
+        <button onclick="closeAdminModal()" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+      </div>
+
+      <div style="font-size:0.85rem; color:#4B5563; margin-bottom:1rem;">
+        Order: <strong>${order.order_number}</strong> &bull; Client: <strong>${order.user_name}</strong>
+      </div>
+
+      <form onsubmit="saveReschedule(event, ${order.id})" style="display:flex; flex-direction:column; gap:1rem;">
+        <div>
+          <label style="font-size:0.85rem; font-weight:700; display:block; margin-bottom:4px;">Scheduled Delivery Date</label>
+          <input type="date" id="newDeliveryDate" class="admin-input" min="${todayIso}" required>
+        </div>
+
+        <div>
+          <label style="font-size:0.85rem; font-weight:700; display:block; margin-bottom:4px;">Delivery Time Window Slot</label>
+          <select id="newDeliverySlot" class="admin-input" required>
+            <option value="Morning Slot (09:00 AM - 12:00 PM)">Morning Slot (09:00 AM - 12:00 PM)</option>
+            <option value="Afternoon Slot (12:00 PM - 04:00 PM)">Afternoon Slot (12:00 PM - 04:00 PM)</option>
+            <option value="Evening Slot (04:00 PM - 08:00 PM)" selected>Evening Slot (04:00 PM - 08:00 PM)</option>
+            <option value="Express 2-Hour Handover">Express 2-Hour Courier Handover</option>
+            <option value="Night Secure Handover (08:00 PM - 10:00 PM)">Night Secure Handover (08:00 PM - 10:00 PM)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:0.85rem; font-weight:700; display:block; margin-bottom:4px;">Courier & Security Instructions</label>
+          <textarea id="newDeliveryNotes" class="admin-input" style="height:65px;" placeholder="e.g. Call 30 mins before arrival">${order.delivery_notes || ''}</textarea>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:0.5rem;">
+          <button type="submit" class="btn-primary-sm" style="flex:1; padding:0.65rem; font-size:0.9rem;">
+            ✓ Save Delivery Time
+          </button>
+          <button type="button" class="btn-secondary-sm" onclick="closeAdminModal()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  modal.style.display = 'flex';
+}
+
+function saveReschedule(e, orderId) {
+  e.preventDefault();
+  const dateVal = document.querySelector('#newDeliveryDate')?.value;
+  const slotVal = document.querySelector('#newDeliverySlot')?.value;
+  const notesVal = document.querySelector('#newDeliveryNotes')?.value;
+
+  const idx = adminOrders.findIndex(o => o.id === orderId);
+  if (idx !== -1) {
+    if (dateVal) {
+      const d = new Date(dateVal);
+      adminOrders[idx].estimated_delivery_date = d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    }
+    if (slotVal) adminOrders[idx].delivery_time_slot = slotVal;
+    if (notesVal !== undefined) adminOrders[idx].delivery_notes = notesVal;
+
+    localStorage.setItem('aurora_orders', JSON.stringify(adminOrders));
+    closeAdminModal();
+    showToast(`✨ Delivery schedule saved: ${adminOrders[idx].estimated_delivery_date} (${adminOrders[idx].delivery_time_slot})`);
+    renderOrdersTable();
+    renderOrdersMobileCards();
+  }
+}
+
+function closeAdminModal() {
+  const modal = document.querySelector('#adminModal');
+  if (modal) modal.style.display = 'none';
+}
+
+// Packing Slip Modal
+function printPackingSlip(orderId) {
+  const order = adminOrders.find(o => o.id === orderId);
+  if (!order) return;
+
+  const modal = document.querySelector('#adminModal');
+  const modalContent = document.querySelector('#adminModalContent');
+  if (!modal || !modalContent) return;
+
+  modalContent.innerHTML = `
+    <div style="padding:1.5rem; background:#FFF; border-radius:12px; font-family:sans-serif; color:#1F2937;">
+      <div style="display:flex; justify-content:space-between; border-bottom:2px solid #C9A227; padding-bottom:1rem; margin-bottom:1.2rem;">
+        <div>
+          <div style="font-size:1.8rem; font-weight:800; letter-spacing:0.1em; color:#111827;">AURORA</div>
+          <div style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:#C9A227; font-weight:700;">MAISON ATELIER &bull; PACKING SLIP</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:700; font-size:1.1rem;">#${order.order_number}</div>
+          <div style="font-size:0.8rem; color:#6B7280;">Date: ${order.placed_time_formatted || '18 Aug 2026'}</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:1.2rem; font-size:0.85rem;">
+        <div>
+          <strong style="color:#6B7280; font-size:0.75rem; text-transform:uppercase;">Ship To:</strong>
+          <div style="font-weight:700; margin-top:2px;">${order.user_name}</div>
+          <div style="color:#4B5563;">${order.user_phone}</div>
+          <div style="color:#4B5563;">${order.shipping_address}</div>
+        </div>
+        <div>
+          <strong style="color:#6B7280; font-size:0.75rem; text-transform:uppercase;">Delivery Time & Payment:</strong>
+          <div style="color:#15803D; font-weight:700; margin-top:2px;">📅 ${order.estimated_delivery_date || 'In 2-3 Days'}</div>
+          <div style="color:#D97706; font-weight:700;">⏰ ${order.delivery_time_slot || 'Morning (9am-12pm)'}</div>
+          <div style="margin-top:2px;">Payment: <strong>${order.payment_method}</strong></div>
+        </div>
+      </div>
+
+      <table style="width:100%; border-collapse:collapse; margin-bottom:1.2rem; font-size:0.85rem;">
+        <thead>
+          <tr style="background:#F9FAFB; text-align:left; border-bottom:1px solid #E5E7EB;">
+            <th style="padding:8px;">Item</th>
+            <th style="padding:8px;">Metal</th>
+            <th style="padding:8px; text-align:center;">Qty</th>
+            <th style="padding:8px; text-align:right;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${(o => (o.items || []).map(it => `
+            <tr style="border-bottom:1px solid #F3F4F6;">
+              <td style="padding:8px;">${it.name}</td>
+              <td style="padding:8px;">${it.metal}</td>
+              <td style="padding:8px; text-align:center;">${it.quantity}</td>
+              <td style="padding:8px; text-align:right; font-weight:700;">₹${(it.price * it.quantity).toLocaleString()}</td>
+            </tr>
+          `).join(''))(order)}
+        </tbody>
+      </table>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #E5E7EB; padding-top:1rem;">
+        <div style="font-size:0.75rem; color:#6B7280;">✓ 100% BIS Hallmarked Pure Luxury &bull; Insured Delivery</div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-primary-sm" onclick="window.print()">🖨️ Print</button>
+          <button class="btn-secondary-sm" onclick="closeAdminModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  modal.style.display = 'flex';
+}
+
+function removeOrder(orderId) {
+  if (!confirm('Are you sure you want to remove this order from records?')) return;
+  adminOrders = adminOrders.filter(o => o.id !== orderId);
+  localStorage.setItem('aurora_orders', JSON.stringify(adminOrders));
+  updateMetrics();
+  renderOrdersTable();
+  renderOrdersMobileCards();
+  showToast('Order removed from records');
+}
+
+function renderCustomRequests() {
+  const container = document.querySelector('#adminCustomRequestsList');
+  if (!container) return;
+
+  const savedReqs = localStorage.getItem('aurora_custom_requests');
+  let reqs = [];
+  if (savedReqs) {
+    try { reqs = JSON.parse(savedReqs); } catch(e) {}
+  }
+
+  if (reqs.length === 0) {
+    container.innerHTML = `<p style="color:#6B7280; font-size:0.9rem; text-align:center; padding:1.5rem;">No bespoke custom requests logged yet.</p>`;
+    return;
+  }
+
+  container.innerHTML = reqs.map(r => `
+    <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:1rem; margin-bottom:0.75rem;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <strong style="font-size:1rem; color:#111827;">${r.accessory_type || 'Bespoke Request'} &bull; ${r.metal_type || 'Gold/Silver'}</strong>
+          <div style="font-size:0.8rem; color:#6B7280;">Client: ${r.user_name} (${r.user_email})</div>
+        </div>
+        <span style="font-size:0.75rem; background:#FEF3C7; color:#B45309; padding:2px 8px; border-radius:12px; font-weight:700;">${r.budget || 'Quote'}</span>
+      </div>
+      <p style="font-size:0.85rem; color:#4B5563; margin:0.5rem 0;">"${r.description}"</p>
+      ${r.inspiration_image ? `<img src="${r.inspiration_image}" style="max-width:140px; border-radius:6px; margin-top:4px; border:1px solid #D1D5DB;">` : ''}
+    </div>
+  `).join('');
+}
+
+// Toast
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed; bottom:24px; right:24px; background:#111827; color:#FFF; padding:12px 20px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.2); font-size:0.9rem; z-index:9999; border-left:4px solid #C9A227; transition:all 0.3s ease;';
+  t.innerText = msg;
+  document.body.appendChild(t);
+  setTimeout(() => {
+    t.style.opacity = '0';
+    setTimeout(() => t.remove(), 300);
+  }, 3200);
+}
+
+// Run on page load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAdminPortal);
+} else {
+  initAdminPortal();
+}
+
+// Global exports
+window.unlockAdminPasskey = unlockAdminPasskey;
+window.quickUnlockAdmin = quickUnlockAdmin;
+window.logoutAdmin = logoutAdmin;
+window.filterOrders = filterOrders;
+window.changeOrderStatus = changeOrderStatus;
+window.openRescheduleModal = openRescheduleModal;
+window.saveReschedule = saveReschedule;
+window.closeAdminModal = closeAdminModal;
+window.printPackingSlip = printPackingSlip;
+window.removeOrder = removeOrder;
