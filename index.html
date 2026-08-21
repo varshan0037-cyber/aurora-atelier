@@ -59,7 +59,7 @@
   <!-- ==========================================================================
        OPENING FULL-SCREEN EXPERIENCE & FEATURE TOUR CAROUSEL (#openingExperience)
        ========================================================================== -->
-  <div class="opening-experience-overlay" id="openingExperience">
+  <div class="opening-experience-overlay" id="openingExperience" style="display:none;">
     <!-- Header with Brand Wordmark & Skip Button -->
     <div class="opening-header">
       <div class="opening-logo">
@@ -701,29 +701,29 @@
       </div>
 
       <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--border-subtle); padding:2rem; box-shadow:var(--shadow-sm);">
-        <div id="cartDrawerItems"></div>
+        <div id="cartPageItems"></div>
         
-        <div id="cartDrawerFooter" style="margin-top:2rem; border-top:1px solid var(--border-subtle); padding-top:1.5rem;">
+        <div id="cartPageFooter" style="margin-top:2rem; border-top:1px solid var(--border-subtle); padding-top:1.5rem;">
           <div class="promo-row">
-            <input type="text" id="promoInput" class="promo-input" placeholder="Promo code (e.g. AURORA10)">
-            <button class="btn btn-secondary btn-sm" onclick="applyPromoCode()">Apply</button>
+            <input type="text" id="cartPagePromoInput" class="promo-input" placeholder="Promo code (e.g. AURORA10)">
+            <button class="btn btn-secondary btn-sm" onclick="applyPromoCode('page')">Apply</button>
           </div>
 
           <div class="cart-summary-line">
             <span>Subtotal</span>
-            <span id="cartSubtotal">₹0</span>
+            <span id="cartPageSubtotal">₹0</span>
           </div>
           <div class="cart-summary-line">
             <span>Insured Atelier Delivery</span>
-            <span id="cartShipping">FREE</span>
+            <span id="cartPageShipping">FREE</span>
           </div>
-          <div class="cart-summary-line" id="cartDiscountRow" style="display:none; color:var(--gold-dark); font-weight:600;">
+          <div class="cart-summary-line" id="cartPageDiscountRow" style="display:none; color:var(--gold-dark); font-weight:600;">
             <span>VIP Atelier Discount</span>
-            <span id="cartDiscount">-₹0</span>
+            <span id="cartPageDiscount">-₹0</span>
           </div>
           <div class="cart-summary-total">
             <span>Estimated Total</span>
-            <span id="cartTotal" style="color:var(--gold-dark);">₹0</span>
+            <span id="cartPageTotal" style="color:var(--gold-dark);">₹0</span>
           </div>
 
           <div style="display:flex; justify-content:space-between; margin-top:2rem; gap:1rem; flex-wrap:wrap;">

@@ -287,6 +287,7 @@ function saveCart() {
   localStorage.setItem('aurora_cart', JSON.stringify(Aurora.cart));
   updateCartBadge();
   renderCart();
+  renderCartPage();
 }
 
 function saveWishlist() {
@@ -1359,12 +1360,57 @@ function renderCart() {
 }
 
 function renderCartPage() {
-  renderCart();
-  const pageContainer = document.querySelector('#cartPageContainer');
-  if (pageContainer) {
-    const { subtotal, total } = calculateCartTotals();
-    // Synchronize page view
+  const pageContainer = document.querySelector('#cartPageItems');
+  const pageFooter = document.querySelector('#cartPageFooter');
+  if (!pageContainer) return;
+
+  if (Aurora.cart.length === 0) {
+    pageContainer.innerHTML = `
+      <div style="text-align:center; padding: 4rem 1rem;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">🛍️</div>
+        <h4 style="font-size: 1.2rem; margin-bottom: 0.4rem;">Your atelier cart is empty</h4>
+        <p style="color:var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Explore our curated pure gold and liquid silver edits.</p>
+        <button class="btn btn-gold btn-sm" onclick="navigateTo('#explore');">Explore Collection</button>
+      </div>
+    `;
+    if (pageFooter) pageFooter.style.display = 'none';
+    return;
   }
+
+  if (pageFooter) pageFooter.style.display = 'block';
+
+  pageContainer.innerHTML = Aurora.cart.map(item => `
+    <div class="cart-item">
+      <img src="${item.image}" class="cart-item-img" alt="${item.name}">
+      <div class="cart-item-info">
+        <div class="cart-item-title">${item.name}</div>
+        <div class="cart-item-meta">${item.metal} &bull; Size: ${item.size}</div>
+        <div class="cart-item-row">
+          <div class="quantity-control">
+            <button class="qty-btn" onclick="updateCartItemQty('${item.cartKey}', -1)">-</button>
+            <span class="qty-number">${item.quantity}</span>
+            <button class="qty-btn" onclick="updateCartItemQty('${item.cartKey}', 1)">+</button>
+          </div>
+          <div class="cart-item-price">₹${(item.price * item.quantity).toLocaleString()}</div>
+        </div>
+        <button class="cart-remove-btn" onclick="removeCartItem('${item.cartKey}')">Remove</button>
+      </div>
+    </div>
+  `).join('');
+
+  const { subtotal, discount, shipping, total } = calculateCartTotals();
+
+  const subEl = document.querySelector('#cartPageSubtotal');
+  const shipEl = document.querySelector('#cartPageShipping');
+  const discRow = document.querySelector('#cartPageDiscountRow');
+  const discEl = document.querySelector('#cartPageDiscount');
+  const totEl = document.querySelector('#cartPageTotal');
+
+  if (subEl) subEl.innerText = `₹${subtotal.toLocaleString()}`;
+  if (shipEl) shipEl.innerText = shipping === 0 ? 'FREE' : `₹${shipping}`;
+  if (discRow) discRow.style.display = discount > 0 ? 'flex' : 'none';
+  if (discEl) discEl.innerText = `-₹${discount.toLocaleString()}`;
+  if (totEl) totEl.innerText = `₹${total.toLocaleString()}`;
 }
 
 function openCartDrawer() {
@@ -1378,9 +1424,9 @@ function closeCartDrawer() {
   document.querySelector('#cartDrawer')?.classList.remove('active');
 }
 
-function applyPromoCode() {
-  const input = document.querySelector('#promoInput');
-  const code = input?.value.trim().toUpperCase();
+function applyPromoCode(inputSource) {
+  const input = inputSource === 'page' ? document.querySelector('#cartPagePromoInput') : document.querySelector('#promoInput');
+  const code = (input?.value || document.querySelector('#promoInput')?.value || document.querySelector('#cartPagePromoInput')?.value || '').trim().toUpperCase();
 
   if (code === 'AURORA10') {
     Aurora.discountPercent = 10;
@@ -1393,6 +1439,7 @@ function applyPromoCode() {
     return;
   }
   renderCart();
+  renderCartPage();
 }
 
 // ==========================================================================
