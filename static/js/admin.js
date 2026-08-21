@@ -59,7 +59,7 @@ async function loadAdminData() {
     adminOrders = await window.AuroraDB.getOrders();
   } else {
     try {
-      const raw = localStorage.getItem('aurora_orders');
+      const raw = localStorage.getItem('aurora_atelier_orders_db_v1') || localStorage.getItem('aurora_orders');
       adminOrders = raw ? JSON.parse(raw) : [];
     } catch(e) {
       adminOrders = [];
@@ -73,9 +73,10 @@ async function loadAdminData() {
 }
 
 function updateMetrics() {
-  const totalRev = adminOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+  const nonCancelled = adminOrders.filter(o => o.order_status !== 'Cancelled');
+  const totalRev = nonCancelled.reduce((sum, o) => sum + (Number(o.total || o.total_amount) || 0), 0);
   const totalCount = adminOrders.length;
-  const activeCount = adminOrders.filter(o => o.order_status !== 'Delivered').length;
+  const activeCount = adminOrders.filter(o => o.order_status !== 'Delivered' && o.order_status !== 'Cancelled').length;
   const deliveredCount = adminOrders.filter(o => o.order_status === 'Delivered').length;
 
   const revEl = document.querySelector('#statRevenue');
@@ -103,7 +104,7 @@ function renderOrdersTable(filteredList = null) {
         <td colspan="7" style="text-align:center; padding: 4rem 1rem; color:#4B5563;">
           <div style="font-size: 2.8rem; margin-bottom: 0.6rem;">📦</div>
           <h3 style="font-size: 1.3rem; margin-bottom: 0.35rem; color:#111827; font-weight:700;">No orders yet</h3>
-          <p style="color:#6B7280; font-size: 0.88rem; max-width:400px; margin:0 auto;">
+          <p style="color:#6B7280; font-size: 0.88rem; max-width:420px; margin:0 auto;">
             Incoming customer acquisitions placed on the Aurora Atelier boutique will appear here automatically in real time.
           </p>
         </td>
@@ -113,21 +114,24 @@ function renderOrdersTable(filteredList = null) {
   }
 
   tbody.innerHTML = list.map(o => {
-    const isPaid = (o.payment_status && o.payment_status.includes('Verified')) || o.payment_method?.includes('UPI') || o.payment_method?.includes('Card');
-    
+    const isPaid = (o.payment_status && o.payment_status.toLowerCase().includes('paid')) || (o.payment_status && o.payment_status.toLowerCase().includes('verified'));
+    const isCod = (o.payment_method && o.payment_method.includes('Cash on Delivery')) || (o.payment_status && o.payment_status.includes('COD'));
+    const orderId = o.order_id || o.order_number;
+    const totalVal = Number(o.total || o.total_amount || 0);
+
     return `
       <tr>
         <td>
-          <strong style="color:#111827; font-size:0.95rem; display:block;">${o.order_number}</strong>
+          <strong style="color:#111827; font-size:0.95rem; display:block;">${orderId}</strong>
           <div style="font-size:0.78rem; color:#6B7280; margin-top:2px;">
-            ⏱️ ${o.placed_time_formatted || (o.created_at ? o.created_at.split('T')[0] : 'Just now')}
+            ⏱️ ${o.order_date || 'Date logged'} ${o.order_time ? 'at ' + o.order_time : ''}
           </div>
         </td>
         <td>
-          <strong style="display:block; color:#111827;">${o.user_name}</strong>
-          <div style="font-size:0.8rem; color:#4B5563;">📞 ${o.user_phone || 'Contact provided'}</div>
-          <div style="font-size:0.75rem; color:#6B7280; max-width:200px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;" title="${o.shipping_address}">
-            📍 ${o.shipping_address}
+          <strong style="display:block; color:#111827;">${o.customer_name || o.user_name}</strong>
+          <div style="font-size:0.8rem; color:#4B5563;">📞 ${o.phone || o.user_phone || 'N/A'}</div>
+          <div style="font-size:0.75rem; color:#6B7280; max-width:200px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;" title="${o.full_address || o.shipping_address}">
+            📍 ${o.full_address || o.shipping_address}
           </div>
         </td>
         <td>
@@ -141,35 +145,36 @@ function renderOrdersTable(filteredList = null) {
           </div>
         </td>
         <td>
-          <strong style="font-size:1rem; color:#111827; display:block;">₹${Number(o.total).toLocaleString()}</strong>
+          <strong style="font-size:1rem; color:#111827; display:block;">₹${totalVal.toLocaleString()}</strong>
           <span style="display:inline-block; font-size:0.7rem; padding:2px 8px; border-radius:12px; font-weight:700; background:${isPaid ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)'}; color:${isPaid ? '#059669' : '#D97706'};">
-            ${isPaid ? '✓ Paid Online' : '⚠️ COD Pending'}
+            ${o.payment_status || (isCod ? 'COD / Pending' : 'Pending Verification')}
           </span>
           <div style="font-size:0.72rem; color:#6B7280; margin-top:2px;">${o.payment_method}</div>
         </td>
         <td>
           <div style="background:#F0FDF4; border:1px solid #BBF7D0; padding:0.45rem 0.65rem; border-radius:6px; font-size:0.8rem;">
-            <div style="font-weight:700; color:#15803D;">📅 ${o.estimated_delivery_date || 'In 2-3 Days'}</div>
-            <div style="font-weight:600; color:#D97706; margin-top:2px;">⏰ ${o.delivery_time_slot || 'Morning (9am-12pm)'}</div>
-            <button class="btn-time-edit" onclick="openRescheduleModal('${o.id}')">
+            <div style="font-weight:700; color:#15803D;">📅 ${o.scheduled_delivery_date || o.estimated_delivery_date || 'In 3-4 Days'}</div>
+            <div style="font-weight:600; color:#D97706; margin-top:2px;">⏰ ${o.delivery_time_slot || 'Morning Slot (09:00 AM - 12:00 PM)'}</div>
+            <button class="btn-time-edit" onclick="openRescheduleModal('${orderId}')">
               🕒 Set / Change Time
             </button>
           </div>
         </td>
         <td>
-          <select class="admin-select" onchange="changeOrderStatus('${o.id}', this.value)">
+          <select class="admin-select" onchange="changeOrderStatus('${orderId}', this.value)">
             <option value="Order Placed" ${o.order_status === 'Order Placed' ? 'selected' : ''}>1. Order Placed</option>
             <option value="Confirmed" ${o.order_status === 'Confirmed' ? 'selected' : ''}>2. Confirmed</option>
-            <option value="Artisan Handcrafting" ${o.order_status === 'Artisan Handcrafting' ? 'selected' : ''}>3. Artisan Handcrafting</option>
-            <option value="Hallmark Verification" ${o.order_status === 'Hallmark Verification' ? 'selected' : ''}>4. Hallmark Verification</option>
-            <option value="Shipped" ${o.order_status === 'Shipped' ? 'selected' : ''}>5. Dispatched with Courier</option>
+            <option value="Packed" ${o.order_status === 'Packed' ? 'selected' : ''}>3. Packed</option>
+            <option value="Shipped" ${o.order_status === 'Shipped' ? 'selected' : ''}>4. Shipped</option>
+            <option value="Out for Delivery" ${o.order_status === 'Out for Delivery' ? 'selected' : ''}>5. Out for Delivery</option>
             <option value="Delivered" ${o.order_status === 'Delivered' ? 'selected' : ''}>6. Delivered</option>
+            <option value="Cancelled" ${o.order_status === 'Cancelled' ? 'selected' : ''}>7. Cancelled</option>
           </select>
         </td>
         <td>
           <div style="display:flex; gap:6px;">
-            <button class="btn-action" onclick="printPackingSlip('${o.id}')" title="Print Packing Slip">📄</button>
-            <button class="btn-action btn-delete" onclick="removeOrder('${o.id}')" title="Delete Order">🗑️</button>
+            <button class="btn-action" onclick="printPackingSlip('${orderId}')" title="Print Packing Slip">📄</button>
+            <button class="btn-action btn-delete" onclick="removeOrder('${orderId}')" title="Delete Order">🗑️</button>
           </div>
         </td>
       </tr>
@@ -197,27 +202,30 @@ function renderOrdersMobileCards(filteredList = null) {
   }
 
   container.innerHTML = list.map(o => {
-    const isPaid = (o.payment_status && o.payment_status.includes('Verified')) || o.payment_method?.includes('UPI') || o.payment_method?.includes('Card');
+    const isPaid = (o.payment_status && o.payment_status.toLowerCase().includes('paid')) || (o.payment_status && o.payment_status.toLowerCase().includes('verified'));
+    const isCod = (o.payment_method && o.payment_method.includes('Cash on Delivery')) || (o.payment_status && o.payment_status.includes('COD'));
+    const orderId = o.order_id || o.order_number;
+    const totalVal = Number(o.total || o.total_amount || 0);
 
     return `
       <div class="mobile-order-card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem; border-bottom:1px solid #F3F4F6; padding-bottom:0.6rem;">
           <div>
-            <strong style="font-size:1.05rem; color:#111827;">${o.order_number}</strong>
-            <div style="font-size:0.75rem; color:#6B7280;">Placed: ${o.placed_time_formatted || 'Just now'}</div>
+            <strong style="font-size:1.05rem; color:#111827;">${orderId}</strong>
+            <div style="font-size:0.75rem; color:#6B7280;">Placed: ${o.order_date || 'Today'} ${o.order_time || ''}</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-size:1.15rem; font-weight:800; color:#C9A227;">₹${Number(o.total).toLocaleString()}</div>
+            <div style="font-size:1.15rem; font-weight:800; color:#C9A227;">₹${totalVal.toLocaleString()}</div>
             <span style="font-size:0.68rem; padding:2px 6px; border-radius:8px; font-weight:700; background:${isPaid ? '#ECFDF5' : '#FFFBEB'}; color:${isPaid ? '#059669' : '#D97706'};">
-              ${isPaid ? 'Paid Online' : 'COD Pending'}
+              ${o.payment_status || (isCod ? 'COD / Pending' : 'Pending')}
             </span>
           </div>
         </div>
 
         <!-- Client Info -->
         <div style="font-size:0.85rem; line-height:1.45; margin-bottom:0.75rem;">
-          <div><strong>Client:</strong> ${o.user_name} &bull; <a href="tel:${o.user_phone}" style="color:#2563EB; text-decoration:none;">${o.user_phone || 'Contact provided'}</a></div>
-          <div style="color:#4B5563; font-size:0.8rem; margin-top:2px;">📍 ${o.shipping_address}</div>
+          <div><strong>Client:</strong> ${o.customer_name || o.user_name} &bull; <a href="tel:${o.phone || o.user_phone}" style="color:#2563EB; text-decoration:none;">${o.phone || o.user_phone || 'N/A'}</a></div>
+          <div style="color:#4B5563; font-size:0.8rem; margin-top:2px;">📍 ${o.full_address || o.shipping_address}</div>
         </div>
 
         <!-- Ordered Items -->
@@ -235,9 +243,9 @@ function renderOrdersMobileCards(filteredList = null) {
 
         <!-- Delivery Schedule -->
         <div style="background:#F0FDF4; border:1px solid #BBF7D0; padding:0.65rem; border-radius:8px; margin-bottom:0.75rem;">
-          <div style="font-size:0.85rem;">📅 <strong>Delivery Date:</strong> <span style="color:#15803D; font-weight:700;">${o.estimated_delivery_date || 'In 2-3 Days'}</span></div>
+          <div style="font-size:0.85rem;">📅 <strong>Delivery Date:</strong> <span style="color:#15803D; font-weight:700;">${o.scheduled_delivery_date || o.estimated_delivery_date || 'In 3-4 Days'}</span></div>
           <div style="font-size:0.85rem; margin-top:3px;">⏰ <strong>Time Window:</strong> <span style="color:#D97706; font-weight:700;">${o.delivery_time_slot || 'Morning (9am-12pm)'}</span></div>
-          <button class="btn-time-edit" style="width:100%; margin-top:6px; padding:0.45rem; font-size:0.8rem;" onclick="openRescheduleModal('${o.id}')">
+          <button class="btn-time-edit" style="width:100%; margin-top:6px; padding:0.45rem; font-size:0.8rem;" onclick="openRescheduleModal('${orderId}')">
             🕒 Set / Change Delivery Time Slot
           </button>
         </div>
@@ -245,20 +253,21 @@ function renderOrdersMobileCards(filteredList = null) {
         <!-- Status Dispatch -->
         <div style="margin-bottom:0.75rem;">
           <label style="font-size:0.72rem; font-weight:700; text-transform:uppercase; color:#6B7280; display:block; margin-bottom:3px;">Update Dispatch Status</label>
-          <select class="admin-select" style="width:100%;" onchange="changeOrderStatus('${o.id}', this.value)">
+          <select class="admin-select" style="width:100%;" onchange="changeOrderStatus('${orderId}', this.value)">
             <option value="Order Placed" ${o.order_status === 'Order Placed' ? 'selected' : ''}>1. Order Placed</option>
             <option value="Confirmed" ${o.order_status === 'Confirmed' ? 'selected' : ''}>2. Confirmed</option>
-            <option value="Artisan Handcrafting" ${o.order_status === 'Artisan Handcrafting' ? 'selected' : ''}>3. Artisan Handcrafting</option>
-            <option value="Hallmark Verification" ${o.order_status === 'Hallmark Verification' ? 'selected' : ''}>4. Hallmark Verification</option>
-            <option value="Shipped" ${o.order_status === 'Shipped' ? 'selected' : ''}>5. Dispatched with Courier</option>
+            <option value="Packed" ${o.order_status === 'Packed' ? 'selected' : ''}>3. Packed</option>
+            <option value="Shipped" ${o.order_status === 'Shipped' ? 'selected' : ''}>4. Shipped</option>
+            <option value="Out for Delivery" ${o.order_status === 'Out for Delivery' ? 'selected' : ''}>5. Out for Delivery</option>
             <option value="Delivered" ${o.order_status === 'Delivered' ? 'selected' : ''}>6. Delivered</option>
+            <option value="Cancelled" ${o.order_status === 'Cancelled' ? 'selected' : ''}>7. Cancelled</option>
           </select>
         </div>
 
         <!-- Actions -->
         <div style="display:flex; gap:8px;">
-          <button class="btn-primary-sm" style="flex:1;" onclick="printPackingSlip('${o.id}')">📄 Packing Slip</button>
-          <button class="btn-danger-sm" onclick="removeOrder('${o.id}')">🗑️ Delete</button>
+          <button class="btn-primary-sm" style="flex:1;" onclick="printPackingSlip('${orderId}')">📄 Packing Slip</button>
+          <button class="btn-danger-sm" onclick="removeOrder('${orderId}')">🗑️ Delete</button>
         </div>
       </div>
     `;
@@ -271,7 +280,11 @@ function filterOrders() {
   const st = document.querySelector('#orderStatusFilter')?.value || 'ALL';
 
   const filtered = adminOrders.filter(o => {
-    const matchQ = !q || (o.order_number && o.order_number.toLowerCase().includes(q)) || (o.user_name && o.user_name.toLowerCase().includes(q)) || (o.user_phone && o.user_phone.toLowerCase().includes(q));
+    const orderId = o.order_id || o.order_number || '';
+    const custName = o.customer_name || o.user_name || '';
+    const phone = o.phone || o.user_phone || '';
+    
+    const matchQ = !q || orderId.toLowerCase().includes(q) || custName.toLowerCase().includes(q) || phone.toLowerCase().includes(q);
     const matchSt = st === 'ALL' || o.order_status === st;
     return matchQ && matchSt;
   });
@@ -285,7 +298,7 @@ async function changeOrderStatus(orderId, newStatus) {
   if (window.AuroraDB) {
     await window.AuroraDB.updateOrderStatus(orderId, newStatus);
   }
-  const idx = adminOrders.findIndex(o => String(o.id) === String(orderId) || o.order_number === orderId);
+  const idx = adminOrders.findIndex(o => o.order_id === orderId || o.order_number === orderId || String(o.id) === String(orderId));
   if (idx !== -1) {
     adminOrders[idx].order_status = newStatus;
   }
@@ -295,13 +308,16 @@ async function changeOrderStatus(orderId, newStatus) {
 
 // Reschedule Delivery Modal
 function openRescheduleModal(orderId) {
-  const order = adminOrders.find(o => String(o.id) === String(orderId) || o.order_number === orderId);
+  const order = adminOrders.find(o => o.order_id === orderId || o.order_number === orderId || String(o.id) === String(orderId));
   if (!order) return;
 
   const todayIso = new Date().toISOString().split('T')[0];
   const modal = document.querySelector('#adminModal');
   const modalContent = document.querySelector('#adminModalContent');
   if (!modal || !modalContent) return;
+
+  const displayId = order.order_id || order.order_number;
+  const clientName = order.customer_name || order.user_name;
 
   modalContent.innerHTML = `
     <div style="padding:1.2rem;">
@@ -311,10 +327,10 @@ function openRescheduleModal(orderId) {
       </div>
 
       <div style="font-size:0.85rem; color:#4B5563; margin-bottom:1rem;">
-        Order: <strong>${order.order_number}</strong> &bull; Client: <strong>${order.user_name}</strong>
+        Order: <strong>${displayId}</strong> &bull; Client: <strong>${clientName}</strong>
       </div>
 
-      <form onsubmit="saveReschedule(event, '${order.id}')" style="display:flex; flex-direction:column; gap:1rem;">
+      <form onsubmit="saveReschedule(event, '${displayId}')" style="display:flex; flex-direction:column; gap:1rem;">
         <div>
           <label style="font-size:0.85rem; font-weight:700; display:block; margin-bottom:4px;">Scheduled Delivery Date</label>
           <input type="date" id="newDeliveryDate" class="admin-input" min="${todayIso}" required>
@@ -367,9 +383,12 @@ async function saveReschedule(e, orderId) {
     await window.AuroraDB.updateOrderDelivery(orderId, formattedDate, slotVal, notesVal);
   }
 
-  const idx = adminOrders.findIndex(o => String(o.id) === String(orderId) || o.order_number === orderId);
+  const idx = adminOrders.findIndex(o => o.order_id === orderId || o.order_number === orderId || String(o.id) === String(orderId));
   if (idx !== -1) {
-    if (formattedDate) adminOrders[idx].estimated_delivery_date = formattedDate;
+    if (formattedDate) {
+      adminOrders[idx].scheduled_delivery_date = formattedDate;
+      adminOrders[idx].estimated_delivery_date = formattedDate;
+    }
     if (slotVal) adminOrders[idx].delivery_time_slot = slotVal;
     if (notesVal !== undefined) adminOrders[idx].delivery_notes = notesVal;
   }
@@ -387,12 +406,18 @@ function closeAdminModal() {
 
 // Packing Slip Modal
 function printPackingSlip(orderId) {
-  const order = adminOrders.find(o => String(o.id) === String(orderId) || o.order_number === orderId);
+  const order = adminOrders.find(o => o.order_id === orderId || o.order_number === orderId || String(o.id) === String(orderId));
   if (!order) return;
 
   const modal = document.querySelector('#adminModal');
   const modalContent = document.querySelector('#adminModalContent');
   if (!modal || !modalContent) return;
+
+  const displayId = order.order_id || order.order_number;
+  const clientName = order.customer_name || order.user_name;
+  const clientPhone = order.phone || order.user_phone;
+  const clientAddress = order.full_address || order.shipping_address;
+  const totalVal = Number(order.total || order.total_amount || 0);
 
   modalContent.innerHTML = `
     <div style="padding:1.5rem; background:#FFF; border-radius:12px; font-family:sans-serif; color:#1F2937;">
@@ -402,23 +427,23 @@ function printPackingSlip(orderId) {
           <div style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:#C9A227; font-weight:700;">MAISON ATELIER &bull; PACKING SLIP</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-weight:700; font-size:1.1rem;">#${order.order_number}</div>
-          <div style="font-size:0.8rem; color:#6B7280;">Date: ${order.placed_time_formatted || 'Today'}</div>
+          <div style="font-weight:700; font-size:1.1rem;">#${displayId}</div>
+          <div style="font-size:0.8rem; color:#6B7280;">Date: ${order.order_date || 'Today'} ${order.order_time || ''}</div>
         </div>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:1.2rem; font-size:0.85rem;">
         <div>
           <strong style="color:#6B7280; font-size:0.75rem; text-transform:uppercase;">Ship To:</strong>
-          <div style="font-weight:700; margin-top:2px;">${order.user_name}</div>
-          <div style="color:#4B5563;">${order.user_phone}</div>
-          <div style="color:#4B5563;">${order.shipping_address}</div>
+          <div style="font-weight:700; margin-top:2px;">${clientName}</div>
+          <div style="color:#4B5563;">${clientPhone}</div>
+          <div style="color:#4B5563;">${clientAddress}</div>
         </div>
         <div>
           <strong style="color:#6B7280; font-size:0.75rem; text-transform:uppercase;">Delivery Time & Payment:</strong>
-          <div style="color:#15803D; font-weight:700; margin-top:2px;">📅 ${order.estimated_delivery_date || 'In 2-3 Days'}</div>
+          <div style="color:#15803D; font-weight:700; margin-top:2px;">📅 ${order.scheduled_delivery_date || order.estimated_delivery_date || 'In 3-4 Days'}</div>
           <div style="color:#D97706; font-weight:700;">⏰ ${order.delivery_time_slot || 'Morning (9am-12pm)'}</div>
-          <div style="margin-top:2px;">Payment: <strong>${order.payment_method}</strong></div>
+          <div style="margin-top:2px;">Payment: <strong>${order.payment_method}</strong> (${order.payment_status || 'Pending'})</div>
         </div>
       </div>
 
@@ -462,7 +487,7 @@ async function removeOrder(orderId) {
   if (window.AuroraDB) {
     await window.AuroraDB.deleteOrder(orderId);
   }
-  adminOrders = adminOrders.filter(o => String(o.id) !== String(orderId) && o.order_number !== orderId);
+  adminOrders = adminOrders.filter(o => o.order_id !== orderId && o.order_number !== orderId && String(o.id) !== String(orderId));
   updateMetrics();
   renderOrdersTable();
   renderOrdersMobileCards();
@@ -478,7 +503,7 @@ async function renderCustomRequests() {
     reqs = await window.AuroraDB.getCustomRequests();
   } else {
     try {
-      const savedReqs = localStorage.getItem('aurora_custom_requests');
+      const savedReqs = localStorage.getItem('aurora_atelier_custom_requests_db_v1') || localStorage.getItem('aurora_custom_requests');
       reqs = savedReqs ? JSON.parse(savedReqs) : [];
     } catch(e) {
       reqs = [];

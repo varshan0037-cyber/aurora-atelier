@@ -759,42 +759,57 @@
             </h3>
             <div class="form-grid-2">
               <div class="form-group">
-                <label class="form-label">Full Name</label>
-                <input type="text" id="checkoutName" class="form-input" value="Aria Vance" required>
+                <label class="form-label">Full Name *</label>
+                <input type="text" id="checkoutName" class="form-input" placeholder="e.g. Mira Kapoor" required>
               </div>
               <div class="form-group">
-                <label class="form-label">Email Address (for Order Confirmation)</label>
-                <input type="email" id="checkoutEmail" class="form-input" value="aria.vance@example.com" required>
+                <label class="form-label">Email Address (for Order Confirmation) *</label>
+                <input type="email" id="checkoutEmail" class="form-input" placeholder="e.g. mira.kapoor@example.com" required>
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">Phone Number (for Courier updates)</label>
-              <input type="tel" id="checkoutPhone" class="form-input" value="+91 98765 43210" required>
+              <label class="form-label">Phone Number (10-Digit Mobile) *</label>
+              <input type="tel" id="checkoutPhone" class="form-input" placeholder="e.g. 9820145890" maxlength="15" required>
             </div>
             <div class="form-group">
-              <label class="form-label">Street Address & Landmark</label>
-              <input type="text" id="checkoutStreet" class="form-input" value="Penthouse 14B, Marine Lines" required>
+              <label class="form-label">Postal / PIN Code (India) *</label>
+              <div style="position:relative;">
+                <input type="text" id="checkoutZip" class="form-input" placeholder="Enter 6-digit Indian PIN code (e.g. 400020)" maxlength="6" oninput="handlePinCodeInput(this)" required>
+                <span id="pinValidationSpinner" style="display:none; position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:0.8rem; color:var(--gold-dark);">
+                  ⏳ Verifying with India Post...
+                </span>
+              </div>
+              <div id="pinValidationMsg" style="font-size:0.82rem; margin-top:5px; font-weight:600; display:none;"></div>
+              
+              <div id="postOfficeSelectWrap" style="display:none; margin-top:8px;">
+                <label class="form-label" style="font-size:0.78rem;">Select Verified Post Office Branch:</label>
+                <select id="checkoutPostOffice" class="form-input" style="padding:0.45rem; font-size:0.85rem;" onchange="handlePostOfficeChange(this)"></select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Street Address (House/Flat No., Building Name, Street) *</label>
+              <input type="text" id="checkoutStreet" class="form-input" placeholder="e.g. Flat 14B, Sea Face Towers, Worli" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Landmark / Locality (Optional)</label>
+              <input type="text" id="checkoutLandmark" class="form-input" placeholder="e.g. Opposite Worli Sports Club">
             </div>
             <div class="form-grid-2">
               <div class="form-group">
-                <label class="form-label">City</label>
-                <input type="text" id="checkoutCity" class="form-input" value="Mumbai" required>
+                <label class="form-label">City / District *</label>
+                <input type="text" id="checkoutCity" class="form-input" placeholder="Auto-verified from PIN" required>
               </div>
               <div class="form-group">
-                <label class="form-label">State</label>
-                <input type="text" id="checkoutState" class="form-input" value="Maharashtra" required>
+                <label class="form-label">State *</label>
+                <input type="text" id="checkoutState" class="form-input" placeholder="Auto-verified from PIN" required>
               </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Postal / PIN Code</label>
-              <input type="text" id="checkoutZip" class="form-input" value="400020" required>
             </div>
           </div>
 
           <!-- Step 2: Payment Method Selection -->
           <div class="checkout-card">
             <h3 style="font-size:1.3rem; margin-bottom:1.5rem; display:flex; align-items:center;">
-              <span class="step-badge">2</span> Select Payment Gateway
+              <span class="step-badge">2</span> Select Payment Option
             </h3>
 
             <!-- Method 1: UPI / QR Code -->
@@ -802,8 +817,8 @@
               <div style="display:flex; align-items:center; gap:0.8rem;">
                 <input type="radio" name="paymentMethodRadio" id="radioUpi" value="UPI / Instant QR" checked onchange="switchPaymentMethod('upi')">
                 <div>
-                  <strong>UPI / QR Code &bull; Google Pay, PhonePe, Paytm</strong>
-                  <div style="font-size:0.8rem; color:var(--text-muted);">Instant zero-fee payment with buyer insurance</div>
+                  <strong>UPI / QR Code (Google Pay, PhonePe, Paytm, BHIM)</strong>
+                  <div style="font-size:0.8rem; color:var(--text-muted);">Scan dynamic QR code & submit for concierge verification</div>
                 </div>
               </div>
               <span style="color:var(--gold-dark); font-weight:700;">⚡ Instant QR</span>
@@ -819,10 +834,10 @@
                 <canvas id="upiQrCanvas" width="200" height="200"></canvas>
               </div>
               <div style="font-size:1.1rem; font-weight:700; color:var(--text-charcoal); margin-bottom:0.3rem;">
-                Scan with any UPI App to Pay <span id="upiPayableAmount" style="color:var(--gold-dark);">₹0</span>
+                Scan to Pay <span id="upiPayableAmount" style="color:var(--gold-dark);">₹0</span>
               </div>
               <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.8rem;">
-                UPI ID: <strong style="color:var(--text-charcoal);">aurora.atelier@icici</strong> &bull; Insured Merchant
+                UPI ID: <strong style="color:var(--text-charcoal);">aurora.atelier@icici</strong>
               </div>
 
               <!-- UPI App Quick-Launch Pills -->
@@ -833,12 +848,12 @@
                 <span class="upi-app-pill" onclick="simulateUpiAppSelection('BHIM UPI')">🇮🇳 BHIM</span>
               </div>
 
-              <div id="upiPaymentStatusBadge" style="background:#FAF3DF; border:1px solid var(--gold-primary); color:var(--gold-dark); padding:0.6rem 1rem; border-radius:var(--radius-pill); font-size:0.85rem; font-weight:600; margin:1rem auto; max-width:320px; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
-                <span class="status-pulse-dot"></span> Waiting for scan & authentication...
+              <div id="upiPaymentStatusBadge" style="background:#FAF3DF; border:1px solid var(--gold-primary); color:var(--gold-dark); padding:0.6rem 1rem; border-radius:var(--radius-pill); font-size:0.85rem; font-weight:600; margin:1rem auto; max-width:340px; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+                <span class="status-pulse-dot"></span> Payment Status: Pending Verification
               </div>
 
-              <button type="button" class="btn btn-gold btn-lg" onclick="verifyAndTriggerUpiPayment()" style="width:100%; margin-top:0.5rem;">
-                Verify & Complete UPI Payment ⚡
+              <button type="button" class="btn btn-gold btn-lg" onclick="triggerUpiOrderSubmit()" style="width:100%; margin-top:0.5rem;">
+                Confirm Acquisition & Place Order (UPI) ⚡
               </button>
             </div>
 
@@ -923,17 +938,17 @@
               </div>
 
               <button type="button" class="btn btn-gold btn-lg" onclick="triggerCardOtpModal()" style="width:100%;">
-                Proceed to 2FA Bank Authentication 💳
+                Proceed with Card (2FA Verification) 💳
               </button>
             </div>
 
             <!-- Method 3: Net Banking -->
             <label class="payment-method-card" onclick="switchPaymentMethod('netbanking')">
               <div style="display:flex; align-items:center; gap:0.8rem;">
-                <input type="radio" name="paymentMethodRadio" id="radioNetbanking" value="Net Banking / Atelier Wire" onchange="switchPaymentMethod('netbanking')">
+                <input type="radio" name="paymentMethodRadio" id="radioNetbanking" value="Net Banking / Direct Wire" onchange="switchPaymentMethod('netbanking')">
                 <div>
                   <strong>Net Banking / Direct Bank Wire</strong>
-                  <div style="font-size:0.8rem; color:var(--text-muted);">All major banks &bull; Instant tokenized transfer</div>
+                  <div style="font-size:0.8rem; color:var(--text-muted);">All major Indian banks &bull; Concierge verified wire</div>
                 </div>
               </div>
               <span>🏦 Net Banking</span>
@@ -951,7 +966,7 @@
                 </select>
               </div>
               <button type="button" class="btn btn-gold btn-lg" onclick="triggerNetBankingCheckout()" style="width:100%; margin-top:0.5rem;">
-                Proceed to Secure Bank Gateway 🏦
+                Confirm & Place Order (Net Banking &bull; Pending Verification) 🏦
               </button>
             </div>
 
@@ -975,7 +990,7 @@
                 </div>
               </div>
               <button type="button" class="btn btn-gold btn-lg" onclick="triggerCodCheckout()" style="width:100%;">
-                Confirm Cash on Delivery Order 📦
+                Confirm Cash on Delivery Order (COD / Pending) 📦
               </button>
             </div>
           </div>
