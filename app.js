@@ -2851,6 +2851,96 @@ async function deleteProductAdmin(productId) {
   } catch(e) {}
 }
 
+function editProductAdmin(productId) {
+  const product = Aurora.products.find(p => p.id === productId);
+  if (!product) return;
+
+  const modalHtml = `
+    <form onsubmit="submitEditProduct(event, ${productId})" style="display:flex; flex-direction:column; gap:1rem; padding:1rem;">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input type="text" id="adminEditName" class="form-input" value="${product.name}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="adminEditCategory" class="form-input">
+            <option value="Necklace" ${product.category === 'Necklace' ? 'selected' : ''}>Necklace</option>
+            <option value="Bracelet" ${product.category === 'Bracelet' ? 'selected' : ''}>Bracelet</option>
+            <option value="Ring" ${product.category === 'Ring' ? 'selected' : ''}>Ring</option>
+            <option value="Earrings" ${product.category === 'Earrings' ? 'selected' : ''}>Earrings</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Metal Type</label>
+          <select id="adminEditMetal" class="form-input">
+            <option value="Gold" ${product.metal_type === 'Gold' ? 'selected' : ''}>Gold</option>
+            <option value="Silver" ${product.metal_type === 'Silver' ? 'selected' : ''}>Silver</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Purity / Hallmark</label>
+          <input type="text" id="adminEditPurity" class="form-input" value="${product.purity || ''}" required>
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Price (₹ INR)</label>
+          <input type="number" id="adminEditPrice" class="form-input" value="${product.price}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Atelier Stock</label>
+          <input type="number" id="adminEditStock" class="form-input" value="${product.stock || 10}" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Image URL</label>
+        <input type="url" id="adminEditImg" class="form-input" value="${product.image_url}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Artisan Description</label>
+        <textarea id="adminEditDesc" class="form-input" style="height:80px;" required>${product.description || ''}</textarea>
+      </div>
+      <button type="submit" class="btn btn-gold" style="width:100%;">Save Changes</button>
+    </form>
+  `;
+  openCustomModal(`Edit: ${product.name}`, modalHtml);
+}
+
+async function submitEditProduct(e, productId) {
+  e.preventDefault();
+  const name = document.querySelector('#adminEditName')?.value;
+  const category = document.querySelector('#adminEditCategory')?.value;
+  const metal_type = document.querySelector('#adminEditMetal')?.value;
+  const purity = document.querySelector('#adminEditPurity')?.value;
+  const price = parseFloat(document.querySelector('#adminEditPrice')?.value || '0');
+  const stock = parseInt(document.querySelector('#adminEditStock')?.value || '10');
+  const image_url = document.querySelector('#adminEditImg')?.value;
+  const description = document.querySelector('#adminEditDesc')?.value;
+
+  const payload = { name, category, metal_type, purity, price, stock, image_url, description };
+  
+  const idx = Aurora.products.findIndex(p => p.id === productId);
+  if (idx !== -1) {
+    Aurora.products[idx] = { ...Aurora.products[idx], ...payload };
+    renderProducts();
+  }
+
+  try {
+    await fetch(`${API_BASE}/products/${productId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) {}
+
+  showToast(`✨ Updated "${name}"!`);
+  closeModal();
+  renderAdminDashboard();
+}
+
 // ==========================================================================
 // MODAL & TOAST CONTROLLERS
 // ==========================================================================
@@ -2965,6 +3055,8 @@ window.openCustomModal = openCustomModal;
 window.closeModal = closeModal;
 window.openProductDetails = openProductDetails;
 window.quickAddToCart = quickAddToCart;
+window.addToCartFromDetail = addToCartFromDetail;
+window.buyNowFromDetail = buyNowFromDetail;
 window.toggleWishlist = toggleWishlist;
 window.applyPromoCode = applyPromoCode;
 window.toggleUserMenu = toggleUserMenu;
@@ -2976,6 +3068,27 @@ window.triggerGoogleSignIn = triggerGoogleSignIn;
 window.submitBespokeRequest = submitBespokeRequest;
 window.submitCustomBespoke = submitBespokeRequest;
 window.submitInspirationCommission = submitInspirationCommission;
+window.handlePromptInput = handlePromptInput;
+window.quickSelectPrompt = quickSelectPrompt;
+window.handleImageFileInput = handleImageFileInput;
+window.resetInspirationPreview = resetInspirationPreview;
+window.addImageByUrl = addImageByUrl;
+window.switchDetailImage = switchDetailImage;
+window.selectVariant = selectVariant;
+window.selectSize = selectSize;
+window.showReviewForm = showReviewForm;
+window.submitReview = submitReview;
+window.updateCartItemQty = updateCartItemQty;
+window.removeCartItem = removeCartItem;
+
+// Admin modal exports
+window.openAddProductModal = openAddProductModal;
+window.submitAddProduct = submitAddProduct;
+window.deleteProductAdmin = deleteProductAdmin;
+window.editProductAdmin = editProductAdmin;
+window.submitEditProduct = submitEditProduct;
+window.updateOrderStatusAdmin = updateOrderStatusAdmin;
+window.renderAdminDashboard = renderAdminDashboard;
 
 // Checkout, PIN validation & Payment simulation exports
 window.handlePinCodeInput = handlePinCodeInput;

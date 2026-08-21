@@ -2,18 +2,56 @@
  * AURORA ATELIER — Unified Real-Time Database Layer (AuroraDB)
  * 
  * Persistent Order Management & Tracking Engine.
- * Provides unified cross-session storage for Customer Boutique & Admin Operations.
+ * Multi-layer persistence: IndexedDB (Browser Object DB) + LocalStorage Cache + REST Backend API.
  * ZERO MOCK/DEMO DATA — 100% REAL ORDERS ONLY.
  */
 
 const AuroraDB = {
+  DB_NAME: 'AuroraAtelierDB',
+  DB_VERSION: 1,
+  STORE_ORDERS: 'orders',
+  STORE_REQUESTS: 'custom_requests',
   ORDERS_KEY: 'aurora_atelier_orders_db_v1',
   REQUESTS_KEY: 'aurora_atelier_custom_requests_db_v1',
   PIN_CACHE_KEY: 'aurora_pin_cache_v1',
 
+  dbInstance: null,
+
   // Initialize
-  init() {
+  async init() {
     this.cleanLegacyDemoData();
+    await this.initIndexedDB();
+  },
+
+  // Open IndexedDB
+  initIndexedDB() {
+    return new Promise((resolve) => {
+      if (!window.indexedDB) {
+        resolve(null);
+        return;
+      }
+      try {
+        const req = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(this.STORE_ORDERS)) {
+            db.createObjectStore(this.STORE_ORDERS, { keyPath: 'order_id' });
+          }
+          if (!db.objectStoreNames.contains(this.STORE_REQUESTS)) {
+            db.createObjectStore(this.STORE_REQUESTS, { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = (e) => {
+          this.dbInstance = e.target.result;
+          resolve(this.dbInstance);
+        };
+        req.onerror = () => {
+          resolve(null);
+        };
+      } catch (err) {
+        resolve(null);
+      }
+    });
   },
 
   // Purge any old hardcoded demo orders
@@ -142,7 +180,7 @@ const AuroraDB = {
     }
   },
 
-  // Retrieve all real orders from database
+  // Retrieve all real orders from database (multi-tiered: IndexedDB -> LocalStorage -> Backend API)
   async getOrders() {
     this.cleanLegacyDemoData();
     let orders = [];
@@ -160,7 +198,25 @@ const AuroraDB = {
       orders = [];
     }
 
-    // 2. Try Backend API if server is running
+    // 2. Try IndexedDB if available and local is empty
+    if (orders.length === 0 && this.dbInstance) {
+      try {
+        const idbOrders = await new Promise((res) => {
+          const tx = this.dbInstance.transaction(this.STORE_ORDERS, 'readonly');
+          const store = tx.objectStore(this.STORE_ORDERS);
+          const req = store.getAll();
+          req.onsuccess = () => res(req.result || []);
+          req.onerror = () => res([]);
+        });
+        if (Array.isArray(idbOrders) && idbOrders.length > 0) {
+          orders = idbOrders.sort((a, b) => (b.id || 0) - (a.id || 0));
+          localStorage.setItem(this.ORDERS_KEY, JSON.stringify(orders));
+          localStorage.setItem('aurora_orders', JSON.stringify(orders));
+        }
+      } catch(e) {}
+    }
+
+    // 3. Try Backend API if server is running
     try {
       const res = await fetch('/api/orders');
       if (res.ok) {
@@ -174,7 +230,7 @@ const AuroraDB = {
     return orders;
   },
 
-  // Save new real order
+  // Save new real order (saves simultaneously to IndexedDB, LocalStorage, and REST API)
   async saveOrder(orderPayload) {
     this.cleanLegacyDemoData();
 
@@ -227,7 +283,7 @@ const AuroraDB = {
       delivery_notes: orderPayload.delivery_notes || 'Insured White-Glove Atelier Courier'
     };
 
-    // Save to localStorage
+    // 1. Save to LocalStorage
     try {
       const existing = await this.getOrders();
       existing.unshift(newRecord);
@@ -237,7 +293,15 @@ const AuroraDB = {
       console.error('Error saving order to localStorage in AuroraDB:', e);
     }
 
-    // Sync with backend if available
+    // 2. Save to IndexedDB
+    if (this.dbInstance) {
+      try {
+        const tx = this.dbInstance.transaction(this.STORE_ORDERS, 'readwrite');
+        tx.objectStore(this.STORE_ORDERS).put(newRecord);
+      } catch(e) {}
+    }
+
+    // 3. Sync with backend if available
     try {
       await fetch('/api/orders', {
         method: 'POST',
@@ -259,6 +323,14 @@ const AuroraDB = {
         orders[idx].updated_at = new Date().toISOString();
         localStorage.setItem(this.ORDERS_KEY, JSON.stringify(orders));
         localStorage.setItem('aurora_orders', JSON.stringify(orders));
+
+        // Update IndexedDB
+        if (this.dbInstance) {
+          try {
+            const tx = this.dbInstance.transaction(this.STORE_ORDERS, 'readwrite');
+            tx.objectStore(this.STORE_ORDERS).put(orders[idx]);
+          } catch(e) {}
+        }
 
         // Sync with backend if active
         try {
@@ -293,6 +365,14 @@ const AuroraDB = {
 
         localStorage.setItem(this.ORDERS_KEY, JSON.stringify(orders));
         localStorage.setItem('aurora_orders', JSON.stringify(orders));
+
+        if (this.dbInstance) {
+          try {
+            const tx = this.dbInstance.transaction(this.STORE_ORDERS, 'readwrite');
+            tx.objectStore(this.STORE_ORDERS).put(orders[idx]);
+          } catch(e) {}
+        }
+
         return orders[idx];
       }
     } catch(e) {
@@ -308,6 +388,14 @@ const AuroraDB = {
       const filtered = orders.filter(o => o.order_id !== orderId && o.order_number !== orderId && String(o.id) !== String(orderId));
       localStorage.setItem(this.ORDERS_KEY, JSON.stringify(filtered));
       localStorage.setItem('aurora_orders', JSON.stringify(filtered));
+
+      if (this.dbInstance) {
+        try {
+          const tx = this.dbInstance.transaction(this.STORE_ORDERS, 'readwrite');
+          tx.objectStore(this.STORE_ORDERS).delete(orderId);
+        } catch(e) {}
+      }
+
       return true;
     } catch(e) {
       console.error('Error deleting order in AuroraDB:', e);
@@ -343,6 +431,14 @@ const AuroraDB = {
       reqs.unshift(record);
       localStorage.setItem(this.REQUESTS_KEY, JSON.stringify(reqs));
       localStorage.setItem('aurora_custom_requests', JSON.stringify(reqs));
+
+      if (this.dbInstance) {
+        try {
+          const tx = this.dbInstance.transaction(this.STORE_REQUESTS, 'readwrite');
+          tx.objectStore(this.STORE_REQUESTS).put(record);
+        } catch(e) {}
+      }
+
       return record;
     } catch(e) {
       return null;
