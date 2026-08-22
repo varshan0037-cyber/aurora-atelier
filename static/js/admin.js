@@ -77,7 +77,7 @@ const DEFAULT_ADMIN_ORDERS = [
     full_address: '42 Golf Links, New Delhi, Delhi - 110003',
     items: [
       {
-        name: 'Ã‰toile Diamond Pave Huggies',
+        name: 'Etoile Diamond Pave Huggies',
         metal: '18K Yellow Gold',
         size: 'Standard',
         price: 8999,
@@ -110,7 +110,7 @@ function handleAdminPasskeySubmit(e) {
     sessionStorage.setItem('aurora_admin_authed', 'true');
     showDashboard();
   } else {
-    alert('âŒ Invalid Administrative Passkey. Please try again.');
+    alert('Invalid Administrative Passkey. Please try again.');
   }
 }
 
@@ -147,7 +147,7 @@ function loadAdminOrders() {
   allAdminOrders = [...stored, ...mergedDefaults];
 
   updateMetrics();
-  renderAdminOrdersTable(allAdminOrders);
+  renderAdminOrdersCards(allAdminOrders);
 }
 
 function updateMetrics() {
@@ -166,29 +166,28 @@ function updateMetrics() {
     }
   });
 
-  document.querySelector('#metricTotalRevenue').innerText = `â‚¹${totalRev.toLocaleString()}`;
+  document.querySelector('#metricTotalRevenue').innerHTML = `&#8377;${totalRev.toLocaleString()}`;
   document.querySelector('#metricTotalOrders').innerText = allAdminOrders.length;
   document.querySelector('#metricActiveOrders').innerText = activeCount;
   document.querySelector('#metricDeliveredOrders').innerText = deliveredCount;
 }
 
-function renderAdminOrdersTable(orders) {
-  const tbody = document.querySelector('#adminOrdersTableBody');
-  if (!tbody) return;
+function renderAdminOrdersCards(orders) {
+  const container = document.querySelector('#adminOrdersCardsContainer');
+  if (!container) return;
 
   if (orders.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="6" class="empty-orders-view">
-          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">ðŸ“­</div>
-          <div style="font-weight: 700; font-size: 1.1rem;">No matching client orders found</div>
-        </td>
-      </tr>
+    container.innerHTML = `
+      <div style="text-align:center; padding:4rem 1rem; color:var(--text-muted);">
+        <div style="font-size: 3rem; margin-bottom: 0.8rem;">ðŸ“¦</div>
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.4rem; color:var(--dark-navy);">No incoming orders matching your search</h3>
+        <p style="font-size:0.85rem;">New customer orders placed from the website will automatically appear here with product pictures.</p>
+      </div>
     `;
     return;
   }
 
-  tbody.innerHTML = orders.map((order, idx) => {
+  container.innerHTML = orders.map((order, idx) => {
     const orderId = order.order_id || order.id || `AUR-2026-${idx+1}`;
     const custName = order.customer_name || order.user_name || 'Valued Collector';
     const email = order.email || order.user_email || 'client@aurora.luxury';
@@ -215,12 +214,13 @@ function renderAdminOrdersTable(orders) {
     ];
 
     const productsHtml = items.map(it => `
-      <div class="order-product-item">
-        <img src="${it.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80'}" alt="${it.name}" class="product-thumb-img" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80'">
-        <div class="product-info-col">
-          <div class="product-item-title" title="${it.name}">${it.name}</div>
-          <div class="product-item-meta">${it.metal || 'Pure Metal'} &bull; Size: ${it.size || 'Standard'} &bull; Qty: <strong>${it.quantity || 1}</strong></div>
-          <div class="product-item-pricing">â‚¹${((it.price || 0) * (it.quantity || 1)).toLocaleString()}</div>
+      <div class="big-product-item">
+        <img src="${it.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80'}" alt="${it.name}" class="big-product-img" onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80'">
+        <div class="product-text-details">
+          <div class="product-title-bold" title="${it.name}">${it.name}</div>
+          <div class="product-metal-tag">${it.metal || 'Precious Metal'} &bull; Size: ${it.size || 'Standard'}</div>
+          <div class="product-qty-size">Quantity: <strong>${it.quantity || 1} piece</strong></div>
+          <div class="product-subtotal-price">&#8377;${((it.price || 0) * (it.quantity || 1)).toLocaleString()}</div>
         </div>
       </div>
     `).join('');
@@ -230,60 +230,83 @@ function renderAdminOrdersTable(orders) {
     const badgeClass = isPaid ? 'badge-paid' : (isCod ? 'badge-cod' : 'badge-pending');
 
     return `
-      <tr>
-        <td>
-          <div class="order-id-badge">${orderId}</div>
-          <div class="order-date-text">Placed: <strong>${dateStr}</strong></div>
-          <div class="order-date-text">Time: ${timeStr}</div>
-        </td>
-
-        <td>
-          <div class="customer-info-box">
-            <div class="customer-name">${custName}</div>
-            <div class="customer-contact">âœ‰ ${email}</div>
-            <div class="customer-contact">ðŸ“ž ${phone}</div>
-            <div class="customer-address">ðŸ“ ${addr}</div>
+      <div class="big-order-card">
+        <!-- Order Card Header Bar -->
+        <div class="order-card-header">
+          <div class="order-id-group">
+            <span class="order-id-pill">${orderId}</span>
+            <span class="order-timestamp">Placed: <strong>${dateStr}</strong> at ${timeStr}</span>
           </div>
-        </td>
-
-        <td>
-          <div class="order-products-gallery">
-            ${productsHtml}
+          <div>
+            <span class="payment-badge ${badgeClass}">${payStatus}</span>
           </div>
-        </td>
+        </div>
 
-        <td>
-          <div class="amount-display">â‚¹${total.toLocaleString()}</div>
-          <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.35rem;">${payMethod}</div>
-          <span class="payment-badge ${badgeClass}">${payStatus}</span>
-        </td>
-
-        <td>
-          <div class="delivery-schedule-box">
-            <div>Target Delivery: <span class="delivery-date-highlight">${delDate}</span></div>
-            <div class="delivery-slot-pill">${delSlot}</div>
+        <!-- 3-Column Order Grid -->
+        <div class="order-grid-columns">
+          
+          <!-- Column 1: Client & Shipping -->
+          <div>
+            <div class="col-section-title">Client &amp; Delivery Destination</div>
+            <div class="client-card-box">
+              <div class="client-name-text">${custName}</div>
+              <div class="client-meta-line"><span>âœ‰</span> ${email}</div>
+              <div class="client-meta-line"><span>ðŸ“ž</span> ${phone}</div>
+              <div class="client-address-text">
+                <div style="font-weight:700; margin-bottom:2px;">ðŸ“ Shipping Address:</div>
+                ${addr}
+              </div>
+            </div>
           </div>
 
-          <select class="order-status-dropdown" onchange="updateOrderStatus('${orderId}', this.value)">
-            <option value="Order Placed" ${status==='Order Placed'?'selected':''}>Order Placed</option>
-            <option value="In Hallmarking Vault" ${status==='In Hallmarking Vault'?'selected':''}>In Hallmarking Vault</option>
-            <option value="Artisan Hand-Forging" ${status==='Artisan Hand-Forging'?'selected':''}>Artisan Hand-Forging</option>
-            <option value="Dispatched with White-Glove Courier" ${status==='Dispatched with White-Glove Courier'?'selected':''}>Dispatched (Courier)</option>
-            <option value="Delivered" ${status==='Delivered'?'selected':''}>Delivered âœ“</option>
-          </select>
-        </td>
-
-        <td>
-          <div class="action-btn-row">
-            <button class="btn-action-slip" onclick="openPackingSlip('${orderId}')">
-              ðŸ“„ Packing Slip
-            </button>
-            <button class="btn-action-del" onclick="deleteAdminOrder('${orderId}')">
-              ðŸ—‘ Delete
-            </button>
+          <!-- Column 2: Big Product Pictures & Details -->
+          <div>
+            <div class="col-section-title">Ordered Jewelry Pieces (${items.length})</div>
+            <div class="ordered-products-wrap">
+              ${productsHtml}
+            </div>
           </div>
-        </td>
-      </tr>
+
+          <!-- Column 3: Financials & Operations Actions -->
+          <div>
+            <div class="col-section-title">Financials &amp; Dispatcher</div>
+            <div class="operations-box">
+              <div class="grand-total-row">
+                <span class="grand-total-label">Grand Total:</span>
+                <span class="grand-total-val">&#8377;${total.toLocaleString()}</span>
+              </div>
+
+              <div class="payment-tag-row">
+                <span style="font-size:0.8rem; color:var(--text-muted);">${payMethod}</span>
+              </div>
+
+              <div class="delivery-schedule-row">
+                <div>Target Delivery: <strong>${delDate}</strong></div>
+                <div class="delivery-slot-badge">${delSlot}</div>
+              </div>
+
+              <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:4px;">UPDATE DISPATCH STATUS:</div>
+              <select class="status-select-action" onchange="updateOrderStatus('${orderId}', this.value)">
+                <option value="Order Placed" ${status==='Order Placed'?'selected':''}>Order Placed</option>
+                <option value="In Hallmarking Vault" ${status==='In Hallmarking Vault'?'selected':''}>In Hallmarking Vault</option>
+                <option value="Artisan Hand-Forging" ${status==='Artisan Hand-Forging'?'selected':''}>Artisan Hand-Forging</option>
+                <option value="Dispatched with White-Glove Courier" ${status==='Dispatched with White-Glove Courier'?'selected':''}>Dispatched (Courier)</option>
+                <option value="Delivered" ${status==='Delivered'?'selected':''}>Delivered âœ“</option>
+              </select>
+
+              <div class="order-actions-grid">
+                <button class="btn-slip" onclick="openPackingSlip('${orderId}')">
+                  ðŸ“„ Packing Slip
+                </button>
+                <button class="btn-del" onclick="deleteAdminOrder('${orderId}')">
+                  ðŸ—‘ Delete
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
     `;
   }).join('');
 }
@@ -305,7 +328,7 @@ function filterAdminOrders() {
     return matchQuery && matchStatus;
   });
 
-  renderAdminOrdersTable(filtered);
+  renderAdminOrdersCards(filtered);
 }
 
 function updateOrderStatus(orderId, newStatus) {
@@ -322,7 +345,7 @@ function deleteAdminOrder(orderId) {
   allAdminOrders = allAdminOrders.filter(o => (o.order_id || o.id) !== orderId);
   saveOrdersToStorage();
   updateMetrics();
-  renderAdminOrdersTable(allAdminOrders);
+  renderAdminOrdersCards(allAdminOrders);
 }
 
 function saveOrdersToStorage() {
@@ -343,54 +366,54 @@ function openPackingSlip(orderId) {
   card.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #C9A227; padding-bottom:1.2rem; margin-bottom:1.5rem;">
       <div>
-        <h2 style="font-family:'Cormorant Garamond', serif; font-size:2rem; font-weight:700; color:#0F172A; letter-spacing:0.1em;">AURORA ATELIER</h2>
-        <div style="font-size:0.8rem; text-transform:uppercase; color:#9A7B1C; font-weight:700; letter-spacing:0.08em;">White-Glove Insured Manifest</div>
+        <h2 style="font-family:'Cormorant Garamond', serif; font-size:2.2rem; font-weight:700; color:#0F172A; letter-spacing:0.1em;">AURORA ATELIER</h2>
+        <div style="font-size:0.82rem; text-transform:uppercase; color:#9A7B1C; font-weight:800; letter-spacing:0.1em;">White-Glove Insured Manifest</div>
       </div>
       <div style="text-align:right;">
-        <div style="font-family:monospace; font-weight:800; font-size:1.1rem; color:#C9A227;">${order.order_id || orderId}</div>
-        <div style="font-size:0.8rem; color:#64748B;">Date: ${order.order_date || 'Today'}</div>
+        <div style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#C9A227;">${order.order_id || orderId}</div>
+        <div style="font-size:0.82rem; color:#64748B;">Date: ${order.order_date || 'Today'}</div>
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; font-size:0.85rem;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; font-size:0.88rem;">
       <div>
-        <div style="font-weight:700; text-transform:uppercase; font-size:0.75rem; color:#64748B; margin-bottom:0.25rem;">Ship To:</div>
-        <div style="font-weight:700; font-size:0.95rem; color:#0F172A;">${order.customer_name || 'Client'}</div>
+        <div style="font-weight:800; text-transform:uppercase; font-size:0.75rem; color:#64748B; margin-bottom:0.3rem;">Ship To:</div>
+        <div style="font-weight:800; font-size:1rem; color:#0F172A;">${order.customer_name || 'Client'}</div>
         <div>${order.phone || ''}</div>
         <div>${order.email || ''}</div>
-        <div style="margin-top:0.4rem; color:#334155;">${order.full_address || ''}</div>
+        <div style="margin-top:0.4rem; color:#334155; line-height:1.4;">${order.full_address || ''}</div>
       </div>
       <div>
-        <div style="font-weight:700; text-transform:uppercase; font-size:0.75rem; color:#64748B; margin-bottom:0.25rem;">Delivery Dispatch:</div>
+        <div style="font-weight:800; text-transform:uppercase; font-size:0.75rem; color:#64748B; margin-bottom:0.3rem;">Delivery Dispatch:</div>
         <div>Scheduled Date: <strong>${order.scheduled_delivery_date || 'In 3 Days'}</strong></div>
         <div>Time Slot: <strong>${order.delivery_time_slot || 'Standard'}</strong></div>
-        <div>Status: <span style="font-weight:700; color:#15803D;">${order.order_status || 'Order Placed'}</span></div>
+        <div>Status: <span style="font-weight:800; color:#15803D;">${order.order_status || 'Order Placed'}</span></div>
         <div>Payment: <strong>${order.payment_method || 'Verified'}</strong> (${order.payment_status || 'Paid'})</div>
       </div>
     </div>
 
-    <div style="border-top:1px solid #E2E8F0; padding-top:1rem; margin-bottom:1.5rem;">
-      <div style="font-weight:700; font-size:0.85rem; text-transform:uppercase; color:#64748B; margin-bottom:0.75rem;">Verified Heirlooms & Pictures:</div>
+    <div style="border-top:1.5px solid #E2E8F0; padding-top:1.2rem; margin-bottom:1.5rem;">
+      <div style="font-weight:800; font-size:0.85rem; text-transform:uppercase; color:#64748B; margin-bottom:0.9rem;">Verified Pieces &amp; Pictures:</div>
       ${items.map(it => `
-        <div style="display:flex; align-items:center; gap:0.9rem; margin-bottom:0.75rem; background:#FAF8F5; padding:0.5rem 0.75rem; border-radius:8px;">
-          <img src="${it.image}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; border:1px solid #CBD5E1;">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.85rem; background:#FAF8F5; padding:0.6rem 0.9rem; border-radius:8px; border:1px solid #E5D5A5;">
+          <img src="${it.image}" style="width:54px; height:54px; object-fit:cover; border-radius:6px; border:1.5px solid #CBD5E1;">
           <div style="flex:1;">
-            <div style="font-weight:700; font-size:0.9rem;">${it.name}</div>
-            <div style="font-size:0.78rem; color:#64748B;">${it.metal || ''} &bull; Size: ${it.size || 'Standard'} &bull; Qty: ${it.quantity || 1}</div>
+            <div style="font-weight:800; font-size:0.95rem;">${it.name}</div>
+            <div style="font-size:0.8rem; color:#64748B;">${it.metal || ''} &bull; Size: ${it.size || 'Standard'} &bull; Qty: <strong>${it.quantity || 1}</strong></div>
           </div>
-          <div style="font-weight:700; font-size:0.9rem; color:#9A7B1C;">â‚¹${((it.price || 0) * (it.quantity || 1)).toLocaleString()}</div>
+          <div style="font-weight:800; font-size:0.95rem; color:#9A7B1C;">&#8377;${((it.price || 0) * (it.quantity || 1)).toLocaleString()}</div>
         </div>
       `).join('')}
     </div>
 
     <div style="display:flex; justify-content:space-between; align-items:center; border-top:2px solid #E2E8F0; padding-top:1rem; margin-bottom:2rem;">
-      <div style="font-size:1.1rem; font-weight:700;">Grand Total:</div>
-      <div style="font-size:1.4rem; font-weight:800; color:#C9A227;">â‚¹${total.toLocaleString()}</div>
+      <div style="font-size:1.15rem; font-weight:800;">Grand Total:</div>
+      <div style="font-size:1.5rem; font-weight:900; color:#C9A227;">&#8377;${total.toLocaleString()}</div>
     </div>
 
     <div style="display:flex; justify-content:space-between; gap:1rem;">
-      <button onclick="closeSlipModal()" style="padding:0.6rem 1.2rem; border-radius:6px; border:1px solid #CBD5E1; background:#F8FAFC; cursor:pointer; font-weight:600;">Close</button>
-      <button onclick="window.print()" style="padding:0.6rem 1.5rem; border-radius:6px; border:none; background:linear-gradient(135deg, #C9A227, #A8841B); color:#FFF; font-weight:700; cursor:pointer;">ðŸ–¨ Print Packing Slip</button>
+      <button onclick="closeSlipModal()" style="padding:0.65rem 1.4rem; border-radius:6px; border:1.5px solid #CBD5E1; background:#F8FAFC; cursor:pointer; font-weight:700;">Close</button>
+      <button onclick="window.print()" style="padding:0.65rem 1.6rem; border-radius:6px; border:none; background:linear-gradient(135deg, #C9A227, #A8841B); color:#FFF; font-weight:800; cursor:pointer;">ðŸ–¨ Print Manifest Slip</button>
     </div>
   `;
 
@@ -417,9 +440,9 @@ function loadAdminBespokeRequests() {
   if (reqs.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" class="empty-orders-view">
-          <div style="font-size: 2rem; margin-bottom: 0.3rem;">âœï¸</div>
-          <div>No bespoke client commissions received yet</div>
+        <td colspan="6" style="text-align:center; padding:3rem 1rem; color:var(--text-muted);">
+          <div style="font-size: 2.2rem; margin-bottom: 0.4rem;">âœï¸</div>
+          <div style="font-weight:700;">No bespoke client commissions received yet</div>
         </td>
       </tr>
     `;
@@ -428,23 +451,23 @@ function loadAdminBespokeRequests() {
 
   tbody.innerHTML = reqs.map(r => `
     <tr>
-      <td><span class="order-id-badge">${r.request_number || r.id}</span></td>
+      <td><span class="order-id-pill">${r.request_number || r.id}</span></td>
       <td>
-        <div style="font-weight:700;">${r.customer_name || 'Anonymous Client'}</div>
-        <div style="font-size:0.8rem; color:#64748B;">${r.email || ''}</div>
-        <div style="font-size:0.8rem; color:#64748B;">${r.phone || ''}</div>
+        <div style="font-weight:800;">${r.customer_name || 'Anonymous Client'}</div>
+        <div style="font-size:0.82rem; color:#64748B;">âœ‰ ${r.email || ''}</div>
+        <div style="font-size:0.82rem; color:#64748B;">ðŸ“ž ${r.phone || ''}</div>
       </td>
       <td>
-        <div style="font-size:0.85rem; max-width:320px; line-height:1.4;">${r.prompt || r.concept_description || 'Custom Bespoke Inquiry'}</div>
+        <div style="font-size:0.88rem; max-width:340px; line-height:1.45;">${r.prompt || r.concept_description || 'Custom Bespoke Inquiry'}</div>
       </td>
       <td>
-        ${r.image_url ? `<img src="${r.image_url}" style="width:50px; height:50px; object-fit:cover; border-radius:6px; border:1px solid #CBD5E1;">` : '<span style="color:#94A3B8; font-size:0.8rem;">No Photo Attached</span>'}
+        ${r.image_url ? `<img src="${r.image_url}" style="width:64px; height:64px; object-fit:cover; border-radius:8px; border:1.5px solid #CBD5E1;">` : '<span style="color:#94A3B8; font-size:0.82rem;">No Photo Attached</span>'}
       </td>
       <td>
-        <div style="font-weight:700; color:#9A7B1C;">${r.metal_choice || '18K Gold'}</div>
-        <div style="font-size:0.78rem; color:#64748B;">Budget: ${r.budget_range || 'Flexible'}</div>
+        <div style="font-weight:800; color:#9A7B1C;">${r.metal_choice || '18K Gold'}</div>
+        <div style="font-size:0.8rem; color:#64748B;">Budget: ${r.budget_range || 'Flexible'}</div>
       </td>
-      <td style="font-size:0.8rem; color:#64748B;">${r.created_at ? new Date(r.created_at).toLocaleDateString() : 'Recent'}</td>
+      <td style="font-size:0.82rem; color:#64748B;">${r.created_at ? new Date(r.created_at).toLocaleDateString() : 'Recent'}</td>
     </tr>
   `).join('');
 }

@@ -3,39 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aurora Atelier â€” Operations & Order Command Center</title>
+  <title>Aurora Atelier &mdash; Operations &amp; Order Command Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>ðŸ‘‘</text></svg>">
   <style>
     :root {
       --gold-primary: #C9A227;
       --gold-dark: #9A7B1C;
-      --gold-light: #E2C974;
+      --gold-light: #E5CF87;
       --gold-bg: #FAF7EE;
-      --gold-border: #E8DCB8;
+      --gold-border: #E5D5A5;
       --dark-navy: #0F172A;
-      --card-bg: #FFFFFF;
+      --card-bg: rgba(255, 255, 255, 0.94);
       --text-main: #1E293B;
       --text-muted: #64748B;
-      --bg-page: #F8FAFC;
-      --border-color: #E2E8F0;
+      --bg-page: #F4EFE6;
+      --border-color: #E2D9C8;
       --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-      --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+      --radius-md: 14px;
+      --radius-lg: 18px;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.12);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: var(--bg-page);
+      background: #F8F5EE url('./static/images/luxury-bg.png') no-repeat center center fixed;
+      background-size: cover;
       color: var(--text-main);
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
+      position: relative;
+    }
+
+    /* Ambient soft backdrop overlay */
+    .luxury-page-backdrop {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.6) 0%, rgba(248, 244, 235, 0.75) 100%);
+      pointer-events: none;
+      z-index: 0;
     }
 
     /* Passkey Gate Screen */
@@ -44,26 +56,28 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 20%, #1E293B 0%, #0F172A 100%);
       padding: 1.5rem;
+      position: relative;
+      z-index: 10;
     }
 
     .gate-card {
-      background: #FFFFFF;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(16px);
       width: 100%;
-      max-width: 440px;
-      padding: 2.5rem;
+      max-width: 460px;
+      padding: 2.8rem 2.2rem;
       border-radius: var(--radius-lg);
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.2);
       text-align: center;
-      border: 1px solid rgba(201, 162, 39, 0.3);
+      border: 1.5px solid var(--gold-border);
     }
 
     .gate-logo {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 2.2rem;
+      font-size: 2.4rem;
       font-weight: 700;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.18em;
       color: var(--dark-navy);
       margin-bottom: 0.3rem;
     }
@@ -71,20 +85,21 @@
     .gate-subtitle {
       font-size: 0.85rem;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.14em;
       color: var(--gold-dark);
-      margin-bottom: 2rem;
-      font-weight: 600;
+      margin-bottom: 1.8rem;
+      font-weight: 700;
     }
 
     .form-input {
       width: 100%;
-      padding: 0.85rem 1rem;
+      padding: 0.9rem 1.1rem;
       font-size: 0.95rem;
       border: 1.5px solid var(--border-color);
       border-radius: var(--radius-sm);
       margin-bottom: 1.2rem;
       outline: none;
+      background: #FFFFFF;
       transition: all 0.2s;
     }
     .form-input:focus {
@@ -94,7 +109,7 @@
 
     .btn-gold {
       width: 100%;
-      padding: 0.85rem 1.5rem;
+      padding: 0.9rem 1.5rem;
       background: linear-gradient(135deg, #C9A227 0%, #A8841B 100%);
       color: #FFFFFF;
       font-size: 0.95rem;
@@ -102,12 +117,12 @@
       border: none;
       border-radius: var(--radius-sm);
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(201, 162, 39, 0.3);
+      box-shadow: 0 4px 14px rgba(201, 162, 39, 0.35);
       transition: all 0.2s;
     }
     .btn-gold:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(201, 162, 39, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(201, 162, 39, 0.45);
     }
 
     /* Admin Dashboard Layout */
@@ -115,31 +130,34 @@
       display: none;
       min-height: 100vh;
       flex-direction: column;
+      position: relative;
+      z-index: 10;
     }
 
     /* Top Operations Bar */
     .admin-navbar {
       background: #0F172A;
       color: #FFFFFF;
-      padding: 1rem 2rem;
+      padding: 1.1rem 2.2rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 2px solid var(--gold-primary);
+      border-bottom: 3px solid var(--gold-primary);
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
 
     .admin-brand {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.2rem;
     }
     .admin-brand-title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.6rem;
-      letter-spacing: 0.12em;
+      font-size: 1.8rem;
+      letter-spacing: 0.15em;
       color: var(--gold-light);
       font-weight: 700;
     }
@@ -147,383 +165,486 @@
       background: rgba(201, 162, 39, 0.2);
       border: 1px solid var(--gold-primary);
       color: var(--gold-light);
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 700;
-      padding: 0.2rem 0.6rem;
+      padding: 0.25rem 0.75rem;
       border-radius: 999px;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
 
     .nav-user-meta {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.2rem;
     }
     .btn-logout {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.08);
       color: #E2E8F0;
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 0.45rem 0.9rem;
-      font-size: 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.5rem 1rem;
+      font-size: 0.82rem;
       font-weight: 600;
       border-radius: var(--radius-sm);
       cursor: pointer;
       transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
     .btn-logout:hover {
-      background: rgba(239, 68, 68, 0.2);
+      background: rgba(239, 68, 68, 0.25);
       border-color: #EF4444;
       color: #FCA5A5;
     }
 
+    .btn-open-store {
+      color: var(--gold-light);
+      font-size: 0.85rem;
+      text-decoration: none;
+      font-weight: 700;
+      padding: 0.5rem 0.9rem;
+      border: 1px solid var(--gold-primary);
+      border-radius: var(--radius-sm);
+      background: rgba(201, 162, 39, 0.1);
+      transition: all 0.2s;
+    }
+    .btn-open-store:hover {
+      background: var(--gold-primary);
+      color: #0F172A;
+    }
+
     /* Main Container */
     .admin-container {
-      max-width: 1380px;
+      max-width: 1420px;
       width: 100%;
       margin: 0 auto;
-      padding: 2rem 1.5rem;
+      padding: 2.2rem 1.5rem;
       flex: 1;
     }
 
     /* Metrics Bar */
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.4rem;
+      margin-bottom: 2.2rem;
     }
 
     .metric-card {
       background: var(--card-bg);
+      backdrop-filter: blur(12px);
       border-radius: var(--radius-md);
-      padding: 1.5rem;
-      border: 1px solid var(--border-color);
-      box-shadow: var(--shadow-sm);
+      padding: 1.6rem 1.5rem;
+      border: 1.5px solid var(--border-color);
+      box-shadow: var(--shadow-md);
       display: flex;
       align-items: center;
-      gap: 1.2rem;
+      gap: 1.3rem;
+      transition: transform 0.2s;
+    }
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
     }
 
     .metric-icon-box {
-      width: 54px;
-      height: 54px;
+      width: 58px;
+      height: 58px;
       border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.6rem;
       flex-shrink: 0;
     }
-    .metric-icon-gold { background: #FAF3DF; color: var(--gold-dark); border: 1px solid var(--gold-border); }
-    .metric-icon-blue { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
-    .metric-icon-green { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
-    .metric-icon-purple { background: #FAF5FF; color: #9333EA; border: 1px solid #E9D5FF; }
+    .metric-icon-gold { background: #FAF3DF; color: var(--gold-dark); border: 1.5px solid var(--gold-border); }
+    .metric-icon-blue { background: #EFF6FF; color: #2563EB; border: 1.5px solid #BFDBFE; }
+    .metric-icon-purple { background: #FAF5FF; color: #9333EA; border: 1.5px solid #E9D5FF; }
+    .metric-icon-green { background: #F0FDF4; color: #16A34A; border: 1.5px solid #BBF7D0; }
 
     .metric-title {
       font-size: 0.8rem;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       color: var(--text-muted);
-      font-weight: 600;
-      margin-bottom: 0.25rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
     }
     .metric-value {
-      font-size: 1.7rem;
+      font-size: 1.85rem;
       font-weight: 800;
       color: var(--dark-navy);
     }
 
-    /* Orders Section Header & Controls */
+    /* Section Container Card */
     .section-card {
       background: var(--card-bg);
+      backdrop-filter: blur(16px);
       border-radius: var(--radius-lg);
-      border: 1px solid var(--border-color);
-      box-shadow: var(--shadow-sm);
+      border: 1.5px solid var(--border-color);
+      box-shadow: var(--shadow-md);
       overflow: hidden;
-      margin-bottom: 2rem;
+      margin-bottom: 2.5rem;
     }
 
     .section-header-bar {
-      padding: 1.25rem 1.75rem;
-      border-bottom: 1px solid var(--border-color);
+      padding: 1.4rem 2rem;
+      border-bottom: 1.5px solid var(--border-color);
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 1rem;
-      background: #FAF8F5;
+      gap: 1.2rem;
+      background: rgba(250, 247, 240, 0.95);
     }
 
     .section-heading {
-      font-size: 1.25rem;
-      font-weight: 700;
+      font-size: 1.35rem;
+      font-weight: 800;
       color: var(--dark-navy);
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.75rem;
     }
 
     .filter-controls {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.9rem;
       flex-wrap: wrap;
     }
 
     .search-input {
-      padding: 0.55rem 0.9rem;
+      padding: 0.65rem 1rem;
       border: 1.5px solid var(--border-color);
       border-radius: var(--radius-sm);
-      font-size: 0.85rem;
-      min-width: 260px;
+      font-size: 0.9rem;
+      min-width: 280px;
       outline: none;
+      background: #FFFFFF;
     }
     .search-input:focus { border-color: var(--gold-primary); }
 
     .status-select {
-      padding: 0.55rem 0.9rem;
+      padding: 0.65rem 1rem;
       border: 1.5px solid var(--border-color);
       border-radius: var(--radius-sm);
-      font-size: 0.85rem;
-      font-weight: 600;
+      font-size: 0.88rem;
+      font-weight: 700;
       outline: none;
       background: #FFFFFF;
+      cursor: pointer;
     }
 
-    /* Orders Table / Cards */
-    .orders-table-wrap {
-      overflow-x: auto;
+    /* BIG ORDERS CONTAINER (Luxury Card Layout) */
+    .orders-cards-list {
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.6rem;
     }
 
-    .admin-orders-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 0.88rem;
+    .big-order-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+      padding: 1.6rem;
+      transition: all 0.2s ease;
+    }
+    .big-order-card:hover {
+      border-color: var(--gold-primary);
+      box-shadow: var(--shadow-md);
     }
 
-    .admin-orders-table th {
-      background: #F1F5F9;
-      color: var(--text-muted);
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.06em;
-      padding: 0.9rem 1.2rem;
-      border-bottom: 1px solid var(--border-color);
+    /* Order Top Meta Bar */
+    .order-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      padding-bottom: 1.1rem;
+      border-bottom: 1.5px solid #F1F5F9;
+      margin-bottom: 1.3rem;
     }
 
-    .admin-orders-table td {
-      padding: 1.2rem;
-      border-bottom: 1px solid var(--border-color);
-      vertical-align: top;
+    .order-id-group {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      flex-wrap: wrap;
     }
 
-    .admin-orders-table tr:hover {
-      background: #FDFCF9;
-    }
-
-    /* Order Column Badges & UI */
-    .order-id-badge {
+    .order-id-pill {
       font-family: monospace;
       font-weight: 800;
       color: var(--gold-dark);
-      font-size: 0.92rem;
+      font-size: 1.05rem;
       background: #FAF3DF;
-      border: 1px solid var(--gold-border);
-      padding: 0.25rem 0.55rem;
-      border-radius: 6px;
-      display: inline-block;
-      margin-bottom: 0.35rem;
+      border: 1.5px solid var(--gold-border);
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      letter-spacing: 0.05em;
     }
 
-    .order-date-text {
-      font-size: 0.78rem;
+    .order-timestamp {
+      font-size: 0.85rem;
       color: var(--text-muted);
+      font-weight: 500;
     }
 
-    /* Customer Info Block */
-    .customer-info-box {
-      line-height: 1.45;
+    /* Order Inner 3-Column Grid */
+    .order-grid-columns {
+      display: grid;
+      grid-template-columns: 1.2fr 1.8fr 1.3fr;
+      gap: 1.8rem;
+      align-items: start;
     }
-    .customer-name {
-      font-weight: 700;
-      color: var(--dark-navy);
-      font-size: 0.95rem;
-    }
-    .customer-contact {
-      font-size: 0.8rem;
+
+    /* Column 1: Client Profile */
+    .col-section-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
       color: var(--text-muted);
-      margin-top: 0.2rem;
+      margin-bottom: 0.6rem;
     }
-    .customer-address {
-      font-size: 0.78rem;
-      color: #475569;
+
+    .client-card-box {
       background: #F8FAFC;
-      border: 1px solid #E2E8F0;
-      border-radius: 6px;
-      padding: 0.45rem 0.6rem;
-      margin-top: 0.4rem;
-      max-width: 260px;
+      border: 1.5px solid #E2E8F0;
+      border-radius: var(--radius-sm);
+      padding: 1.1rem;
     }
-
-    /* Product Item Visual Gallery (Image + Title + Price) */
-    .order-products-gallery {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      min-width: 280px;
+    .client-name-text {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--dark-navy);
+      margin-bottom: 0.3rem;
     }
-
-    .order-product-item {
+    .client-meta-line {
+      font-size: 0.85rem;
+      color: #475569;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+    .client-address-text {
+      font-size: 0.82rem;
+      color: #334155;
       background: #FFFFFF;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm);
-      padding: 0.45rem 0.6rem;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
-
-    .product-thumb-img {
-      width: 52px;
-      height: 52px;
-      object-fit: cover;
-      border-radius: 6px;
       border: 1px solid #CBD5E1;
-      background: #F1F5F9;
-      flex-shrink: 0;
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+      line-height: 1.45;
     }
 
-    .product-info-col {
+    /* Column 2: Big Product Pictures & Details */
+    .ordered-products-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .big-product-item {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      background: #FAF8F5;
+      border: 1.5px solid var(--gold-border);
+      border-radius: var(--radius-sm);
+      padding: 0.8rem 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .big-product-img {
+      width: 84px;
+      height: 84px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1.5px solid #CBD5E1;
+      background: #FFFFFF;
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+    .big-product-img:hover {
+      transform: scale(1.05);
+    }
+
+    .product-text-details {
       flex: 1;
       min-width: 0;
     }
-    .product-item-title {
-      font-weight: 700;
-      color: var(--dark-navy);
-      font-size: 0.84rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .product-item-meta {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-    .product-item-pricing {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--gold-dark);
-    }
-
-    /* Amount & Payment */
-    .amount-display {
-      font-size: 1.15rem;
+    .product-title-bold {
+      font-size: 1.05rem;
       font-weight: 800;
       color: var(--dark-navy);
       margin-bottom: 0.25rem;
     }
+    .product-metal-tag {
+      font-size: 0.82rem;
+      color: var(--gold-dark);
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+    .product-qty-size {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .product-subtotal-price {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--dark-navy);
+      margin-top: 0.3rem;
+    }
+
+    /* Column 3: Financials & Operations */
+    .operations-box {
+      background: #F8FAFC;
+      border: 1.5px solid #E2E8F0;
+      border-radius: var(--radius-sm);
+      padding: 1.1rem;
+    }
+
+    .grand-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.6rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid #E2E8F0;
+    }
+    .grand-total-label { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); }
+    .grand-total-val { font-size: 1.35rem; font-weight: 900; color: var(--gold-dark); }
+
+    .payment-tag-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
     .payment-badge {
       display: inline-block;
-      padding: 0.2rem 0.55rem;
-      border-radius: 4px;
-      font-size: 0.72rem;
-      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
     }
     .badge-paid { background: #DCFCE7; color: #15803D; border: 1px solid #86EFAC; }
     .badge-cod { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
     .badge-pending { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; }
 
-    /* Delivery Time & Status Dispatcher */
-    .delivery-schedule-box {
-      font-size: 0.8rem;
-      line-height: 1.4;
+    .delivery-schedule-row {
+      font-size: 0.82rem;
+      line-height: 1.45;
+      margin-bottom: 0.8rem;
     }
-    .delivery-date-highlight {
-      font-weight: 700;
-      color: #1E293B;
-    }
-    .delivery-slot-pill {
+    .delivery-slot-badge {
       display: inline-block;
       background: #EFF6FF;
       color: #1D4ED8;
       border: 1px solid #BFDBFE;
-      padding: 0.15rem 0.5rem;
+      padding: 0.2rem 0.55rem;
       border-radius: 4px;
-      font-size: 0.72rem;
-      font-weight: 600;
+      font-size: 0.75rem;
+      font-weight: 700;
       margin-top: 0.2rem;
     }
 
-    .order-status-dropdown {
-      padding: 0.4rem 0.6rem;
+    .status-select-action {
+      width: 100%;
+      padding: 0.55rem 0.8rem;
       border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      outline: none;
-      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 800;
       border: 1.5px solid var(--border-color);
-      margin-top: 0.5rem;
+      margin-bottom: 0.8rem;
       background: #FFFFFF;
+      cursor: pointer;
     }
 
-    /* Action Buttons */
-    .action-btn-row {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
+    .order-actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
     }
-    .btn-action-slip {
-      background: #F8FAFC;
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      padding: 0.35rem 0.65rem;
-      border-radius: 6px;
-      font-size: 0.76rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .btn-action-slip:hover {
+
+    .btn-slip {
       background: #FAF3DF;
-      border-color: var(--gold-primary);
+      border: 1.5px solid var(--gold-primary);
       color: var(--gold-dark);
-    }
-
-    .btn-action-del {
-      background: #FEF2F2;
-      border: 1px solid #FECACA;
-      color: #DC2626;
-      padding: 0.35rem 0.65rem;
+      padding: 0.5rem;
       border-radius: 6px;
-      font-size: 0.76rem;
-      font-weight: 600;
+      font-size: 0.82rem;
+      font-weight: 700;
       cursor: pointer;
+      text-align: center;
       transition: all 0.15s;
     }
-    .btn-action-del:hover {
+    .btn-slip:hover {
+      background: var(--gold-primary);
+      color: #FFFFFF;
+    }
+
+    .btn-del {
+      background: #FEF2F2;
+      border: 1.5px solid #FECACA;
+      color: #DC2626;
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .btn-del:hover {
       background: #DC2626;
       color: #FFFFFF;
     }
 
-    /* Empty state */
-    .empty-orders-view {
-      text-align: center;
-      padding: 4rem 1rem;
+    /* Bespoke Table Styling */
+    .bespoke-table-wrap {
+      overflow-x: auto;
+      padding: 0 1rem 1.5rem 1rem;
+    }
+    .bespoke-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .bespoke-table th {
+      background: #F1F5F9;
       color: var(--text-muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      padding: 0.9rem 1.2rem;
+      border-bottom: 1.5px solid var(--border-color);
+      text-align: left;
+    }
+    .bespoke-table td {
+      padding: 1.2rem;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
     }
 
-    /* Printable Slip Modal */
+    /* Modal Styling */
     .slip-modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(6px);
       z-index: 1000;
       display: none;
       align-items: center;
@@ -533,7 +654,7 @@
 
     .slip-card {
       background: #FFFFFF;
-      max-width: 600px;
+      max-width: 620px;
       width: 100%;
       border-radius: var(--radius-lg);
       padding: 2.5rem;
@@ -541,6 +662,13 @@
       box-shadow: var(--shadow-lg);
       max-height: 90vh;
       overflow-y: auto;
+    }
+
+    @media (max-width: 1024px) {
+      .order-grid-columns {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+      }
     }
 
     @media print {
@@ -552,30 +680,33 @@
 </head>
 <body>
 
+  <!-- Ambient Backdrop Filter -->
+  <div class="luxury-page-backdrop"></div>
+
   <!-- PASSKEY GATE SCREEN -->
   <div class="admin-gate-screen" id="adminGateScreen">
     <div class="gate-card">
-      <div style="font-size: 2.8rem; margin-bottom: 0.5rem;">ðŸ‘‘</div>
+      <div style="font-size: 3rem; margin-bottom: 0.5rem;">ðŸ‘‘</div>
       <h1 class="gate-logo">AURORA</h1>
-      <div class="gate-subtitle">Operations & Order Command Center</div>
+      <div class="gate-subtitle">Operations &amp; Order Command Center</div>
       
-      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-        Enter administrative passkey to inspect incoming client orders, delivery schedules, and product photos.
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.8rem; line-height: 1.5;">
+        Enter administrative passkey to inspect incoming client orders, delivery schedules, and high-resolution jewelry pictures.
       </p>
 
       <form id="adminPasskeyForm" onsubmit="handleAdminPasskeySubmit(event)">
         <input type="password" id="adminPasskeyInput" class="form-input" placeholder="Enter Admin Passkey (AURORA2026)" required autofocus>
-        <button type="submit" class="btn-gold" style="margin-bottom: 0.8rem;">
-          Unlock Operations Dashboard âš¡
+        <button type="submit" class="btn-gold" style="margin-bottom: 1rem;">
+          Unlock Operations Dashboard &#9889;
         </button>
       </form>
 
-      <button type="button" onclick="quickUnlockDemo()" style="background:none; border:none; color:var(--gold-dark); font-size:0.82rem; font-weight:700; cursor:pointer; text-decoration:underline;">
-        âš¡ Instant Quick-Unlock (Demo: AURORA2026)
+      <button type="button" onclick="quickUnlockDemo()" style="background:none; border:none; color:var(--gold-dark); font-size:0.85rem; font-weight:700; cursor:pointer; text-decoration:underline;">
+        &#9889; Instant Quick-Unlock (Demo: AURORA2026)
       </button>
       
-      <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-        <a href="index.html" style="font-size: 0.82rem; color: var(--text-muted); text-decoration: none;">
+      <div style="margin-top: 1.8rem; border-top: 1px solid var(--border-color); padding-top: 1.2rem;">
+        <a href="index.html" style="font-size: 0.85rem; color: var(--text-muted); text-decoration: none; font-weight: 600;">
           &larr; Return to Customer Boutique
         </a>
       </div>
@@ -593,10 +724,12 @@
       </div>
 
       <div class="nav-user-meta">
-        <span style="font-size:0.85rem; color:#94A3B8;">Master Concierge Active</span>
-        <button class="btn-logout" onclick="logoutAdmin()">Sign Out & Lock ðŸ”’</button>
-        <a href="index.html" target="_blank" style="color:var(--gold-light); font-size:0.85rem; text-decoration:none; font-weight:600;">
-          Open Store â†—
+        <span style="font-size:0.85rem; color:#CBD5E1; font-weight:500;">Master Concierge Active</span>
+        <button class="btn-logout" onclick="logoutAdmin()">
+          <span>ðŸ”’</span> Sign Out &amp; Lock
+        </button>
+        <a href="index.html" target="_blank" class="btn-open-store">
+          Open Boutique &nearr;
         </a>
       </div>
     </nav>
@@ -607,15 +740,19 @@
       <!-- Metrics Bar -->
       <section class="metrics-grid">
         <div class="metric-card">
-          <div class="metric-icon-box metric-icon-gold">â‚¹</div>
+          <div class="metric-icon-box metric-icon-gold">
+            <span style="font-size:1.6rem; font-weight:800; color:var(--gold-dark);">&#8377;</span>
+          </div>
           <div>
             <div class="metric-title">Total Revenue</div>
-            <div class="metric-value" id="metricTotalRevenue">â‚¹0</div>
+            <div class="metric-value" id="metricTotalRevenue">&#8377;0</div>
           </div>
         </div>
 
         <div class="metric-card">
-          <div class="metric-icon-box metric-icon-blue">ðŸ“¦</div>
+          <div class="metric-icon-box metric-icon-blue">
+            <span style="font-size:1.6rem;">ðŸ“¦</span>
+          </div>
           <div>
             <div class="metric-title">Total Orders</div>
             <div class="metric-value" id="metricTotalOrders">0</div>
@@ -623,7 +760,9 @@
         </div>
 
         <div class="metric-card">
-          <div class="metric-icon-box metric-icon-purple">â³</div>
+          <div class="metric-icon-box metric-icon-purple">
+            <span style="font-size:1.6rem;">â³</span>
+          </div>
           <div>
             <div class="metric-title">Active Dispatches</div>
             <div class="metric-value" id="metricActiveOrders">0</div>
@@ -631,7 +770,9 @@
         </div>
 
         <div class="metric-card">
-          <div class="metric-icon-box metric-icon-green">âœ“</div>
+          <div class="metric-icon-box metric-icon-green">
+            <span style="font-size:1.6rem; color:#16A34A; font-weight:800;">âœ“</span>
+          </div>
           <div>
             <div class="metric-title">Delivered Heirlooms</div>
             <div class="metric-value" id="metricDeliveredOrders">0</div>
@@ -639,11 +780,11 @@
         </div>
       </section>
 
-      <!-- Incoming Orders & Picture Viewer -->
+      <!-- Big Incoming Orders Section -->
       <section class="section-card">
         <div class="section-header-bar">
           <h2 class="section-heading">
-            <span>ðŸ“¦</span> Incoming Customer Orders & Product Pictures
+            <span>ðŸ“¦</span> Incoming Customer Orders &amp; Product Pictures
           </h2>
 
           <div class="filter-controls">
@@ -658,28 +799,15 @@
               <option value="Delivered">Delivered</option>
             </select>
 
-            <button class="btn-action-slip" onclick="loadAdminOrders()" title="Refresh Orders">
+            <button class="btn-slip" style="padding:0.65rem 1rem;" onclick="loadAdminOrders()" title="Refresh Orders">
               ðŸ”„ Refresh
             </button>
           </div>
         </div>
 
-        <div class="orders-table-wrap">
-          <table class="admin-orders-table">
-            <thead>
-              <tr>
-                <th>Order Details</th>
-                <th>Client & Delivery Address</th>
-                <th>Ordered Pieces & Pictures</th>
-                <th>Amount & Payment</th>
-                <th>Delivery Time Slot & Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="adminOrdersTableBody">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
+        <!-- Big Order Cards List -->
+        <div class="orders-cards-list" id="adminOrdersCardsContainer">
+          <!-- Dynamically populated -->
         </div>
       </section>
 
@@ -687,20 +815,20 @@
       <section class="section-card">
         <div class="section-header-bar">
           <h2 class="section-heading">
-            <span>âœï¸</span> Bespoke Studio & Client Inspiration Requests
+            <span>âœï¸</span> Bespoke Studio &amp; Client Inspiration Requests
           </h2>
-          <span style="font-size:0.82rem; color:var(--text-muted);" id="bespokeRequestsCount">0 Commissions</span>
+          <span style="font-size:0.85rem; color:var(--text-muted); font-weight:700;" id="bespokeRequestsCount">0 Commissions</span>
         </div>
 
-        <div class="orders-table-wrap">
-          <table class="admin-orders-table">
+        <div class="bespoke-table-wrap">
+          <table class="bespoke-table">
             <thead>
               <tr>
                 <th>Request ID</th>
                 <th>Client Contact</th>
                 <th>Commission Concept / Prompt</th>
                 <th>Uploaded Photo Reference</th>
-                <th>Target Metal & Budget</th>
+                <th>Target Metal &amp; Budget</th>
                 <th>Submitted On</th>
               </tr>
             </thead>
@@ -719,6 +847,6 @@
     <div class="slip-card" id="printableSlipContent"></div>
   </div>
 
-  <script src="./static/js/admin.js?v=4.0"></script>
+  <script src="./static/js/admin.js?v=4.1"></script>
 </body>
 </html>
