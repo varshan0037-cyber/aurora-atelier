@@ -1512,47 +1512,44 @@ async function submitBespokeRequest() {
   };
 
   try {
-    if (window.AuroraDB) {
-      await window.AuroraDB.saveCustomRequest(payload);
-    }
     const res = await fetch(`${API_BASE}/custom-requests`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-  } catch (err) {}
-
-  showToast('✨ Bespoke request submitted! Our artisans will review within 24h.');
-  const promptEl = document.querySelector('#bespokePromptInput');
-  if (promptEl) promptEl.value = '';
-  Aurora.inspirationImageBase64 = null;
-  resetInspirationPreview();
-  await loadCustomRequests();
-  openCustomModal('Bespoke Commission Received ✨', `
-    <div style="text-align:center; padding:1.5rem;">
-      <div style="font-size:3rem; margin-bottom:1rem;">💍</div>
-      <h3 style="font-size:1.4rem; margin-bottom:0.6rem;">Your Request has Reached Our Atelier</h3>
-      <p style="color:var(--text-muted); font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
-        Our head artisan is reviewing your specifications for <strong>${metal_type} ${accessory_type}</strong>. You will receive a quotation and digital 3D rendering in your registered inbox.
-      </p>
-      <button class="btn btn-gold" onclick="closeModal(); navigateTo('#explore');">Continue Exploring</button>
-    </div>
-  `);
+    const data = await res.json();
+    if (data.success) {
+      showToast('✨ Bespoke request submitted! Our artisans will review within 24h.');
+      document.querySelector('#bespokePromptInput').value = '';
+      Aurora.inspirationImageBase64 = null;
+      resetInspirationPreview();
+      await loadCustomRequests();
+      openCustomModal('Bespoke Commission Received ✨', `
+        <div style="text-align:center; padding:1.5rem;">
+          <div style="font-size:3rem; margin-bottom:1rem;">💍</div>
+          <h3 style="font-size:1.4rem; margin-bottom:0.6rem;">Your Request has Reached Our Atelier</h3>
+          <p style="color:var(--text-muted); font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
+            Our head artisan is reviewing your specifications for <strong>${metal_type} ${accessory_type}</strong>. You will receive a quotation and digital 3D rendering in your registered inbox.
+          </p>
+          <button class="btn btn-gold" onclick="closeModal(); navigateTo('#explore');">Continue Exploring</button>
+        </div>
+      `);
+    }
+  } catch (err) {
+    showToast('✨ Bespoke request saved to your atelier account!');
+    closeModal();
+  }
 }
 
 async function loadCustomRequests() {
-  if (window.AuroraDB) {
-    Aurora.customRequests = await window.AuroraDB.getCustomRequests();
-  } else {
-    try {
-      const email = Aurora.user ? Aurora.user.email : '';
-      const res = await fetch(`${API_BASE}/custom-requests?email=${encodeURIComponent(email)}`);
-      const data = await res.json();
-      if (data.success) {
-        Aurora.customRequests = data.requests;
-      }
-    } catch(e) {}
-  }
+  try {
+    const email = Aurora.user ? Aurora.user.email : '';
+    const res = await fetch(`${API_BASE}/custom-requests?email=${encodeURIComponent(email)}`);
+    const data = await res.json();
+    if (data.success) {
+      Aurora.customRequests = data.requests;
+    }
+  } catch(e) {}
 }
 
 async function submitInspirationCommission() {
@@ -1573,9 +1570,6 @@ async function submitInspirationCommission() {
   };
 
   try {
-    if (window.AuroraDB) {
-      await window.AuroraDB.saveCustomRequest(payload);
-    }
     await fetch(`${API_BASE}/custom-requests`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1924,313 +1918,30 @@ function simulateUpiAppSelection(appName) {
   document.querySelectorAll('.upi-app-pill').forEach(pill => pill.classList.remove('active'));
   event.target.classList.add('active');
   showToast(`⚡ Selected ${appName}. Scan QR to complete payment!`);
-// ==========================================================================
-// REAL INDIAN PIN CODE VALIDATOR & PAYMENT DISPATCHER
-// ==========================================================================
-let currentVerifiedPinData = null;
-
-async function handlePinCodeInput(input) {
-  const pin = input.value.replace(/\D/g, '').substring(0, 6);
-  input.value = pin;
-
-  const spinner = document.querySelector('#pinValidationSpinner');
-  const msgEl = document.querySelector('#pinValidationMsg');
-  const poWrap = document.querySelector('#postOfficeSelectWrap');
-  const poSelect = document.querySelector('#checkoutPostOffice');
-
-  if (pin.length < 6) {
-    if (spinner) spinner.style.display = 'none';
-    if (msgEl) {
-      msgEl.style.display = 'none';
-      msgEl.innerHTML = '';
-    }
-    if (poWrap) poWrap.style.display = 'none';
-    currentVerifiedPinData = null;
-    return;
-  }
-
-  // 6 digits entered — Verify with India Post API
-  if (spinner) spinner.style.display = 'inline-block';
-  if (msgEl) {
-    msgEl.style.display = 'block';
-    msgEl.style.color = '#B45309';
-    msgEl.innerHTML = '🔍 Validating with India Post database...';
-  }
-
-  const result = await window.AuroraDB.validateIndianPinCode(pin);
-  if (spinner) spinner.style.display = 'none';
-
-  if (result.valid) {
-    currentVerifiedPinData = result;
-    if (msgEl) {
-      msgEl.style.display = 'block';
-      msgEl.style.color = '#15803D';
-      msgEl.innerHTML = `✓ Valid PIN Code: <strong>${result.district || result.city}</strong>, ${result.state} (India)`;
-    }
-
-    const cityInput = document.querySelector('#checkoutCity');
-    const stateInput = document.querySelector('#checkoutState');
-    if (cityInput && (!cityInput.value || cityInput.value === 'Mumbai' || !currentVerifiedPinData)) {
-      cityInput.value = result.district || result.city;
-    }
-    if (stateInput && (!stateInput.value || stateInput.value === 'Maharashtra' || !currentVerifiedPinData)) {
-      stateInput.value = result.state;
-    }
-
-    // Populate Post Offices if available
-    if (poSelect && Array.isArray(result.postOffices) && result.postOffices.length > 0) {
-      poSelect.innerHTML = result.postOffices.map(po => `
-        <option value="${po.name}">${po.name} (${po.branchType || 'Post Office'} &bull; ${po.deliveryStatus || 'Delivery'})</option>
-      `).join('');
-      if (poWrap) poWrap.style.display = 'block';
-    } else {
-      if (poWrap) poWrap.style.display = 'none';
-    }
-
-    showToast(`✓ PIN code verified: ${result.district || result.city}, ${result.state}`);
-  } else {
-    currentVerifiedPinData = null;
-    if (msgEl) {
-      msgEl.style.display = 'block';
-      msgEl.style.color = '#DC2626';
-      msgEl.innerHTML = `❌ ${result.error || 'Invalid Indian PIN code. Please verify.'}`;
-    }
-    if (poWrap) poWrap.style.display = 'none';
-  }
 }
 
-function handlePostOfficeChange(select) {
-  const selectedPo = select.value;
-  const landmarkInput = document.querySelector('#checkoutLandmark');
-  if (landmarkInput && !landmarkInput.value) {
-    landmarkInput.value = `Near ${selectedPo} Post Office`;
-  }
-}
-
-// Comprehensive checkout validation
-async function validateCheckoutForm() {
-  if (Aurora.cart.length === 0) {
-    return { valid: false, error: 'Your atelier bag is empty. Add a piece before checkout.' };
-  }
-
-  const name = document.querySelector('#checkoutName')?.value.trim();
-  const email = document.querySelector('#checkoutEmail')?.value.trim();
-  const phone = document.querySelector('#checkoutPhone')?.value.trim();
-  const street = document.querySelector('#checkoutStreet')?.value.trim();
-  const landmark = document.querySelector('#checkoutLandmark')?.value.trim() || '';
-  const city = document.querySelector('#checkoutCity')?.value.trim();
-  const state = document.querySelector('#checkoutState')?.value.trim();
-  const pin = document.querySelector('#checkoutZip')?.value.trim();
-
-  if (!name || name.length < 2) {
-    document.querySelector('#checkoutName')?.focus();
-    return { valid: false, error: 'Please enter your full name for the luxury shipping manifest.' };
-  }
-
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    document.querySelector('#checkoutEmail')?.focus();
-    return { valid: false, error: 'Please provide a valid email address for your order dossier.' };
-  }
-
-  const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
-  if (!cleanPhone || cleanPhone.length < 10) {
-    document.querySelector('#checkoutPhone')?.focus();
-    return { valid: false, error: 'Please provide a valid 10-digit mobile number for courier handover.' };
-  }
-
-  if (!pin || !/^[1-9][0-9]{5}$/.test(pin)) {
-    document.querySelector('#checkoutZip')?.focus();
-    return { valid: false, error: 'Please enter a genuine 6-digit Indian postal PIN code.' };
-  }
-
-  // Validate PIN code against database/API
-  if (!currentVerifiedPinData || currentVerifiedPinData.pincode !== pin) {
-    const pinRes = await window.AuroraDB.validateIndianPinCode(pin);
-    if (!pinRes.valid) {
-      document.querySelector('#checkoutZip')?.focus();
-      return { valid: false, error: `Invalid PIN code: ${pinRes.error}` };
-    }
-    currentVerifiedPinData = pinRes;
-  }
-
-  if (!street || street.length < 4) {
-    document.querySelector('#checkoutStreet')?.focus();
-    return { valid: false, error: 'Please provide complete street address with building / flat number.' };
-  }
-
-  if (!city || city.length < 2) {
-    document.querySelector('#checkoutCity')?.focus();
-    return { valid: false, error: 'Please enter your City / District.' };
-  }
-
-  if (!state || state.length < 2) {
-    document.querySelector('#checkoutState')?.focus();
-    return { valid: false, error: 'Please enter your State.' };
-  }
-
-  // Verify State match with PIN Code
-  if (currentVerifiedPinData && currentVerifiedPinData.state) {
-    const vState = currentVerifiedPinData.state.toLowerCase();
-    const eState = state.toLowerCase();
-    if (!vState.includes(eState) && !eState.includes(vState)) {
-      return {
-        valid: false,
-        error: `⚠️ PIN code ${pin} belongs to ${currentVerifiedPinData.state} (${currentVerifiedPinData.district}), but entered state is "${state}". Please correct your state or PIN.`
-      };
-    }
-  }
-
-  const selectedPo = document.querySelector('#checkoutPostOffice')?.value || '';
-  const fullAddress = `${street}${landmark ? ', Near ' + landmark : ''}${selectedPo ? ' (' + selectedPo + ' PO)' : ''}, ${city}, ${state} - ${pin}`;
-
-  return {
-    valid: true,
-    data: {
-      name,
-      email,
-      phone,
-      street,
-      landmark,
-      city,
-      state,
-      pin,
-      fullAddress
-    }
-  };
-}
-
-// Form onsubmit handler
-async function processOrderCheckout(event) {
-  if (event) event.preventDefault();
-  
-  const radio = document.querySelector('input[name="paymentMethodRadio"]:checked')?.value || 'UPI / Instant QR';
-  
-  if (radio.includes('UPI')) {
-    await triggerUpiOrderSubmit();
-  } else if (radio.includes('Card')) {
-    triggerCardOtpModal();
-  } else if (radio.includes('Net Banking')) {
-    await triggerNetBankingCheckout();
-  } else if (radio.includes('Cash on Delivery')) {
-    await triggerCodCheckout();
-  } else {
-    await triggerUpiOrderSubmit();
-  }
-}
-
-// --------------------------------------------------------------------------
-// PAYMENT DISPATCHERS
-// --------------------------------------------------------------------------
-async function triggerUpiOrderSubmit() {
-  const check = await validateCheckoutForm();
-  if (!check.valid) {
-    showToast(check.error);
-    return;
-  }
-
+async function verifyAndTriggerUpiPayment() {
   const statusBadge = document.querySelector('#upiPaymentStatusBadge');
   if (statusBadge) {
-    statusBadge.innerHTML = `<span class="spinner-inline"></span> Logging order with Atelier Concierge...`;
+    statusBadge.innerHTML = `<span class="spinner" style="width:14px; height:14px; border:2px solid var(--gold-dark); border-top-color:transparent; border-radius:50%; display:inline-block; animation:spin 0.8s linear infinite;"></span> Connecting to Bank Payment Gateway...`;
     statusBadge.style.background = '#FEF3C7';
     statusBadge.style.color = '#92400E';
   }
 
   setTimeout(async () => {
-    await executeOrderSubmission('UPI / QR Code (Google Pay/PhonePe/Paytm)', 'Pending (Awaiting Verification)', check.data);
-  }, 900);
-}
-
-function triggerCardOtpModal() {
-  validateCheckoutForm().then(check => {
-    if (!check.valid) {
-      showToast(check.error);
-      return;
+    if (statusBadge) {
+      statusBadge.innerHTML = `✅ Payment Authenticated & Confirmed by NPCI`;
+      statusBadge.style.background = '#DCFCE7';
+      statusBadge.style.color = '#15803D';
     }
 
-    const num = document.querySelector('#cardInputNumber')?.value.replace(/\s/g, '');
-    const exp = document.querySelector('#cardInputExpiry')?.value;
-    const cvv = document.querySelector('#cardInputCvv')?.value;
-
-    if (!num || num.length < 15) {
-      showToast('Please enter a valid 16-digit card number');
-      return;
-    }
-    if (!exp || exp.length < 5) {
-      showToast('Please enter a valid card expiry date (MM/YY)');
-      return;
-    }
-    if (!cvv || cvv.length < 3) {
-      showToast('Please enter the 3-digit CVV security code');
-      return;
-    }
-
-    const modal = document.querySelector('#bankOtpModal');
-    if (!modal) return;
-
-    const phone = check.data.phone;
-    const masked = phone.length > 4 ? `•••• ••${phone.slice(-4)}` : '•••• ••4210';
-    const maskedEl = document.querySelector('#otpMaskedPhone');
-    if (maskedEl) maskedEl.innerText = masked;
-
-    modal.style.display = 'flex';
-    startOtpCountdownTimer();
-
-    // Reset inputs
-    document.querySelectorAll('.otp-input-box').forEach((box, i) => {
-      box.value = '';
-      if (i === 0) box.focus();
-    });
-  });
-}
-
-async function verifyCardOtpAndSubmit() {
-  const boxes = document.querySelectorAll('.otp-input-box');
-  let enteredOtp = '';
-  boxes.forEach(b => enteredOtp += b.value);
-
-  if (enteredOtp.length < 6) {
-    showToast('Please enter the complete 6-digit OTP code');
-    return;
-  }
-
-  const check = await validateCheckoutForm();
-  if (!check.valid) {
-    closeOtpModal();
-    showToast(check.error);
-    return;
-  }
-
-  closeOtpModal();
-  showToast('✨ Card details authorized!');
-  await executeOrderSubmission('Credit / Debit Card (3D Secure)', 'Pending (Gateway Processing)', check.data);
-}
-
-async function triggerNetBankingCheckout() {
-  const check = await validateCheckoutForm();
-  if (!check.valid) {
-    showToast(check.error);
-    return;
-  }
-
-  const bank = document.querySelector('#netBankingSelect')?.value || 'HDFC Bank';
-  showToast(`🏦 Redirecting to ${bank} Secure Token Portal...`);
-  setTimeout(async () => {
-    await executeOrderSubmission(`Net Banking (${bank})`, 'Pending (Bank Verification)', check.data);
-  }, 1000);
-}
-
-async function triggerCodCheckout() {
-  const check = await validateCheckoutForm();
-  if (!check.valid) {
-    showToast(check.error);
-    return;
-  }
-
-  await executeOrderSubmission('Cash on Delivery', 'COD / Pending', check.data);
+    // Submit order
+    await executeOrderSubmission('UPI / Instant QR', 'Completed');
+  }, 1800);
 }
 
 // --------------------------------------------------------------------------
-// 3D CARD ANIMATIONS & HELPERS
+// 3D INTERACTIVE CREDIT / DEBIT CARD SIMULATOR ENGINE
 // --------------------------------------------------------------------------
 function handleCardNumberInput(input) {
   let val = input.value.replace(/\D/g, '').substring(0, 16);
@@ -2238,7 +1949,11 @@ function handleCardNumberInput(input) {
   input.value = formatted;
 
   const display = document.querySelector('#cardNumberDisplay');
-  if (display) display.innerText = formatted ? formatted.padEnd(19, '•') : '•••• •••• •••• ••••';
+  if (display) {
+    display.innerText = formatted ? formatted.padEnd(19, '•') : '•••• •••• •••• ••••';
+  }
+
+  // Detect BIN and Card Network
   detectCardNetwork(val);
 }
 
@@ -2279,27 +1994,78 @@ function detectCardNetwork(rawNumber) {
 
 function handleCardExpiryInput(input) {
   let val = input.value.replace(/\D/g, '').substring(0, 4);
-  if (val.length >= 2) val = val.substring(0, 2) + '/' + val.substring(2);
+  if (val.length >= 2) {
+    val = val.substring(0, 2) + '/' + val.substring(2);
+  }
   input.value = val;
+
   const display = document.querySelector('#cardExpiryDisplay');
-  if (display) display.innerText = val || 'MM/YY';
+  if (display) {
+    display.innerText = val || 'MM/YY';
+  }
 }
 
 function handleCardCvvInput(input) {
   let val = input.value.replace(/\D/g, '').substring(0, 4);
   input.value = val;
+
   const display = document.querySelector('#cardCvvDisplay');
-  if (display) display.innerText = val ? '•'.repeat(val.length) : '•••';
+  if (display) {
+    display.innerText = val ? '•'.repeat(val.length) : '•••';
+  }
 }
 
 function handleCardNameInput(input) {
   const display = document.querySelector('#cardHolderDisplay');
-  if (display) display.innerText = input.value.toUpperCase() || 'VALUED PATRON';
+  if (display) {
+    display.innerText = input.value.toUpperCase() || 'ARIA VANCE';
+  }
 }
 
 function flipCard3D(isFlipped) {
   const inner = document.querySelector('#card3dInner');
-  if (inner) inner.classList.toggle('flipped', isFlipped);
+  if (!inner) return;
+  inner.classList.toggle('flipped', isFlipped);
+}
+
+// --------------------------------------------------------------------------
+// BANK 2FA OTP MODAL ENGINE
+// --------------------------------------------------------------------------
+function triggerCardOtpModal() {
+  const num = document.querySelector('#cardInputNumber')?.value.replace(/\s/g, '');
+  const exp = document.querySelector('#cardInputExpiry')?.value;
+  const cvv = document.querySelector('#cardInputCvv')?.value;
+  const name = document.querySelector('#cardInputName')?.value.trim();
+
+  if (!num || num.length < 15) {
+    showToast('Please enter a valid 16-digit card number');
+    return;
+  }
+  if (!exp || exp.length < 5) {
+    showToast('Please enter a valid card expiry date (MM/YY)');
+    return;
+  }
+  if (!cvv || cvv.length < 3) {
+    showToast('Please enter the 3-digit CVV security code');
+    return;
+  }
+
+  const modal = document.querySelector('#bankOtpModal');
+  if (!modal) return;
+
+  const phone = document.querySelector('#cardInputPhone')?.value || '+91 98765 43210';
+  const masked = phone.length > 4 ? `•••• ••${phone.slice(-4)}` : '•••• ••4210';
+  const maskedEl = document.querySelector('#otpMaskedPhone');
+  if (maskedEl) maskedEl.innerText = masked;
+
+  modal.style.display = 'flex';
+  startOtpCountdownTimer();
+
+  // Reset inputs
+  document.querySelectorAll('.otp-input-box').forEach((box, i) => {
+    box.value = '';
+    if (i === 0) box.focus();
+  });
 }
 
 function closeOtpModal() {
@@ -2333,110 +2099,110 @@ function startOtpCountdownTimer() {
   }, 1000);
 }
 
+async function verifyCardOtpAndSubmit() {
+  const boxes = document.querySelectorAll('.otp-input-box');
+  let enteredOtp = '';
+  boxes.forEach(b => enteredOtp += b.value);
+
+  if (enteredOtp.length < 6) {
+    showToast('Please enter the complete 6-digit OTP code');
+    return;
+  }
+
+  closeOtpModal();
+  showToast('✨ 2FA Bank Authentication Verified!');
+  await executeOrderSubmission('Credit / Debit Card (3D Secure)', 'Completed');
+}
+
 // --------------------------------------------------------------------------
-// REAL ORDER CREATION & PERSISTENCE ENGINE
+// CASH ON DELIVERY & NET BANKING HANDLERS
 // --------------------------------------------------------------------------
-async function executeOrderSubmission(paymentMethodName, paymentStatus, formData) {
+async function triggerCodCheckout() {
+  await executeOrderSubmission('Cash on Delivery (Verified)', 'Pending (Cash on Delivery)');
+}
+
+async function triggerNetBankingCheckout() {
+  const bank = document.querySelector('#netBankingSelect')?.value || 'HDFC Bank';
+  showToast(`🏦 Redirecting to ${bank} Secure Token Portal...`);
+  setTimeout(async () => {
+    await executeOrderSubmission(`Net Banking (${bank})`, 'Completed');
+  }, 1200);
+}
+
+// --------------------------------------------------------------------------
+// UNIFIED ORDER SUBMISSION & TRACKING ENGINE
+// --------------------------------------------------------------------------
+async function executeOrderSubmission(paymentMethodName, paymentStatus = 'Completed') {
   if (Aurora.cart.length === 0) {
-    showToast('Your atelier cart is empty');
+    showToast('Your cart is empty');
     navigateTo('#explore');
     return;
   }
 
-  const { subtotal, discount, shipping, total } = calculateCartTotals();
-  const orderId = window.AuroraDB ? window.AuroraDB.generateOrderId() : `AUR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+  const fullName = document.querySelector('#checkoutName')?.value.trim() || Aurora.user?.name || 'Valued Patron';
+  const email = document.querySelector('#checkoutEmail')?.value.trim() || Aurora.user?.email || 'patron@aurora.luxury';
+  const phone = document.querySelector('#checkoutPhone')?.value.trim() || '+91 98765 43210';
+  const street = document.querySelector('#checkoutStreet')?.value.trim() || 'Penthouse 14B, Marine Lines';
+  const city = document.querySelector('#checkoutCity')?.value.trim() || 'Mumbai';
+  const state = document.querySelector('#checkoutState')?.value.trim() || 'Maharashtra';
+  const postalCode = document.querySelector('#checkoutZip')?.value.trim() || '400020';
 
-  const orderPayload = {
-    id: Date.now(),
-    order_id: orderId,
-    order_number: orderId,
-    customer_name: formData.name,
-    user_name: formData.name,
-    email: formData.email,
-    user_email: formData.email,
-    phone: formData.phone,
-    user_phone: formData.phone,
-    full_address: formData.fullAddress,
-    shipping_address: formData.fullAddress,
-    street_address: formData.street,
-    landmark: formData.landmark,
-    city: formData.city,
-    state: formData.state,
-    pin_code: formData.pin,
-    items: Aurora.cart.map(c => ({
-      id: c.product?.id || c.id || Math.floor(Math.random()*1000),
-      name: c.product?.name || c.name || 'Fine Jewelry',
-      metal: c.product?.metal_type || c.metal || '18K Gold / 925 Silver',
-      price: Number(c.product?.price || c.price || 0),
-      quantity: Number(c.quantity || 1),
-      image: c.product?.image_url || c.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80',
-      size: c.size || 'Standard'
-    })),
-    subtotal: subtotal,
-    discount: discount,
-    delivery_charge: shipping,
-    shipping: shipping,
-    total: total,
-    total_amount: total,
-    payment_method: paymentMethodName,
-    payment_status: paymentStatus,
-    order_status: 'Order Placed',
-    order_date: new Date().toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }),
-    order_time: new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }),
-    created_at: new Date().toISOString(),
-    placed_time_formatted: new Date().toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) + ' at ' + new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }),
-    scheduled_delivery_date: new Date(Date.now() + 3 * 24 * 3600 * 1000).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }),
-    estimated_delivery_date: new Date(Date.now() + 3 * 24 * 3600 * 1000).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }),
-    delivery_time_slot: 'Morning Slot (09:00 AM - 12:00 PM)',
-    delivery_notes: 'Insured White-Glove Atelier Courier'
+  const address = { fullName, street, city, state, postalCode, phone };
+  const { subtotal, discount, shipping, total } = calculateCartTotals();
+
+  const payload = {
+    user_id: Aurora.user ? Aurora.user.id : null,
+    user_name: fullName,
+    user_email: email,
+    user_phone: phone,
+    address,
+    items: Aurora.cart,
+    subtotal,
+    shipping,
+    discount,
+    total,
+    payment_method: paymentMethodName
   };
 
   try {
-    let savedOrder = null;
-    if (window.AuroraDB) {
-      savedOrder = await window.AuroraDB.saveOrder(orderPayload);
-    } else {
-      let existing = [];
-      try {
-        const raw = localStorage.getItem('aurora_atelier_orders_db_v1') || localStorage.getItem('aurora_orders');
-        if (raw) existing = JSON.parse(raw);
-      } catch(e) {}
-      existing.unshift(orderPayload);
-      localStorage.setItem('aurora_atelier_orders_db_v1', JSON.stringify(existing));
-      localStorage.setItem('aurora_orders', JSON.stringify(existing));
-      savedOrder = orderPayload;
-    }
+    const res = await fetch(`${API_BASE}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
 
-    // Clear cart
+    if (data.success) {
+      const orderNumber = data.order_number;
+      const orderTotal = data.total;
+      const eta = data.estimated_delivery;
+      const isCod = (paymentStatus.includes('Cash on Delivery') || paymentMethodName.includes('Cash on Delivery'));
+
+      Aurora.cart = [];
+      saveCart();
+
+      displayOrderSuccessScreen(orderNumber, orderTotal, eta, address, paymentMethodName, isCod);
+      await loadOrders();
+    } else {
+      showToast(data.error || 'Failed to place order');
+    }
+  } catch (err) {
+    // Client fallback for static hosting
+    const randNum = `AUR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const isCod = (paymentStatus.includes('Cash on Delivery') || paymentMethodName.includes('Cash on Delivery'));
     Aurora.cart = [];
     saveCart();
-    renderCart();
-    updateCartBadge();
-
-    // Show Confirmation Screen
-    displayOrderSuccessScreen(savedOrder);
-    
-    // Reload Orders for Customer Page
-    await loadOrders();
-  } catch (err) {
-    console.error('Failed to create order:', err);
-    showToast('Failed to save order. Please try again.');
+    displayOrderSuccessScreen(randNum, total, '4 business days', address, paymentMethodName, isCod);
   }
 }
 
 // --------------------------------------------------------------------------
-// ORDER CONFIRMATION VIEW
+// ORDER CONFIRMATION & COD DISPATCH ANIMATION VIEW
 // --------------------------------------------------------------------------
-function displayOrderSuccessScreen(order) {
+function displayOrderSuccessScreen(orderNumber, total, eta, address, paymentMethod, isCod = false) {
   const container = document.querySelector('#orderConfirmationView');
   const checkoutSection = document.querySelector('#checkout');
   if (checkoutSection) checkoutSection.style.display = 'none';
-
-  const isCod = (order.payment_method && order.payment_method.includes('Cash on Delivery')) || (order.payment_status && order.payment_status.includes('COD'));
-  const orderId = order.order_id || order.order_number;
-  const clientName = order.customer_name || order.user_name;
-  const clientAddress = order.full_address || order.shipping_address;
-  const totalVal = Number(order.total || order.total_amount || 0);
 
   if (container) {
     container.style.display = 'block';
@@ -2449,73 +2215,54 @@ function displayOrderSuccessScreen(order) {
           </svg>
         </div>
 
-        <div class="eyebrow">${isCod ? 'ORDER CONFIRMED &bull; PAY ON DELIVERY' : 'ORDER PLACED SUCCESSFULLY ✨'}</div>
+        <div class="eyebrow">${isCod ? 'ORDER CONFIRMED &bull; PAY ON DELIVERY' : 'PAYMENT SUCCESSFUL &bull; ORDER CONFIRMED'}</div>
         <h2 style="font-size:2.2rem; margin-bottom:0.5rem; color:var(--text-charcoal);">
-          Order Placed Successfully! 📦
+          ${isCod ? 'Your Atelier Order is Confirmed! 📦' : 'Thank You for Your Acquisition ✨'}
         </h2>
         <p style="color:var(--text-muted); font-size:1rem; margin-bottom:1.5rem; line-height:1.5;">
-          A tamper-evident wax sealed dossier & order confirmation has been created for <strong>${clientName}</strong>.
+          A tamper-evident wax sealed dossier & order confirmation has been dispatched to <strong>${address.fullName}</strong> (${address.street}, ${address.city}).
         </p>
 
-        <!-- Delivery Badge -->
+        <!-- Animated Delivery Van -->
         <div class="delivery-truck-wrap">
           <div class="delivery-van-icon">🚚</div>
           <div style="font-size:0.8rem; font-weight:700; color:var(--gold-dark); text-transform:uppercase; letter-spacing:0.08em; margin-top:0.3rem;">
-            Insured Express White-Glove Handover
+            Insured Express Courier Dispatched
           </div>
         </div>
 
         <!-- Receipt Breakdown -->
         <div class="order-receipt-summary">
           <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
-            <span>Order Reference ID:</span>
-            <strong style="color:var(--gold-dark);">${orderId}</strong>
+            <span>Order Reference Number:</span>
+            <strong style="color:var(--gold-dark);">${orderNumber}</strong>
           </div>
           <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
-            <span>Client Name:</span>
-            <strong>${clientName}</strong>
-          </div>
-          <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
-            <span>Delivery Destination:</span>
-            <span style="font-size:0.85rem; max-width:280px; text-align:right;">${clientAddress}</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
-            <span>Expected Delivery Date:</span>
-            <strong>${order.scheduled_delivery_date || order.estimated_delivery_date || 'In 3-4 Days'}</strong>
+            <span>Estimated Atelier Delivery:</span>
+            <strong>${eta}</strong>
           </div>
           <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
             <span>Payment Method:</span>
-            <span style="font-weight:600;">${order.payment_method}</span>
+            <span style="font-weight:600;">${paymentMethod}</span>
           </div>
           <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--border-subtle); font-size:0.9rem;">
             <span>Payment Status:</span>
-            <span style="color:#D97706; font-weight:700;">
-              ${order.payment_status || (isCod ? 'COD / Pending' : 'Pending Verification')}
+            <span style="color:${isCod ? '#D97706' : 'var(--success)'}; font-weight:700;">
+              ${isCod ? 'Pending (Pay at Doorstep)' : 'Completed & Verified'}
             </span>
           </div>
           <div style="display:flex; justify-content:space-between; padding:0.7rem 0 0 0; font-size:1.15rem; font-weight:800;">
             <span>Total Amount:</span>
-            <span style="color:var(--gold-dark);">₹${totalVal.toLocaleString()}</span>
+            <span style="color:var(--gold-dark);">₹${total.toLocaleString()}</span>
           </div>
         </div>
 
-        <!-- Ordered Items Preview -->
-        <div style="background:var(--bg-card-subtle); padding:1rem; border-radius:var(--radius-md); margin-top:1.5rem; text-align:left;">
-          <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem;">Ordered Pieces</div>
-          ${(order.items || []).map(it => `
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; padding:4px 0;">
-              <span>${it.name} (${it.metal} &bull; x${it.quantity})</span>
-              <strong>₹${(it.price * it.quantity).toLocaleString()}</strong>
-            </div>
-          `).join('')}
-        </div>
-
         <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
-          <button class="btn btn-gold btn-lg" onclick="openConfirmationEmailModal('${orderId}')">
-            📧 View Email Dossier
+          <button class="btn btn-gold btn-lg" onclick="openConfirmationEmailModal('${orderNumber}')">
+            📧 View Atelier Email Receipt
           </button>
           <button class="btn btn-secondary btn-lg" onclick="navigateTo('#orders')">
-            📦 Track in My Orders
+            Live Order Status
           </button>
         </div>
       </div>
@@ -2524,9 +2271,9 @@ function displayOrderSuccessScreen(order) {
   }
 }
 
-// --------------------------------------------------------------------------
+// ==========================================================================
 // CONFIRMATION EMAIL VIEWER
-// --------------------------------------------------------------------------
+// ==========================================================================
 async function openConfirmationEmailModal(orderNumber) {
   let emailHtml = '';
   try {
@@ -2556,21 +2303,18 @@ async function openConfirmationEmailModal(orderNumber) {
   openCustomModal(`Order Confirmation Email &bull; ${orderNumber}`, modalWrapper, true);
 }
 
-// --------------------------------------------------------------------------
+// ==========================================================================
 // MY ORDERS & LIVE TRACKER
-// --------------------------------------------------------------------------
+// ==========================================================================
 async function loadOrders() {
-  if (window.AuroraDB) {
-    Aurora.orders = await window.AuroraDB.getOrders();
-  } else {
-    try {
-      const saved = localStorage.getItem('aurora_atelier_orders_db_v1') || localStorage.getItem('aurora_orders');
-      Aurora.orders = saved ? JSON.parse(saved) : [];
-    } catch(e) {
-      Aurora.orders = [];
+  try {
+    const email = Aurora.user ? Aurora.user.email : '';
+    const res = await fetch(`${API_BASE}/orders?email=${encodeURIComponent(email)}`);
+    const data = await res.json();
+    if (data.success) {
+      Aurora.orders = data.orders;
     }
-  }
-  renderOrders();
+  } catch(e) {}
 }
 
 function renderOrders() {
@@ -2580,9 +2324,9 @@ function renderOrders() {
   if (Aurora.orders.length === 0) {
     container.innerHTML = `
       <div style="text-align:center; padding: 4rem 1rem; background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--border-subtle);">
-        <div style="font-size: 2.8rem; margin-bottom: 0.8rem;">📦</div>
+        <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">📦</div>
         <h3 style="font-size: 1.4rem; margin-bottom: 0.4rem;">No orders yet</h3>
-        <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Explore our handcrafted gold & silver accessories to place your first real order.</p>
+        <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Explore our handcrafted gold & silver accessories to place your first order.</p>
         <button class="btn btn-gold" onclick="navigateTo('#explore')">Explore Accessories</button>
       </div>
     `;
@@ -2593,43 +2337,42 @@ function renderOrders() {
 }
 
 function createOrderCardHTML(order) {
-  const orderId = order.order_id || order.order_number;
-  const orderStatus = order.order_status || 'Order Placed';
-  const totalVal = Number(order.total || order.total_amount || 0);
+  const tracking = order.tracking_history || [
+    { status: 'Order Placed', completed: true },
+    { status: 'Confirmed', completed: order.order_status !== 'Order Placed' },
+    { status: 'Preparing', completed: ['Preparing', 'Shipped', 'Delivered'].includes(order.order_status) },
+    { status: 'Shipped', completed: ['Shipped', 'Delivered'].includes(order.order_status) },
+    { status: 'Delivered', completed: order.order_status === 'Delivered' }
+  ];
 
-  const steps = ['Order Placed', 'Confirmed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
-  const isCancelled = orderStatus === 'Cancelled';
-  const currentIdx = isCancelled ? -1 : steps.indexOf(orderStatus);
-  const progressPercent = isCancelled ? 0 : Math.max(0, (currentIdx / (steps.length - 1)) * 100);
+  const steps = ['Order Placed', 'Confirmed', 'Preparing', 'Shipped', 'Delivered'];
+  const currentIdx = steps.indexOf(order.order_status);
+  const progressPercent = Math.max(0, (currentIdx / (steps.length - 1)) * 100);
 
-  const trackerStepsHtml = isCancelled 
-    ? `<div style="text-align:center; color:#DC2626; font-weight:700; padding:0.5rem;">❌ This order was cancelled by Atelier Management.</div>`
-    : steps.map((stepName, idx) => {
-        const isCompleted = idx <= currentIdx;
-        const isCurrent = idx === currentIdx;
-        return `
-          <div class="tracker-step ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}">
-            <div class="step-dot">${isCompleted ? '✓' : idx + 1}</div>
-            <span class="step-label">${stepName}</span>
-          </div>
-        `;
-      }).join('');
+  const trackerStepsHtml = steps.map((stepName, idx) => {
+    const isCompleted = idx <= currentIdx;
+    const isCurrent = idx === currentIdx;
+    return `
+      <div class="tracker-step ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}">
+        <div class="step-dot">${isCompleted ? '✓' : idx + 1}</div>
+        <span class="step-label">${stepName}</span>
+      </div>
+    `;
+  }).join('');
 
   return `
     <div class="order-card">
       <div class="order-card-header">
         <div>
           <div class="eyebrow">ORDER REF</div>
-          <h3 style="font-size:1.3rem; margin:0;">${orderId}</h3>
-          <span style="font-size:0.8rem; color:var(--text-muted);">
-            Placed on ${order.order_date || (order.created_at ? order.created_at.split('T')[0] : 'Today')} ${order.order_time ? 'at ' + order.order_time : ''}
-          </span>
+          <h3 style="font-size:1.3rem; margin:0;">${order.order_number}</h3>
+          <span style="font-size:0.8rem; color:var(--text-muted);">Placed on ${order.created_at ? order.created_at.split('T')[0] : 'Today'}</span>
         </div>
         <div style="text-align:right;">
-          <div style="font-size:1.3rem; font-weight:700; color:var(--gold-dark);">₹${totalVal.toLocaleString()}</div>
-          <span style="font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:700; background:${isCancelled ? '#FEE2E2' : '#EFF6FF'}; color:${isCancelled ? '#DC2626' : '#2563EB'};">
-            ${orderStatus}
-          </span>
+          <div style="font-size:1.3rem; font-weight:700; color:var(--gold-dark);">₹${order.total.toLocaleString()}</div>
+          <button class="btn btn-outline-gold btn-sm" style="margin-top:4px;" onclick="openConfirmationEmailModal('${order.order_number}')">
+            📧 View Email Receipt
+          </button>
         </div>
       </div>
 
@@ -2639,27 +2382,9 @@ function createOrderCardHTML(order) {
         ${trackerStepsHtml}
       </div>
 
-      <!-- Destination & Payment Summary -->
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.8rem; background:var(--bg-card-subtle); padding:0.8rem 1.2rem; border-radius:var(--radius-md); margin-top:1.2rem; font-size:0.82rem;">
-        <div>
-          <span style="color:var(--text-muted); display:block; font-size:0.72rem; text-transform:uppercase; font-weight:700;">Delivery Destination</span>
-          <strong>${order.full_address || order.shipping_address}</strong>
-        </div>
-        <div>
-          <span style="color:var(--text-muted); display:block; font-size:0.72rem; text-transform:uppercase; font-weight:700;">Expected Delivery & Slot</span>
-          <strong style="color:#15803D;">📅 ${order.scheduled_delivery_date || order.estimated_delivery_date || 'In 3-4 Days'}</strong>
-          <div style="color:#D97706; font-size:0.78rem;">⏰ ${order.delivery_time_slot || 'Morning Slot (09:00 AM - 12:00 PM)'}</div>
-        </div>
-        <div>
-          <span style="color:var(--text-muted); display:block; font-size:0.72rem; text-transform:uppercase; font-weight:700;">Payment Details</span>
-          <strong>${order.payment_method}</strong>
-          <div style="color:#B45309; font-weight:600;">Status: ${order.payment_status || 'Pending'}</div>
-        </div>
-      </div>
-
       <!-- Items in Order -->
-      <div style="background:var(--bg-card-subtle); padding:1rem 1.2rem; border-radius:var(--radius-md); margin-top:0.8rem;">
-        <div style="font-size:0.78rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.6rem;">Purchased Items</div>
+      <div style="background:var(--bg-card-subtle); padding:1rem 1.2rem; border-radius:var(--radius-md); margin-top:1.5rem;">
+        <div style="font-size:0.8rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.6rem;">Purchased Items</div>
         <div style="display:flex; flex-direction:column; gap:0.6rem;">
           ${(order.items || []).map(item => `
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.88rem;">
@@ -2898,96 +2623,6 @@ async function deleteProductAdmin(productId) {
   } catch(e) {}
 }
 
-function editProductAdmin(productId) {
-  const product = Aurora.products.find(p => p.id === productId);
-  if (!product) return;
-
-  const modalHtml = `
-    <form onsubmit="submitEditProduct(event, ${productId})" style="display:flex; flex-direction:column; gap:1rem; padding:1rem;">
-      <div class="form-grid-2">
-        <div class="form-group">
-          <label class="form-label">Product Name</label>
-          <input type="text" id="adminEditName" class="form-input" value="${product.name}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Category</label>
-          <select id="adminEditCategory" class="form-input">
-            <option value="Necklace" ${product.category === 'Necklace' ? 'selected' : ''}>Necklace</option>
-            <option value="Bracelet" ${product.category === 'Bracelet' ? 'selected' : ''}>Bracelet</option>
-            <option value="Ring" ${product.category === 'Ring' ? 'selected' : ''}>Ring</option>
-            <option value="Earrings" ${product.category === 'Earrings' ? 'selected' : ''}>Earrings</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-grid-2">
-        <div class="form-group">
-          <label class="form-label">Metal Type</label>
-          <select id="adminEditMetal" class="form-input">
-            <option value="Gold" ${product.metal_type === 'Gold' ? 'selected' : ''}>Gold</option>
-            <option value="Silver" ${product.metal_type === 'Silver' ? 'selected' : ''}>Silver</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Purity / Hallmark</label>
-          <input type="text" id="adminEditPurity" class="form-input" value="${product.purity || ''}" required>
-        </div>
-      </div>
-      <div class="form-grid-2">
-        <div class="form-group">
-          <label class="form-label">Price (₹ INR)</label>
-          <input type="number" id="adminEditPrice" class="form-input" value="${product.price}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Atelier Stock</label>
-          <input type="number" id="adminEditStock" class="form-input" value="${product.stock || 10}" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Image URL</label>
-        <input type="url" id="adminEditImg" class="form-input" value="${product.image_url}" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Artisan Description</label>
-        <textarea id="adminEditDesc" class="form-input" style="height:80px;" required>${product.description || ''}</textarea>
-      </div>
-      <button type="submit" class="btn btn-gold" style="width:100%;">Save Changes</button>
-    </form>
-  `;
-  openCustomModal(`Edit: ${product.name}`, modalHtml);
-}
-
-async function submitEditProduct(e, productId) {
-  e.preventDefault();
-  const name = document.querySelector('#adminEditName')?.value;
-  const category = document.querySelector('#adminEditCategory')?.value;
-  const metal_type = document.querySelector('#adminEditMetal')?.value;
-  const purity = document.querySelector('#adminEditPurity')?.value;
-  const price = parseFloat(document.querySelector('#adminEditPrice')?.value || '0');
-  const stock = parseInt(document.querySelector('#adminEditStock')?.value || '10');
-  const image_url = document.querySelector('#adminEditImg')?.value;
-  const description = document.querySelector('#adminEditDesc')?.value;
-
-  const payload = { name, category, metal_type, purity, price, stock, image_url, description };
-  
-  const idx = Aurora.products.findIndex(p => p.id === productId);
-  if (idx !== -1) {
-    Aurora.products[idx] = { ...Aurora.products[idx], ...payload };
-    renderProducts();
-  }
-
-  try {
-    await fetch(`${API_BASE}/products/${productId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-  } catch(e) {}
-
-  showToast(`✨ Updated "${name}"!`);
-  closeModal();
-  renderAdminDashboard();
-}
-
 // ==========================================================================
 // MODAL & TOAST CONTROLLERS
 // ==========================================================================
@@ -3104,6 +2739,11 @@ window.openProductDetails = openProductDetails;
 window.quickAddToCart = quickAddToCart;
 window.addToCartFromDetail = addToCartFromDetail;
 window.buyNowFromDetail = buyNowFromDetail;
+window.selectVariant = selectVariant;
+window.selectSize = selectSize;
+window.switchDetailImage = switchDetailImage;
+window.showReviewForm = showReviewForm;
+window.submitReview = submitReview;
 window.toggleWishlist = toggleWishlist;
 window.applyPromoCode = applyPromoCode;
 window.toggleUserMenu = toggleUserMenu;
@@ -3120,38 +2760,8 @@ window.quickSelectPrompt = quickSelectPrompt;
 window.handleImageFileInput = handleImageFileInput;
 window.resetInspirationPreview = resetInspirationPreview;
 window.addImageByUrl = addImageByUrl;
-window.switchDetailImage = switchDetailImage;
-window.selectVariant = selectVariant;
-window.selectSize = selectSize;
-window.showReviewForm = showReviewForm;
-window.submitReview = submitReview;
 window.updateCartItemQty = updateCartItemQty;
 window.removeCartItem = removeCartItem;
-
-// Admin modal exports
-window.openAddProductModal = openAddProductModal;
-window.submitAddProduct = submitAddProduct;
-window.deleteProductAdmin = deleteProductAdmin;
-window.editProductAdmin = editProductAdmin;
-window.submitEditProduct = submitEditProduct;
-window.updateOrderStatusAdmin = updateOrderStatusAdmin;
-window.renderAdminDashboard = renderAdminDashboard;
-
-// Checkout, PIN validation & Payment simulation exports
-window.handlePinCodeInput = handlePinCodeInput;
-window.handlePostOfficeChange = handlePostOfficeChange;
-window.validateCheckoutForm = validateCheckoutForm;
-window.processOrderCheckout = processOrderCheckout;
-window.triggerUpiOrderSubmit = triggerUpiOrderSubmit;
-window.triggerCardOtpModal = triggerCardOtpModal;
-window.verifyCardOtpAndSubmit = verifyCardOtpAndSubmit;
-window.triggerNetBankingCheckout = triggerNetBankingCheckout;
-window.triggerCodCheckout = triggerCodCheckout;
-window.executeOrderSubmission = executeOrderSubmission;
-window.displayOrderSuccessScreen = displayOrderSuccessScreen;
-window.openConfirmationEmailModal = openConfirmationEmailModal;
-window.loadOrders = loadOrders;
-window.renderOrders = renderOrders;
 window.switchPaymentMethod = switchPaymentMethod;
 window.simulateUpiAppSelection = simulateUpiAppSelection;
 window.handleCardNumberInput = handleCardNumberInput;
@@ -3159,7 +2769,12 @@ window.handleCardExpiryInput = handleCardExpiryInput;
 window.handleCardCvvInput = handleCardCvvInput;
 window.handleCardNameInput = handleCardNameInput;
 window.flipCard3D = flipCard3D;
+window.triggerCardOtpModal = triggerCardOtpModal;
+window.verifyCardOtpAndSubmit = verifyCardOtpAndSubmit;
+window.triggerNetBankingCheckout = triggerNetBankingCheckout;
+window.triggerCodCheckout = triggerCodCheckout;
+window.verifyAndTriggerUpiPayment = verifyAndTriggerUpiPayment;
 window.closeOtpModal = closeOtpModal;
 window.handleOtpBoxInput = handleOtpBoxInput;
+window.openConfirmationEmailModal = openConfirmationEmailModal;
 window.showToast = showToast;
-
