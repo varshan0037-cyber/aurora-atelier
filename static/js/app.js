@@ -354,6 +354,7 @@ function closeOpeningTour() {
   const overlay = document.querySelector('#openingExperience');
   if (!overlay) return;
   overlay.classList.remove('active');
+  overlay.style.display = 'none';
   overlay.style.opacity = '0';
   overlay.style.visibility = 'hidden';
   overlay.style.pointerEvents = 'none';

@@ -1799,7 +1799,7 @@ h1, h2, h3, h4, .font-serif {
   z-index: 9999;
   background: radial-gradient(circle at 50% 20%, #201D19 0%, #0D0C0B 75%, #050505 100%);
   color: #FFFFFF;
-  display: flex;
+  display: none;
   flex-direction: column;
   justify-content: space-between;
   opacity: 0;
@@ -1810,6 +1810,7 @@ h1, h2, h3, h4, .font-serif {
 }
 
 .opening-experience-overlay.active {
+  display: flex;
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -2995,6 +2996,15 @@ h1, h2, h3, h4, .font-serif {
     height: 100dvh;
     padding: 0;
     overflow-y: auto;
+    display: none;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .opening-experience-overlay.active {
+    display: flex;
+    pointer-events: auto;
+    visibility: visible;
   }
 
   .opening-header {
