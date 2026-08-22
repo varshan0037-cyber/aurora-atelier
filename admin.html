@@ -1,9 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aurora Atelier - Operations &amp; Order Command Center</title>
+    <title>Aurora Atelier - Operations &amp; Order Command Center</title>
+  <link rel="icon" type="image/svg+xml" href="./static/images/favicon.svg">
+  <link rel="alternate icon" type="image/png" href="./static/images/favicon.png">
+  <link rel="apple-touch-icon" href="./static/images/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -712,9 +715,21 @@
   <!-- PASSKEY GATE SCREEN -->
   <div class="admin-gate-screen" id="adminGateScreen">
     <div class="gate-card">
-      <div class="gate-crown-icon">
-        <svg class="svg-icon" viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
-          <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"/>
+      <div class="gate-crown-icon" style="margin-bottom:1rem;">
+        <svg viewBox="0 0 64 64" width="60" height="60" style="filter:drop-shadow(0 4px 12px rgba(201,162,39,0.3));">
+          <defs>
+            <linearGradient id="gateGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#E5CF87"/>
+              <stop offset="50%" stop-color="#C9A227"/>
+              <stop offset="100%" stop-color="#9A7B1C"/>
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" rx="16" fill="#0F172A" stroke="url(#gateGoldGrad)" stroke-width="2"/>
+          <path d="M16 43 L12 18 L23 27 L32 14 L41 27 L52 18 L48 43 Z" fill="url(#gateGoldGrad)"/>
+          <rect x="16" y="46" width="32" height="4" rx="2" fill="url(#gateGoldGrad)"/>
+          <circle cx="32" cy="14" r="2.5" fill="#FFFFFF"/>
+          <circle cx="12" cy="18" r="2" fill="#FFFFFF"/>
+          <circle cx="52" cy="18" r="2" fill="#FFFFFF"/>
         </svg>
       </div>
       <h1 class="gate-logo">AURORA</h1>
@@ -750,9 +765,27 @@
     <!-- Navbar -->
     <nav class="admin-navbar">
       <div class="admin-brand">
-        <span class="admin-brand-title">AURORA ATELIER</span>
+        <svg viewBox="0 0 64 64" width="38" height="38" style="flex-shrink:0;">
+          <defs>
+            <linearGradient id="navGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#E5CF87"/>
+              <stop offset="50%" stop-color="#C9A227"/>
+              <stop offset="100%" stop-color="#9A7B1C"/>
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" rx="14" fill="#1E293B" stroke="url(#navGoldGrad)" stroke-width="2"/>
+          <path d="M16 43 L12 18 L23 27 L32 14 L41 27 L52 18 L48 43 Z" fill="url(#navGoldGrad)"/>
+          <rect x="16" y="46" width="32" height="4" rx="2" fill="url(#navGoldGrad)"/>
+          <circle cx="32" cy="14" r="2.5" fill="#FFFFFF"/>
+          <circle cx="12" cy="18" r="2" fill="#FFFFFF"/>
+          <circle cx="52" cy="18" r="2" fill="#FFFFFF"/>
+        </svg>
+        <div style="display:flex; flex-direction:column;">
+          <span class="admin-brand-title">AURORA ATELIER</span>
+          <span style="font-size:0.68rem; letter-spacing:0.18em; color:var(--gold-light); text-transform:uppercase; font-weight:700;">Maison d'Haute Joaillerie</span>
+        </div>
         <span class="admin-badge">
-          <svg class="svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"/></svg>
+          <svg class="svg-icon" viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
           Operations Command
         </span>
       </div>
