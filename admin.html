@@ -1,0 +1,724 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aurora Atelier â€” Operations & Order Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>ðŸ‘‘</text></svg>">
+  <style>
+    :root {
+      --gold-primary: #C9A227;
+      --gold-dark: #9A7B1C;
+      --gold-light: #E2C974;
+      --gold-bg: #FAF7EE;
+      --gold-border: #E8DCB8;
+      --dark-navy: #0F172A;
+      --card-bg: #FFFFFF;
+      --text-main: #1E293B;
+      --text-muted: #64748B;
+      --bg-page: #F8FAFC;
+      --border-color: #E2E8F0;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Passkey Gate Screen */
+    .admin-gate-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 20%, #1E293B 0%, #0F172A 100%);
+      padding: 1.5rem;
+    }
+
+    .gate-card {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 440px;
+      padding: 2.5rem;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35);
+      text-align: center;
+      border: 1px solid rgba(201, 162, 39, 0.3);
+    }
+
+    .gate-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--dark-navy);
+      margin-bottom: 0.3rem;
+    }
+
+    .gate-subtitle {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold-dark);
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      font-size: 0.95rem;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      margin-bottom: 1.2rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .form-input:focus {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.15);
+    }
+
+    .btn-gold {
+      width: 100%;
+      padding: 0.85rem 1.5rem;
+      background: linear-gradient(135deg, #C9A227 0%, #A8841B 100%);
+      color: #FFFFFF;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(201, 162, 39, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-gold:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(201, 162, 39, 0.4);
+    }
+
+    /* Admin Dashboard Layout */
+    .admin-layout {
+      display: none;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    /* Top Operations Bar */
+    .admin-navbar {
+      background: #0F172A;
+      color: #FFFFFF;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--gold-primary);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .admin-brand-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.12em;
+      color: var(--gold-light);
+      font-weight: 700;
+    }
+    .admin-badge {
+      background: rgba(201, 162, 39, 0.2);
+      border: 1px solid var(--gold-primary);
+      color: var(--gold-light);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .nav-user-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .btn-logout {
+      background: rgba(255,255,255,0.1);
+      color: #E2E8F0;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 0.45rem 0.9rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #EF4444;
+      color: #FCA5A5;
+    }
+
+    /* Main Container */
+    .admin-container {
+      max-width: 1380px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      flex: 1;
+    }
+
+    /* Metrics Bar */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .metric-icon-box {
+      width: 54px;
+      height: 54px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+    .metric-icon-gold { background: #FAF3DF; color: var(--gold-dark); border: 1px solid var(--gold-border); }
+    .metric-icon-blue { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
+    .metric-icon-green { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
+    .metric-icon-purple { background: #FAF5FF; color: #9333EA; border: 1px solid #E9D5FF; }
+
+    .metric-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    .metric-value {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--dark-navy);
+    }
+
+    /* Orders Section Header & Controls */
+    .section-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .section-header-bar {
+      padding: 1.25rem 1.75rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      background: #FAF8F5;
+    }
+
+    .section-heading {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--dark-navy);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .filter-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      padding: 0.55rem 0.9rem;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      min-width: 260px;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--gold-primary); }
+
+    .status-select {
+      padding: 0.55rem 0.9rem;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      outline: none;
+      background: #FFFFFF;
+    }
+
+    /* Orders Table / Cards */
+    .orders-table-wrap {
+      overflow-x: auto;
+    }
+
+    .admin-orders-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    .admin-orders-table th {
+      background: #F1F5F9;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      padding: 0.9rem 1.2rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .admin-orders-table td {
+      padding: 1.2rem;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+
+    .admin-orders-table tr:hover {
+      background: #FDFCF9;
+    }
+
+    /* Order Column Badges & UI */
+    .order-id-badge {
+      font-family: monospace;
+      font-weight: 800;
+      color: var(--gold-dark);
+      font-size: 0.92rem;
+      background: #FAF3DF;
+      border: 1px solid var(--gold-border);
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 0.35rem;
+    }
+
+    .order-date-text {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* Customer Info Block */
+    .customer-info-box {
+      line-height: 1.45;
+    }
+    .customer-name {
+      font-weight: 700;
+      color: var(--dark-navy);
+      font-size: 0.95rem;
+    }
+    .customer-contact {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+    .customer-address {
+      font-size: 0.78rem;
+      color: #475569;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      padding: 0.45rem 0.6rem;
+      margin-top: 0.4rem;
+      max-width: 260px;
+    }
+
+    /* Product Item Visual Gallery (Image + Title + Price) */
+    .order-products-gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-width: 280px;
+    }
+
+    .order-product-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 0.45rem 0.6rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .product-thumb-img {
+      width: 52px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #CBD5E1;
+      background: #F1F5F9;
+      flex-shrink: 0;
+    }
+
+    .product-info-col {
+      flex: 1;
+      min-width: 0;
+    }
+    .product-item-title {
+      font-weight: 700;
+      color: var(--dark-navy);
+      font-size: 0.84rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .product-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .product-item-pricing {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--gold-dark);
+    }
+
+    /* Amount & Payment */
+    .amount-display {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--dark-navy);
+      margin-bottom: 0.25rem;
+    }
+    .payment-badge {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-paid { background: #DCFCE7; color: #15803D; border: 1px solid #86EFAC; }
+    .badge-cod { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+    .badge-pending { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; }
+
+    /* Delivery Time & Status Dispatcher */
+    .delivery-schedule-box {
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+    .delivery-date-highlight {
+      font-weight: 700;
+      color: #1E293B;
+    }
+    .delivery-slot-pill {
+      display: inline-block;
+      background: #EFF6FF;
+      color: #1D4ED8;
+      border: 1px solid #BFDBFE;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-top: 0.2rem;
+    }
+
+    .order-status-dropdown {
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      outline: none;
+      cursor: pointer;
+      border: 1.5px solid var(--border-color);
+      margin-top: 0.5rem;
+      background: #FFFFFF;
+    }
+
+    /* Action Buttons */
+    .action-btn-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .btn-action-slip {
+      background: #F8FAFC;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-action-slip:hover {
+      background: #FAF3DF;
+      border-color: var(--gold-primary);
+      color: var(--gold-dark);
+    }
+
+    .btn-action-del {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      color: #DC2626;
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-action-del:hover {
+      background: #DC2626;
+      color: #FFFFFF;
+    }
+
+    /* Empty state */
+    .empty-orders-view {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--text-muted);
+    }
+
+    /* Printable Slip Modal */
+    .slip-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .slip-card {
+      background: #FFFFFF;
+      max-width: 600px;
+      width: 100%;
+      border-radius: var(--radius-lg);
+      padding: 2.5rem;
+      border: 2px solid var(--gold-primary);
+      box-shadow: var(--shadow-lg);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printableSlipContent, #printableSlipContent * { visibility: visible; }
+      #printableSlipContent { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PASSKEY GATE SCREEN -->
+  <div class="admin-gate-screen" id="adminGateScreen">
+    <div class="gate-card">
+      <div style="font-size: 2.8rem; margin-bottom: 0.5rem;">ðŸ‘‘</div>
+      <h1 class="gate-logo">AURORA</h1>
+      <div class="gate-subtitle">Operations & Order Command Center</div>
+      
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+        Enter administrative passkey to inspect incoming client orders, delivery schedules, and product photos.
+      </p>
+
+      <form id="adminPasskeyForm" onsubmit="handleAdminPasskeySubmit(event)">
+        <input type="password" id="adminPasskeyInput" class="form-input" placeholder="Enter Admin Passkey (AURORA2026)" required autofocus>
+        <button type="submit" class="btn-gold" style="margin-bottom: 0.8rem;">
+          Unlock Operations Dashboard âš¡
+        </button>
+      </form>
+
+      <button type="button" onclick="quickUnlockDemo()" style="background:none; border:none; color:var(--gold-dark); font-size:0.82rem; font-weight:700; cursor:pointer; text-decoration:underline;">
+        âš¡ Instant Quick-Unlock (Demo: AURORA2026)
+      </button>
+      
+      <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+        <a href="index.html" style="font-size: 0.82rem; color: var(--text-muted); text-decoration: none;">
+          &larr; Return to Customer Boutique
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTHENTICATED OPERATIONS DASHBOARD -->
+  <div class="admin-layout" id="adminDashboardLayout">
+    
+    <!-- Navbar -->
+    <nav class="admin-navbar">
+      <div class="admin-brand">
+        <span class="admin-brand-title">AURORA ATELIER</span>
+        <span class="admin-badge">ðŸ‘‘ Operations Command</span>
+      </div>
+
+      <div class="nav-user-meta">
+        <span style="font-size:0.85rem; color:#94A3B8;">Master Concierge Active</span>
+        <button class="btn-logout" onclick="logoutAdmin()">Sign Out & Lock ðŸ”’</button>
+        <a href="index.html" target="_blank" style="color:var(--gold-light); font-size:0.85rem; text-decoration:none; font-weight:600;">
+          Open Store â†—
+        </a>
+      </div>
+    </nav>
+
+    <!-- Content Container -->
+    <main class="admin-container">
+      
+      <!-- Metrics Bar -->
+      <section class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon-box metric-icon-gold">â‚¹</div>
+          <div>
+            <div class="metric-title">Total Revenue</div>
+            <div class="metric-value" id="metricTotalRevenue">â‚¹0</div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box metric-icon-blue">ðŸ“¦</div>
+          <div>
+            <div class="metric-title">Total Orders</div>
+            <div class="metric-value" id="metricTotalOrders">0</div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box metric-icon-purple">â³</div>
+          <div>
+            <div class="metric-title">Active Dispatches</div>
+            <div class="metric-value" id="metricActiveOrders">0</div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-box metric-icon-green">âœ“</div>
+          <div>
+            <div class="metric-title">Delivered Heirlooms</div>
+            <div class="metric-value" id="metricDeliveredOrders">0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Incoming Orders & Picture Viewer -->
+      <section class="section-card">
+        <div class="section-header-bar">
+          <h2 class="section-heading">
+            <span>ðŸ“¦</span> Incoming Customer Orders & Product Pictures
+          </h2>
+
+          <div class="filter-controls">
+            <input type="text" id="adminSearchInput" class="search-input" placeholder="Search by Client Name, Order ID, City, or Phone..." oninput="filterAdminOrders()">
+            
+            <select id="adminStatusFilter" class="status-select" onchange="filterAdminOrders()">
+              <option value="ALL">All Order Statuses</option>
+              <option value="Order Placed">Order Placed</option>
+              <option value="In Hallmarking Vault">In Hallmarking Vault</option>
+              <option value="Artisan Hand-Forging">Artisan Hand-Forging</option>
+              <option value="Dispatched with White-Glove Courier">Dispatched</option>
+              <option value="Delivered">Delivered</option>
+            </select>
+
+            <button class="btn-action-slip" onclick="loadAdminOrders()" title="Refresh Orders">
+              ðŸ”„ Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="orders-table-wrap">
+          <table class="admin-orders-table">
+            <thead>
+              <tr>
+                <th>Order Details</th>
+                <th>Client & Delivery Address</th>
+                <th>Ordered Pieces & Pictures</th>
+                <th>Amount & Payment</th>
+                <th>Delivery Time Slot & Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminOrdersTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Custom Bespoke & Inspiration Requests -->
+      <section class="section-card">
+        <div class="section-header-bar">
+          <h2 class="section-heading">
+            <span>âœï¸</span> Bespoke Studio & Client Inspiration Requests
+          </h2>
+          <span style="font-size:0.82rem; color:var(--text-muted);" id="bespokeRequestsCount">0 Commissions</span>
+        </div>
+
+        <div class="orders-table-wrap">
+          <table class="admin-orders-table">
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>Client Contact</th>
+                <th>Commission Concept / Prompt</th>
+                <th>Uploaded Photo Reference</th>
+                <th>Target Metal & Budget</th>
+                <th>Submitted On</th>
+              </tr>
+            </thead>
+            <tbody id="adminBespokeTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- PRINTABLE WHITE-GLOVE PACKING SLIP MODAL -->
+  <div class="slip-modal-backdrop" id="slipModalBackdrop" onclick="if(event.target.id==='slipModalBackdrop') closeSlipModal()">
+    <div class="slip-card" id="printableSlipContent"></div>
+  </div>
+
+  <script src="./static/js/admin.js?v=4.0"></script>
+</body>
+</html>
