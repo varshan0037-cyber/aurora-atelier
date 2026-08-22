@@ -1,13 +1,12 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aurora Atelier &mdash; Operations &amp; Order Command Center</title>
+  <title>Aurora Atelier - Operations &amp; Order Command Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>ðŸ‘‘</text></svg>">
   <style>
     :root {
       --gold-primary: #C9A227;
@@ -16,10 +15,10 @@
       --gold-bg: #FAF7EE;
       --gold-border: #E5D5A5;
       --dark-navy: #0F172A;
-      --card-bg: rgba(255, 255, 255, 0.94);
+      --card-bg: rgba(255, 255, 255, 0.95);
       --text-main: #1E293B;
       --text-muted: #64748B;
-      --bg-page: #F4EFE6;
+      --bg-page: #F8F5EE;
       --border-color: #E2D9C8;
       --radius-sm: 8px;
       --radius-md: 14px;
@@ -33,7 +32,7 @@
     
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #F8F5EE url('./static/images/luxury-bg.png') no-repeat center center fixed;
+      background: var(--bg-page) url('./static/images/luxury-bg.png') no-repeat center center fixed;
       background-size: cover;
       color: var(--text-main);
       min-height: 100vh;
@@ -45,9 +44,16 @@
     .luxury-page-backdrop {
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.6) 0%, rgba(248, 244, 235, 0.75) 100%);
+      background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.65) 0%, rgba(248, 244, 235, 0.8) 100%);
       pointer-events: none;
       z-index: 0;
+    }
+
+    /* SVG Icon base class */
+    .svg-icon {
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
     }
 
     /* Passkey Gate Screen */
@@ -73,6 +79,11 @@
       border: 1.5px solid var(--gold-border);
     }
 
+    .gate-crown-icon {
+      color: var(--gold-primary);
+      margin-bottom: 0.8rem;
+    }
+
     .gate-logo {
       font-family: 'Cormorant Garamond', serif;
       font-size: 2.4rem;
@@ -80,6 +91,7 @@
       letter-spacing: 0.18em;
       color: var(--dark-navy);
       margin-bottom: 0.3rem;
+      text-transform: uppercase;
     }
 
     .gate-subtitle {
@@ -119,6 +131,10 @@
       cursor: pointer;
       box-shadow: 0 4px 14px rgba(201, 162, 39, 0.35);
       transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
     .btn-gold:hover {
       transform: translateY(-2px);
@@ -160,6 +176,7 @@
       letter-spacing: 0.15em;
       color: var(--gold-light);
       font-weight: 700;
+      text-transform: uppercase;
     }
     .admin-badge {
       background: rgba(201, 162, 39, 0.2);
@@ -167,7 +184,7 @@
       color: var(--gold-light);
       font-size: 0.75rem;
       font-weight: 700;
-      padding: 0.25rem 0.75rem;
+      padding: 0.3rem 0.8rem;
       border-radius: 999px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -193,7 +210,7 @@
       transition: all 0.2s;
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
     }
     .btn-logout:hover {
       background: rgba(239, 68, 68, 0.25);
@@ -211,6 +228,9 @@
       border-radius: var(--radius-sm);
       background: rgba(201, 162, 39, 0.1);
       transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
     .btn-open-store:hover {
       background: var(--gold-primary);
@@ -260,7 +280,7 @@
       justify-content: center;
       flex-shrink: 0;
     }
-    .metric-icon-gold { background: #FAF3DF; color: var(--gold-dark); border: 1.5px solid var(--gold-border); }
+    .metric-icon-gold { background: #FAF3DF; color: var(--gold-dark); border: 1.5px solid var(--gold-border); font-size: 1.6rem; font-weight: 800; }
     .metric-icon-blue { background: #EFF6FF; color: #2563EB; border: 1.5px solid #BFDBFE; }
     .metric-icon-purple { background: #FAF5FF; color: #9333EA; border: 1.5px solid #E9D5FF; }
     .metric-icon-green { background: #F0FDF4; color: #16A34A; border: 1.5px solid #BBF7D0; }
@@ -339,7 +359,7 @@
       cursor: pointer;
     }
 
-    /* BIG ORDERS CONTAINER (Luxury Card Layout) */
+    /* BIG ORDERS CONTAINER */
     .orders-cards-list {
       padding: 1.5rem 2rem;
       display: flex;
@@ -360,7 +380,6 @@
       box-shadow: var(--shadow-md);
     }
 
-    /* Order Top Meta Bar */
     .order-card-header {
       display: flex;
       align-items: center;
@@ -397,7 +416,6 @@
       font-weight: 500;
     }
 
-    /* Order Inner 3-Column Grid */
     .order-grid-columns {
       display: grid;
       grid-template-columns: 1.2fr 1.8fr 1.3fr;
@@ -582,13 +600,17 @@
       background: #FAF3DF;
       border: 1.5px solid var(--gold-primary);
       color: var(--gold-dark);
-      padding: 0.5rem;
+      padding: 0.55rem;
       border-radius: 6px;
       font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
       text-align: center;
       transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
     }
     .btn-slip:hover {
       background: var(--gold-primary);
@@ -599,13 +621,17 @@
       background: #FEF2F2;
       border: 1.5px solid #FECACA;
       color: #DC2626;
-      padding: 0.5rem;
+      padding: 0.55rem;
       border-radius: 6px;
       font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
       text-align: center;
       transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
     }
     .btn-del:hover {
       background: #DC2626;
@@ -686,7 +712,11 @@
   <!-- PASSKEY GATE SCREEN -->
   <div class="admin-gate-screen" id="adminGateScreen">
     <div class="gate-card">
-      <div style="font-size: 3rem; margin-bottom: 0.5rem;">ðŸ‘‘</div>
+      <div class="gate-crown-icon">
+        <svg class="svg-icon" viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+          <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"/>
+        </svg>
+      </div>
       <h1 class="gate-logo">AURORA</h1>
       <div class="gate-subtitle">Operations &amp; Order Command Center</div>
       
@@ -697,12 +727,13 @@
       <form id="adminPasskeyForm" onsubmit="handleAdminPasskeySubmit(event)">
         <input type="password" id="adminPasskeyInput" class="form-input" placeholder="Enter Admin Passkey (AURORA2026)" required autofocus>
         <button type="submit" class="btn-gold" style="margin-bottom: 1rem;">
-          Unlock Operations Dashboard &#9889;
+          <svg class="svg-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Unlock Operations Dashboard
         </button>
       </form>
 
       <button type="button" onclick="quickUnlockDemo()" style="background:none; border:none; color:var(--gold-dark); font-size:0.85rem; font-weight:700; cursor:pointer; text-decoration:underline;">
-        &#9889; Instant Quick-Unlock (Demo: AURORA2026)
+        Instant Quick-Unlock (Demo: AURORA2026)
       </button>
       
       <div style="margin-top: 1.8rem; border-top: 1px solid var(--border-color); padding-top: 1.2rem;">
@@ -720,13 +751,17 @@
     <nav class="admin-navbar">
       <div class="admin-brand">
         <span class="admin-brand-title">AURORA ATELIER</span>
-        <span class="admin-badge">ðŸ‘‘ Operations Command</span>
+        <span class="admin-badge">
+          <svg class="svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"/></svg>
+          Operations Command
+        </span>
       </div>
 
       <div class="nav-user-meta">
         <span style="font-size:0.85rem; color:#CBD5E1; font-weight:500;">Master Concierge Active</span>
         <button class="btn-logout" onclick="logoutAdmin()">
-          <span>ðŸ”’</span> Sign Out &amp; Lock
+          <svg class="svg-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Sign Out &amp; Lock
         </button>
         <a href="index.html" target="_blank" class="btn-open-store">
           Open Boutique &nearr;
@@ -741,7 +776,7 @@
       <section class="metrics-grid">
         <div class="metric-card">
           <div class="metric-icon-box metric-icon-gold">
-            <span style="font-size:1.6rem; font-weight:800; color:var(--gold-dark);">&#8377;</span>
+            &#8377;
           </div>
           <div>
             <div class="metric-title">Total Revenue</div>
@@ -751,7 +786,7 @@
 
         <div class="metric-card">
           <div class="metric-icon-box metric-icon-blue">
-            <span style="font-size:1.6rem;">ðŸ“¦</span>
+            <svg class="svg-icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 9.4L7.55 4.24M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16zM3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>
           </div>
           <div>
             <div class="metric-title">Total Orders</div>
@@ -761,7 +796,7 @@
 
         <div class="metric-card">
           <div class="metric-icon-box metric-icon-purple">
-            <span style="font-size:1.6rem;">â³</span>
+            <svg class="svg-icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </div>
           <div>
             <div class="metric-title">Active Dispatches</div>
@@ -771,7 +806,7 @@
 
         <div class="metric-card">
           <div class="metric-icon-box metric-icon-green">
-            <span style="font-size:1.6rem; color:#16A34A; font-weight:800;">âœ“</span>
+            <svg class="svg-icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
           <div>
             <div class="metric-title">Delivered Heirlooms</div>
@@ -784,7 +819,8 @@
       <section class="section-card">
         <div class="section-header-bar">
           <h2 class="section-heading">
-            <span>ðŸ“¦</span> Incoming Customer Orders &amp; Product Pictures
+            <svg class="svg-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 9.4L7.55 4.24M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16zM3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>
+            Incoming Customer Orders &amp; Product Pictures
           </h2>
 
           <div class="filter-controls">
@@ -800,7 +836,8 @@
             </select>
 
             <button class="btn-slip" style="padding:0.65rem 1rem;" onclick="loadAdminOrders()" title="Refresh Orders">
-              ðŸ”„ Refresh
+              <svg class="svg-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0118.8-4.3M22 12.5a10 10 0 01-18.8 4.3"/></svg>
+              Refresh
             </button>
           </div>
         </div>
@@ -815,7 +852,8 @@
       <section class="section-card">
         <div class="section-header-bar">
           <h2 class="section-heading">
-            <span>âœï¸</span> Bespoke Studio &amp; Client Inspiration Requests
+            <svg class="svg-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Bespoke Studio &amp; Client Inspiration Requests
           </h2>
           <span style="font-size:0.85rem; color:var(--text-muted); font-weight:700;" id="bespokeRequestsCount">0 Commissions</span>
         </div>
@@ -847,6 +885,6 @@
     <div class="slip-card" id="printableSlipContent"></div>
   </div>
 
-  <script src="./static/js/admin.js?v=4.1"></script>
+  <script src="./static/js/admin.js?v=4.2"></script>
 </body>
 </html>

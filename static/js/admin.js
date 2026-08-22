@@ -1,6 +1,6 @@
-﻿// ==========================================================================
-// AURORA ATELIER â€” STANDALONE ADMIN OPERATIONS SCRIPT
-// Features: Order Tracking, Product Picture Display, Delivery Scheduling
+// ==========================================================================
+// AURORA ATELIER - STANDALONE ADMIN OPERATIONS SCRIPT
+// Clean SVG Icons & Pure HTML Entity Formatting
 // ==========================================================================
 
 const ADMIN_PASSKEY = 'AURORA2026';
@@ -141,7 +141,7 @@ function loadAdminOrders() {
     if (raw) stored = JSON.parse(raw);
   } catch(e) {}
 
-  // Merge stored customer orders with default sample orders (without duplicate order IDs)
+  // Merge stored customer orders with default sample orders
   const existingIds = new Set(stored.map(o => o.order_id || o.id));
   const mergedDefaults = DEFAULT_ADMIN_ORDERS.filter(o => !existingIds.has(o.order_id));
   allAdminOrders = [...stored, ...mergedDefaults];
@@ -166,7 +166,7 @@ function updateMetrics() {
     }
   });
 
-  document.querySelector('#metricTotalRevenue').innerHTML = `&#8377;${totalRev.toLocaleString()}`;
+  document.querySelector('#metricTotalRevenue').innerHTML = '&#8377;' + totalRev.toLocaleString();
   document.querySelector('#metricTotalOrders').innerText = allAdminOrders.length;
   document.querySelector('#metricActiveOrders').innerText = activeCount;
   document.querySelector('#metricDeliveredOrders').innerText = deliveredCount;
@@ -179,7 +179,9 @@ function renderAdminOrdersCards(orders) {
   if (orders.length === 0) {
     container.innerHTML = `
       <div style="text-align:center; padding:4rem 1rem; color:var(--text-muted);">
-        <div style="font-size: 3rem; margin-bottom: 0.8rem;">ðŸ“¦</div>
+        <div style="margin-bottom: 0.8rem; color:var(--gold-primary);">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 9.4L7.55 4.24M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16zM3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>
+        </div>
         <h3 style="font-size: 1.2rem; margin-bottom: 0.4rem; color:var(--dark-navy);">No incoming orders matching your search</h3>
         <p style="font-size:0.85rem;">New customer orders placed from the website will automatically appear here with product pictures.</p>
       </div>
@@ -250,10 +252,19 @@ function renderAdminOrdersCards(orders) {
             <div class="col-section-title">Client &amp; Delivery Destination</div>
             <div class="client-card-box">
               <div class="client-name-text">${custName}</div>
-              <div class="client-meta-line"><span>âœ‰</span> ${email}</div>
-              <div class="client-meta-line"><span>ðŸ“ž</span> ${phone}</div>
+              <div class="client-meta-line">
+                <svg class="svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                ${email}
+              </div>
+              <div class="client-meta-line">
+                <svg class="svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                ${phone}
+              </div>
               <div class="client-address-text">
-                <div style="font-weight:700; margin-bottom:2px;">ðŸ“ Shipping Address:</div>
+                <div style="font-weight:700; margin-bottom:3px; display:flex; align-items:center; gap:0.4rem;">
+                  <svg class="svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#C9A227" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Shipping Address:
+                </div>
                 ${addr}
               </div>
             </div>
@@ -277,7 +288,7 @@ function renderAdminOrdersCards(orders) {
               </div>
 
               <div class="payment-tag-row">
-                <span style="font-size:0.8rem; color:var(--text-muted);">${payMethod}</span>
+                <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">${payMethod}</span>
               </div>
 
               <div class="delivery-schedule-row">
@@ -291,15 +302,17 @@ function renderAdminOrdersCards(orders) {
                 <option value="In Hallmarking Vault" ${status==='In Hallmarking Vault'?'selected':''}>In Hallmarking Vault</option>
                 <option value="Artisan Hand-Forging" ${status==='Artisan Hand-Forging'?'selected':''}>Artisan Hand-Forging</option>
                 <option value="Dispatched with White-Glove Courier" ${status==='Dispatched with White-Glove Courier'?'selected':''}>Dispatched (Courier)</option>
-                <option value="Delivered" ${status==='Delivered'?'selected':''}>Delivered âœ“</option>
+                <option value="Delivered" ${status==='Delivered'?'selected':''}>Delivered &check;</option>
               </select>
 
               <div class="order-actions-grid">
                 <button class="btn-slip" onclick="openPackingSlip('${orderId}')">
-                  ðŸ“„ Packing Slip
+                  <svg class="svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  Packing Slip
                 </button>
                 <button class="btn-del" onclick="deleteAdminOrder('${orderId}')">
-                  ðŸ—‘ Delete
+                  <svg class="svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  Delete
                 </button>
               </div>
             </div>
@@ -366,7 +379,7 @@ function openPackingSlip(orderId) {
   card.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #C9A227; padding-bottom:1.2rem; margin-bottom:1.5rem;">
       <div>
-        <h2 style="font-family:'Cormorant Garamond', serif; font-size:2.2rem; font-weight:700; color:#0F172A; letter-spacing:0.1em;">AURORA ATELIER</h2>
+        <h2 style="font-family:'Cormorant Garamond', serif; font-size:2.2rem; font-weight:700; color:#0F172A; letter-spacing:0.1em; text-transform:uppercase;">AURORA ATELIER</h2>
         <div style="font-size:0.82rem; text-transform:uppercase; color:#9A7B1C; font-weight:800; letter-spacing:0.1em;">White-Glove Insured Manifest</div>
       </div>
       <div style="text-align:right;">
@@ -413,7 +426,7 @@ function openPackingSlip(orderId) {
 
     <div style="display:flex; justify-content:space-between; gap:1rem;">
       <button onclick="closeSlipModal()" style="padding:0.65rem 1.4rem; border-radius:6px; border:1.5px solid #CBD5E1; background:#F8FAFC; cursor:pointer; font-weight:700;">Close</button>
-      <button onclick="window.print()" style="padding:0.65rem 1.6rem; border-radius:6px; border:none; background:linear-gradient(135deg, #C9A227, #A8841B); color:#FFF; font-weight:800; cursor:pointer;">ðŸ–¨ Print Manifest Slip</button>
+      <button onclick="window.print()" style="padding:0.65rem 1.6rem; border-radius:6px; border:none; background:linear-gradient(135deg, #C9A227, #A8841B); color:#FFF; font-weight:800; cursor:pointer;">Print Manifest Slip</button>
     </div>
   `;
 
@@ -441,8 +454,7 @@ function loadAdminBespokeRequests() {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" style="text-align:center; padding:3rem 1rem; color:var(--text-muted);">
-          <div style="font-size: 2.2rem; margin-bottom: 0.4rem;">âœï¸</div>
-          <div style="font-weight:700;">No bespoke client commissions received yet</div>
+          <div style="font-weight:700; font-size:1rem;">No bespoke client commissions received yet</div>
         </td>
       </tr>
     `;
@@ -454,8 +466,8 @@ function loadAdminBespokeRequests() {
       <td><span class="order-id-pill">${r.request_number || r.id}</span></td>
       <td>
         <div style="font-weight:800;">${r.customer_name || 'Anonymous Client'}</div>
-        <div style="font-size:0.82rem; color:#64748B;">âœ‰ ${r.email || ''}</div>
-        <div style="font-size:0.82rem; color:#64748B;">ðŸ“ž ${r.phone || ''}</div>
+        <div style="font-size:0.82rem; color:#64748B;">??? ${r.email || ''}</div>
+        <div style="font-size:0.82rem; color:#64748B;">???? ${r.phone || ''}</div>
       </td>
       <td>
         <div style="font-size:0.88rem; max-width:340px; line-height:1.45;">${r.prompt || r.concept_description || 'Custom Bespoke Inquiry'}</div>
